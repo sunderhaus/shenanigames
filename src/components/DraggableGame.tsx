@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Game } from '../types/types';
 import { DraggableType, DraggableItem } from './DragAndDropProvider';
@@ -13,6 +13,12 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
   const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useGameStore(state => state.draftingComplete);
   const players = useGameStore(state => state.players);
+  const placeGame = useGameStore(state => state.placeGame);
+
+  // State to track clicks for double-click detection
+  const [lastClickTime, setLastClickTime] = useState<number | null>(null);
+  // State to track if the game was recently clicked (for visual feedback)
+  const [recentlyClicked, setRecentlyClicked] = useState(false);
 
   // Get the current player
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
@@ -22,6 +28,49 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
   const tables = useGameStore(state => state.tables);
   const rounds = useGameStore(state => state.rounds);
   const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
+
+  // Handle click on the game card
+  const handleGameClick = () => {
+    const now = Date.now();
+
+    // Check if this is a double-click (two clicks within 300ms)
+    if (lastClickTime && now - lastClickTime < 300) {
+      // Only allow placing if the game is a valid target for the current player
+      if (isDraggable && currentPlayerId) {
+        // Find an available table (one without a game assigned)
+        const availableTable = tables.find(table => table.gameId === null);
+
+        if (availableTable) {
+          // Place the game on the available table
+          placeGame(game.id, availableTable.id, currentPlayerId);
+        }
+      }
+      // Reset the last click time after a double-click
+      setLastClickTime(null);
+      setRecentlyClicked(false);
+    } else {
+      // Update the last click time for single clicks
+      setLastClickTime(now);
+
+      // Set recently clicked for visual feedback
+      if (isDraggable) {
+        setRecentlyClicked(true);
+
+        // Reset recently clicked after 300ms (the double-click threshold)
+        setTimeout(() => {
+          setRecentlyClicked(false);
+        }, 300);
+      }
+    }
+  };
+
+  // Clear the click state when the component unmounts or when the game changes
+  useEffect(() => {
+    return () => {
+      setLastClickTime(null);
+      setRecentlyClicked(false);
+    };
+  }, [game.id]);
 
   // Check if the current player has already assigned any of their picks to a table
   const hasAssignedPicks = currentPlayer && tables.some(table => 
@@ -57,13 +106,39 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
     disabled: !isDraggable
   });
 
+  // Get the recently clicked class
+  const getRecentlyClickedClass = () => {
+    return recentlyClicked ? 'recently-clicked' : '';
+  };
+
+  // Determine the tooltip text based on the game state
+  const getTooltipText = () => {
+    if (isDraggable) {
+      return "Double-click to place on an available table";
+    } else if (draftingComplete) {
+      return "Drafting is complete";
+    } else if (hasAssignedPicks) {
+      return "You have already assigned your picks";
+    } else if (!isInPlayerPicks) {
+      return "This game is not in your picks";
+    } else if (isGameUsedInPreviousRound) {
+      return "This game was used in a previous round";
+    } else {
+      return "Not your turn";
+    }
+  };
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     zIndex: isDragging ? 1000 : 1,
     opacity: isDragging ? 0.8 : 1,
-    cursor: isDraggable ? 'grab' : 'not-allowed'
+    cursor: isDraggable ? 'grab' : 'not-allowed',
+    transition: 'all 0.2s ease',
+    boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : ''
   } : {
-    cursor: isDraggable ? 'grab' : 'not-allowed'
+    cursor: isDraggable ? 'grab' : 'not-allowed',
+    transition: 'all 0.2s ease',
+    boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : ''
   };
 
   return (
@@ -72,7 +147,9 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={`game-card ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''}`}
+      onClick={handleGameClick}
+      title={getTooltipText()}
+      className={`game-card ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''} ${getRecentlyClickedClass()}`}
     >
       <div className="flex items-center">
         {game.image && (
