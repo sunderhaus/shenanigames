@@ -41,6 +41,5 @@ export interface SessionState {
   tables: Table[];
   turnOrder: string[];
   currentPlayerTurnIndex: number;
-  consecutivePasses: number;
   draftingComplete: boolean;
 }

@@ -4,20 +4,20 @@ import { SessionState, Player, Game, Table } from '@/types/types';
 
 // Sample data for initial state based on player-picks.csv
 const sampleGames: Game[] = [
-  { id: uuidv4(), title: 'Bloodstones', maxPlayers: 4 },
-  { id: uuidv4(), title: 'SETI', maxPlayers: 4 },
-  { id: uuidv4(), title: 'Dune', maxPlayers: 6 },
-  { id: uuidv4(), title: 'New Kemet', maxPlayers: 5 },
-  { id: uuidv4(), title: 'Champions of Midgard', maxPlayers: 4 },
-  { id: uuidv4(), title: 'Last Light', maxPlayers: 8 },
-  { id: uuidv4(), title: 'Oath', maxPlayers: 6 },
-  { id: uuidv4(), title: 'Realm of Reckoning', maxPlayers: 4 },
-  { id: uuidv4(), title: 'Stupor Mundi', maxPlayers: 4 },
-  { id: uuidv4(), title: 'Brass: Birmingham', maxPlayers: 4 },
-  { id: uuidv4(), title: 'Cyclades Legendary', maxPlayers: 5 },
-  { id: uuidv4(), title: 'Pillars of Earth', maxPlayers: 4 },
-  { id: uuidv4(), title: 'Dune War for Arakis', maxPlayers: 2 },
-  { id: uuidv4(), title: 'The White Castle', maxPlayers: 4 },
+  { id: uuidv4(), title: 'Bloodstones', maxPlayers: 4 , link: 'https://boardgamegeek.com/boardgame/284587/bloodstones', image: 'https://cf.geekdo-images.com/HV14OnnJ8csHISjCVoYmig__imagepagezoom/img/N6ldKubcFgbA_iYfb_HrwV2Iapg=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7014527.jpg'},
+  { id: uuidv4(), title: 'SETI', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/418059/seti-search-for-extraterrestrial-intelligence', image: 'https://cf.geekdo-images.com/_BUXOVRDU9g_eRwgpR5ZZw__imagepagezoom/img/Scz5h4qbJT88nUjCeTt5LI_rlyE=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic8160466.jpg' },
+  { id: uuidv4(), title: 'Dune', maxPlayers: 6, link: 'https://boardgamegeek.com/boardgame/283355/dune', image: 'https://cf.geekdo-images.com/2fgPg6Be--w97zoycObUgg__imagepagezoom/img/xaHCXAm16YrluAkOLF6ATbKDYHg=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic4815198.jpg' },
+  { id: uuidv4(), title: 'New Kemet', maxPlayers: 5, link: 'https://boardgamegeek.com/boardgame/297562/kemet-blood-and-sand', image: 'https://boardgamegeek.com/boardgame/297562/kemet-blood-and-sand' },
+  { id: uuidv4(), title: 'Champions of Midgard', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/172287/champions-of-midgard', image: 'https://cf.geekdo-images.com/VJwOnMF5vwJg2Yaq6ozn3Q__imagepagezoom/img/KTdvwhXefkXRFiOYbl8HVLq9aKk=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic2869714.jpg' },
+  { id: uuidv4(), title: 'Last Light', maxPlayers: 8, link: 'https://boardgamegeek.com/boardgame/315727/last-light', image: 'https://cf.geekdo-images.com/zw7xI7gJD6r7zNDR-AbVAQ__imagepagezoom/img/uOxcanSS4PXD8y6rHNO3UxT8eVg=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic6338617.jpg' },
+  { id: uuidv4(), title: 'Oath', maxPlayers: 6, link: 'https://boardgamegeek.com/boardgame/291572/oath', image: 'https://cf.geekdo-images.com/gTxav_KKQK1rDg-XuCjCSA__imagepagezoom/img/vZVvtufTceUYyWfvHwOBTRGmXdw=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic5164812.jpg' },
+  { id: uuidv4(), title: 'Realm of Reckoning', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/446893/realm-of-reckoning', image: 'https://cf.geekdo-images.com/xElMYLyj1pqtCIOhRNzA9w__imagepagezoom/img/JdGJ4hQ1GsNMuYl0AeOh0rRfqJ8=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic8899476.png' },
+  { id: uuidv4(), title: 'Stupor Mundi', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/392492/stupor-mundi', image: 'https://cf.geekdo-images.com/SJvK-Hq72xOiJ_JsmB1dGA__imagepagezoom/img/lsPEsMAQx4KcaLrYnwwNArS44VM=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7585104.jpg' },
+  { id: uuidv4(), title: 'Brass: Birmingham', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/224517/brass-birmingham', image: 'https://cf.geekdo-images.com/x3zxjr-Vw5iU4yDPg70Jgw__imagepagezoom/img/7a0LOL48K-7JNIOSGtcsNsIxkN0=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic3490053.jpg' },
+  { id: uuidv4(), title: 'Cyclades Legendary', maxPlayers: 5, link: '', image: '' },
+  { id: uuidv4(), title: 'Pillars of Earth', maxPlayers: 4, link: '', image: '' },
+  { id: uuidv4(), title: 'Dune War for Arakis', maxPlayers: 2, link: '', image: '' },
+  { id: uuidv4(), title: 'The White Castle', maxPlayers: 4, link: '', image: '' },
 ];
 
 // Create players based on player-picks.csv
@@ -57,7 +57,6 @@ const initialState: SessionState = {
   tables: sampleTables,
   turnOrder: samplePlayers.map(player => player.id),
   currentPlayerTurnIndex: 0,
-  consecutivePasses: 0,
   draftingComplete: false,
 };
 
@@ -73,7 +72,7 @@ interface GameStore extends SessionState {
   passTurn: () => void;
 
   // Helper to advance to the next player's turn
-  advanceTurn: (resetPasses: boolean) => void;
+  advanceTurn: () => void;
 }
 
 // Create the store
@@ -154,7 +153,6 @@ export const useGameStore = create<GameStore>((set) => ({
         availableGames: updatedAvailableGames,
         currentPlayerTurnIndex: nextIndex,
         turnOrder: newTurnOrder,
-        consecutivePasses: 0, // Reset passes when a game is placed
       };
     });
   },
@@ -210,36 +208,18 @@ export const useGameStore = create<GameStore>((set) => ({
         players: updatedPlayers,
         currentPlayerTurnIndex: nextIndex,
         turnOrder: newTurnOrder,
-        consecutivePasses: 0, // Reset passes when a player joins a game
       };
     });
   },
 
   // Pass a turn
   passTurn: () => {
-    set(state => {
-      const { advanceTurn } = state;
-      advanceTurn(false);
-      return {
-        ...state,
-        consecutivePasses: state.consecutivePasses + 1,
-      };
-    });
-
-    // Check if drafting is complete
-    set(state => {
-      if (state.consecutivePasses === state.players.length) {
-        return {
-          ...state,
-          draftingComplete: true,
-        };
-      }
-      return state;
-    });
+    // Just advance to the next player's turn without tracking passes
+    useGameStore.getState().advanceTurn();
   },
 
   // Advance to the next player's turn
-  advanceTurn: (resetPasses: boolean) => {
+  advanceTurn: () => {
     set(state => {
       let nextIndex = (state.currentPlayerTurnIndex + 1) % state.players.length;
       let newTurnOrder = [...state.turnOrder];
@@ -253,7 +233,6 @@ export const useGameStore = create<GameStore>((set) => ({
         ...state,
         currentPlayerTurnIndex: nextIndex,
         turnOrder: newTurnOrder,
-        consecutivePasses: resetPasses ? 0 : state.consecutivePasses,
       };
     });
   },
