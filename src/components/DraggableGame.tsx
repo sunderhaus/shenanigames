@@ -13,30 +13,42 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
   const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useGameStore(state => state.draftingComplete);
   const players = useGameStore(state => state.players);
-  
+
   // Get the current player
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
   const currentPlayer = players.find(p => p.id === currentPlayerId);
-  
+
+  // Get tables to check if player has already assigned picks
+  const tables = useGameStore(state => state.tables);
+
+  // Check if the current player has already assigned any of their picks to a table
+  const hasAssignedPicks = currentPlayer && tables.some(table => 
+    table.gameId !== null && 
+    currentPlayer.picks.includes(table.gameId) && 
+    table.seatedPlayerIds.includes(currentPlayer.id)
+  );
+
   // Determine if the game is draggable
   // A game is draggable if:
   // 1. It's the current player's turn
   // 2. Drafting is not complete
-  // 3. The current player has made fewer than 2 selections
-  const isDraggable = !draftingComplete && currentPlayer && currentPlayer.selectionsMade < 2;
-  
+  // 3. The current player hasn't already assigned their picks to a table
+  // 4. The game is in the player's picks
+  const isInPlayerPicks = currentPlayer && currentPlayer.picks.includes(game.id);
+  const isDraggable = !draftingComplete && currentPlayer && !hasAssignedPicks && isInPlayerPicks;
+
   // Set up draggable
   const draggableItem: DraggableItem = {
     id: game.id,
     type: DraggableType.GAME
   };
-  
+
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: game.id,
     data: draggableItem,
     disabled: !isDraggable
   });
-  
+
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     zIndex: isDragging ? 1000 : 1,

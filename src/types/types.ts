@@ -9,6 +9,7 @@ export interface Player {
   id: string;
   name: string;
   selectionsMade: number;
+  picks: string[]; // Array of game IDs the player has preselected
 }
 
 /**

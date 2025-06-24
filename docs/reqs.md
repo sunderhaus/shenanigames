@@ -19,7 +19,7 @@ Please define the data structures for the application state. A good starting poi
 ## Player
 - id: string (unique identifier, e.g., uuid())
 - name: string
-- selectionsMade: number (initially 0, max 2)
+- picks: Game[] (An array of Games the player has preselected as the games they want to play)
 
 ## Game
 - id: string (unique identifier)
