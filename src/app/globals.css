@@ -6,7 +6,7 @@
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
   --footer-height: 200px; /* Base footer height */
-  --footer-height-with-warning: 260px; /* Increased height when warning is shown */
+  --footer-height-with-warning: 220px; /* Reduced height for when warning is shown */
   --header-height: 80px;
 }
 

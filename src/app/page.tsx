@@ -52,7 +52,7 @@ export default function Home() {
 
   return (
     <AnimationProvider>
-      <main className={`min-h-screen p-4 ${isMobile && allTablesHaveGames ? 'pb-64' : 'pb-52'} bg-gray-100`}>
+      <main className={`min-h-screen p-4 ${isMobile && allTablesHaveGames ? 'pb-56' : 'pb-52'} bg-gray-100`}>
         <div className="container mx-auto">
           <header className="mb-8 sticky top-0 bg-gray-100 z-30 pt-2 pb-4">
             <h1 className="text-3xl font-bold text-center">Shenanigames</h1>
@@ -69,7 +69,7 @@ export default function Home() {
               )}
 
               {/* Main content - Tables */}
-              <div className={`${isMobile ? `fixed inset-0 pt-20 ${allTablesHaveGames ? 'pb-64' : 'pb-52'} px-4 mt-0` : 'lg:col-span-6'}`}>
+              <div className={`${isMobile ? `fixed inset-0 pt-20 ${allTablesHaveGames ? 'pb-56' : 'pb-52'} px-4 mt-0` : 'lg:col-span-6'}`}>
                 <TablesArea isMobile={isMobile} />
               </div>
 

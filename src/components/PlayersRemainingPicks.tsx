@@ -55,7 +55,7 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
             </div>
             <div className="ml-3">
               <p className={`${isFooter ? 'text-xs' : 'text-sm'} font-medium`}>
-                All tables have games placed on them. No more games can be placed until the next round.
+                This rounds picks have been selected. Continue to the next round to see a player's remaining picks.
               </p>
             </div>
           </div>
@@ -64,7 +64,7 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
 
       {/* Hide game images in footer when all tables have games */}
       {isFooter && allTablesHaveGames ? (
-        <p className="text-gray-500"></p>
+        null
       ) : filteredGames.length === 0 ? (
         <p className="text-gray-500">No games available</p>
       ) : (

@@ -40,10 +40,16 @@ export default function ActivePlayerFooter() {
   return (
     <div className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md z-20 ${allTablesHaveGames ? 'has-warning' : ''}`}>
       <div className="container mx-auto">
-        {/* Players Remaining Picks */}
-        <div className="px-3 pt-3 pb-2 border-b border-gray-200">
-          <PlayersRemainingPicks isFooter={true} />
-        </div>
+        {/* Players Remaining Picks - Only show warning when all tables have games */}
+        {allTablesHaveGames ? (
+          <div className="px-3 py-1 border-b border-gray-200">
+            <PlayersRemainingPicks isFooter={true} />
+          </div>
+        ) : (
+          <div className="px-3 pt-3 pb-2 border-b border-gray-200">
+            <PlayersRemainingPicks isFooter={true} />
+          </div>
+        )}
 
         {/* Active Player */}
         <div className="p-3">
