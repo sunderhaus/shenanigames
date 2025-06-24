@@ -5,13 +5,80 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
+  --footer-height: 200px; /* Base footer height */
+  --footer-height-with-warning: 260px; /* Increased height when warning is shown */
+  --header-height: 80px;
+}
+
+html {
+  height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-rgb));
   min-height: 100vh;
-  padding: 1rem;
+  padding: 0;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Prevent zooming on main content area */
+main {
+  touch-action: pan-x pan-y; /* Allow scrolling but prevent zooming */
+}
+
+/* Mobile optimizations */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: var(--footer-height);
+    touch-action: manipulation; /* Prevents browser handling of all touch gestures */
+  }
+
+  /* Adjust padding when warning is shown */
+  body.has-warning-footer {
+    padding-bottom: var(--footer-height-with-warning);
+  }
+
+  /* Improve touch targets for mobile */
+  button, 
+  .player-tile, 
+  .game-card, 
+  .table-card {
+    min-height: 44px; /* Apple's recommended minimum touch target size */
+    touch-action: manipulation; /* Prevents double-tap-to-zoom */
+  }
+
+  /* Prevent text selection during drag operations */
+  .draggable {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    touch-action: none; /* Disables browser handling of all touch gestures */
+  }
+
+  /* Fixed TablesArea in mobile view */
+  .fixed.inset-0 {
+    overflow-y: auto;
+    z-index: 10;
+    background-color: rgb(var(--background-rgb));
+  }
+
+  /* Ensure proper z-index stacking */
+  header.sticky {
+    z-index: 30;
+  }
+
+  .fixed.bottom-0 {
+    z-index: 40;
+  }
+
+  /* Adjust footer height when warning is shown */
+  .fixed.bottom-0.has-warning {
+    height: var(--footer-height-with-warning);
+  }
 }
 
 /* Game card styles */
@@ -213,4 +280,69 @@ body {
   padding: 2px 5px;
   border-radius: 3px;
   pointer-events: none;
+}
+
+/* Mobile swipe view styles */
+@media (max-width: 1023px) {
+  /* Table card in swipe view */
+  .table-card-swipe {
+    width: 100%;
+    height: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  /* Swipe indicators */
+  .swipe-indicator {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+  }
+
+  .swipe-indicator-left {
+    left: 10px;
+  }
+
+  .swipe-indicator-right {
+    right: 10px;
+  }
+
+  /* Table navigation dots */
+  .table-nav-dots {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+  }
+
+  .table-nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #cbd5e0;
+    margin: 0 4px;
+    padding: 0;
+    border: none;
+    transition: background-color 0.3s ease;
+    display: inline-block;
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    line-height: 1;
+    min-height: 10px;
+    overflow: hidden;
+  }
+
+  .table-nav-dot.active {
+    background-color: #4299e1;
+  }
 }

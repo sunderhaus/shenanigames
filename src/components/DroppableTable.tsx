@@ -142,9 +142,16 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : '',
         opacity: isReadOnly ? 0.85 : 1,
         pointerEvents: isReadOnly ? 'none' : 'auto',
-        border: isReadOnly ? '1px dashed #ccc' : ''
+        border: isReadOnly ? '1px dashed #ccc' : '',
+        position: 'relative'
       }}
     >
+      {/* Mobile long press indicator */}
+      {isValidPlayerTarget && (
+        <div className="absolute top-1 right-1 block md:hidden text-xs text-gray-500 bg-white bg-opacity-80 px-1 rounded">
+          <span className="mr-1">👆</span>Long press to join
+        </div>
+      )}
       <h3 className="font-medium text-center mb-2">{game ? game.title : table.id}</h3>
 
       {game ? (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { DndContext, DragEndEvent, DragStartEvent, DragOverEvent, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragStartEvent, DragOverEvent, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { useGameStore } from '../store/store';
 
 // Define the types of draggable items
@@ -31,10 +31,19 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
 
   // Configure sensors for drag detection
   const sensors = useSensors(
+    // Pointer sensor for mouse/desktop interactions
     useSensor(PointerSensor, {
       // Require a drag distance of 5px before activating
       activationConstraint: {
         distance: 5,
+      },
+    }),
+    // Touch sensor for mobile interactions with long press
+    useSensor(TouchSensor, {
+      // Require a long press of 250ms before activating
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     })
   );

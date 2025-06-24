@@ -58,7 +58,7 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
   return (
     <div 
       ref={setNodeRef}
-      style={style}
+      style={{...style, position: 'relative'}}
       {...attributes}
       {...listeners}
       className={`player-tile flex justify-between items-center p-2 border rounded-lg ${
@@ -67,6 +67,12 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
         player.actionTakenInCurrentRound ? 'action-taken' : ''
       }`}
     >
+      {/* Mobile long press indicator */}
+      {isDraggable && (
+        <div className="absolute top-0 right-1 block md:hidden text-xs text-gray-500">
+          <span>👆</span>
+        </div>
+      )}
       <div className="flex items-center">
         <div className={`player-token mr-2 ${isCurrentPlayer && !allPlayersHaveActed ? 'current-player' : ''}`}>
           <span>{player.icon}</span>
