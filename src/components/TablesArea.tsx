@@ -47,6 +47,9 @@ export default function TablesArea() {
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
 
+  // Check if all players have taken actions in the current round
+  const allPlayersHaveActed = players.every(player => player.actionTakenInCurrentRound);
+
   // Handle next round button click
   const handleNextRound = () => {
     if (roundComplete) {
@@ -60,8 +63,8 @@ export default function TablesArea() {
         <h2 className="text-xl font-bold">Tables</h2>
         <div className="flex items-center">
           <span className="mr-4">
-            Round {currentRoundIndex + 1} of {rounds.length}
-            {roundComplete && " (Complete)"}
+            {!allPlayersHaveActed && `Round ${currentRoundIndex + 1} of ${rounds.length}`}
+            {roundComplete && " (Set)"}
           </span>
           <button
             onClick={handleNextRound}

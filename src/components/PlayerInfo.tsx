@@ -23,6 +23,9 @@ export default function PlayerInfo() {
     return acc;
   }, {} as Record<string, Player>);
 
+  // Check if all players have taken actions in the current round
+  const allPlayersHaveActed = players.every(player => player.actionTakenInCurrentRound);
+
   return (
     <div className="bg-white p-3 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-3">
@@ -60,6 +63,7 @@ export default function PlayerInfo() {
                   isCurrentPlayer={isCurrentPlayer}
                   showPassButton={isCurrentPlayer && !draftingComplete}
                   onPassTurn={passTurn}
+                  allPlayersHaveActed={allPlayersHaveActed}
                 />
               );
             })}

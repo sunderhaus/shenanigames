@@ -9,13 +9,15 @@ interface DraggablePlayerProps {
   isCurrentPlayer: boolean;
   showPassButton?: boolean;
   onPassTurn?: () => void;
+  allPlayersHaveActed?: boolean;
 }
 
 const DraggablePlayer: React.FC<DraggablePlayerProps> = ({ 
   player, 
   isCurrentPlayer, 
   showPassButton = false, 
-  onPassTurn 
+  onPassTurn,
+  allPlayersHaveActed = false
 }) => {
   const draftingComplete = useGameStore(state => state.draftingComplete);
 
@@ -60,19 +62,19 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
       {...attributes}
       {...listeners}
       className={`player-tile flex justify-between items-center p-2 border rounded-lg ${
-        isCurrentPlayer ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+        isCurrentPlayer && !allPlayersHaveActed ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
       } ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''} ${
         player.actionTakenInCurrentRound ? 'action-taken' : ''
-      } ${player.actionTakenInCurrentRound && showPassButton ? 'hide-checkmark' : ''}`}
+      }`}
     >
       <div className="flex items-center">
-        <div className={`player-token mr-2 ${isCurrentPlayer ? 'current-player' : ''}`}>
+        <div className={`player-token mr-2 ${isCurrentPlayer && !allPlayersHaveActed ? 'current-player' : ''}`}>
           <span>{player.name.charAt(0)}</span>
         </div>
         <span className="font-medium">{player.name}</span>
       </div>
 
-      {showPassButton && (
+      {showPassButton && !player.actionTakenInCurrentRound && (
         <button 
           className="pass-button text-sm px-2 py-1"
           onClick={handlePassTurn}
