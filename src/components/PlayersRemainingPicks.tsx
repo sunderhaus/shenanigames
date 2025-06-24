@@ -39,9 +39,11 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
 
   return (
     <div className={`bg-white ${isFooter ? 'p-0' : 'p-4 rounded-lg shadow-md'}`}>
-      <h2 className={`${isFooter ? 'text-lg' : 'text-xl'} font-bold ${isFooter ? 'mb-2' : 'mb-4'}`}>
-        {isClient && currentPlayer ? `${currentPlayer.name}'s Remaining Picks` : "Player's Remaining Picks"}
-      </h2>
+      {!isFooter && (
+        <h2 className="text-xl font-bold mb-4">
+          {isClient && currentPlayer ? `${currentPlayer.name}'s Remaining Picks` : "Player's Remaining Picks"}
+        </h2>
+      )}
 
       {isClient && allTablesHaveGames && (
         <div className={`${isFooter ? 'mb-2 p-2 text-xs' : 'mb-4 p-4'} bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded`}>
