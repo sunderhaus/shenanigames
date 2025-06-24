@@ -387,9 +387,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
         ? state.availableGames 
         : state.availableGames.filter(g => g.id !== gameId);
 
-      // Calculate next player turn index
-      let nextIndex = (state.currentPlayerTurnIndex + 1) % state.players.length;
-
       // Update the current round's table states
       const updatedRounds = [...state.rounds];
       updatedRounds[state.currentRoundIndex] = {
@@ -427,13 +424,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
         players: updatedPlayers,
         availableGames: updatedAvailableGames,
         rounds: updatedRounds,
-        currentPlayerTurnIndex: nextIndex,
-        // Only rotate turn order if we've completed a round AND cycled through all players
+        // Don't update currentPlayerTurnIndex here, we'll use advanceTurn instead
         turnOrder: state.turnOrder, // Don't rotate turn order here, only at the end of a round
       };
     });
 
-    // After updating the state, check if the round is complete and we need to create a new round
+    // After updating the state, use advanceTurn to consistently advance to the next player
+    useGameStore.getState().advanceTurn();
+
+    // Check if the round is complete and we need to create a new round
     const state = useGameStore.getState();
     if (state.rounds[state.currentRoundIndex].completed) {
       // Don't automatically create a new round, let the UI handle it
@@ -484,9 +483,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
           : p
       );
 
-      // Calculate next player turn index
-      let nextIndex = (state.currentPlayerTurnIndex + 1) % state.players.length;
-
       // Update the current round's table states
       const updatedRounds = [...state.rounds];
       updatedRounds[state.currentRoundIndex] = {
@@ -522,13 +518,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
         tables: updatedTables,
         players: updatedPlayers,
         rounds: updatedRounds,
-        currentPlayerTurnIndex: nextIndex,
-        // Don't rotate turn order here, only at the end of a round
+        // Don't update currentPlayerTurnIndex here, we'll use advanceTurn instead
         turnOrder: state.turnOrder,
       };
     });
 
-    // After updating the state, check if the round is complete and we need to create a new round
+    // After updating the state, use advanceTurn to consistently advance to the next player
+    useGameStore.getState().advanceTurn();
+
+    // Check if the round is complete and we need to create a new round
     const state = useGameStore.getState();
     if (state.rounds[state.currentRoundIndex].completed) {
       // Don't automatically create a new round, let the UI handle it
@@ -564,10 +562,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
         // If we've gone full circle and back to where we started, all players have taken actions
         if (nextIndex === startingIndex) {
-          // All players have taken actions, the round is effectively complete
-          // We'll keep the current player's turn for now, as they'll need to start the next round
-          // The UI can handle transitioning to a new round
-          break;
+          // We've gone full circle, which means all players with actionTakenInCurrentRound=true
+          // have already taken their turns. Now we need to check if any players passed.
+
+          // Find players who passed (actionTakenInCurrentRound is still false)
+          const playersWhoPassed = players.filter(p => !p.actionTakenInCurrentRound);
+
+          if (playersWhoPassed.length > 0) {
+            // Find the first player in the turn order who passed
+            for (let i = 0; i < turnOrder.length; i++) {
+              const passedPlayerId = turnOrder[i];
+              const passedPlayer = playersWhoPassed.find(p => p.id === passedPlayerId);
+
+              if (passedPlayer) {
+                // Found the first player who passed, set them as the next player
+                nextIndex = i;
+                nextPlayerId = passedPlayerId;
+                nextPlayer = passedPlayer;
+                break;
+              }
+            }
+          } else {
+            // All players have taken actions, the round is effectively complete
+            // We'll keep the current player's turn for now, as they'll need to start the next round
+            // The UI can handle transitioning to a new round
+            break;
+          }
         }
 
         // Get the next player
