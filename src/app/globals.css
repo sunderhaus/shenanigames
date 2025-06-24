@@ -65,25 +65,27 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
+  min-width: 2rem;
+  height: 2rem;
   border-radius: 999px;
-  background-color: #4a5568;
-  color: white;
-  font-size: 0.75rem;
+  border: 1px solid #4a5568;
+  color: #4a5568;
+  font-size: 0.875rem;
   font-weight: bold;
   transition: all 0.2s ease-in-out;
-  padding: 0 0.5rem;
+  padding: 0 0.625rem;
   white-space: nowrap;
 }
 
 .current-player {
-  background-color: #48bb78;
+  border-color: #48bb78;
+  color: #48bb78;
 }
 
 /* Game picker styles - for the player who placed the game */
 .game-picker {
   background-color: #f6ad55;
+  border-color: #4a5568;
   font-weight: 700;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transform: scale(1.05);

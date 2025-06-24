@@ -69,7 +69,7 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
     >
       <div className="flex items-center">
         <div className={`player-token mr-2 ${isCurrentPlayer && !allPlayersHaveActed ? 'current-player' : ''}`}>
-          <span>{player.name.charAt(0)}</span>
+          <span>{player.icon}</span>
         </div>
         <span className="font-medium">{player.name}</span>
       </div>

@@ -175,6 +175,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
                 {player.id === table.placedByPlayerId && (
                   <span className="mr-1 text-yellow-400">★</span>
                 )}
+                <span className="mr-1">{player.icon}</span>
                 {player.name}
               </div>
             ))}

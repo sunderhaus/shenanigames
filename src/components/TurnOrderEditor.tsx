@@ -28,7 +28,7 @@ const SortablePlayer: React.FC<{ player: Player, id: string }> = ({ player, id }
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <span>{player.name}</span>
+      <span><span className="mr-2">{player.icon}</span>{player.name}</span>
       <span className="text-gray-400">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />

@@ -23,13 +23,13 @@ const sampleGames: Game[] = [
 
 // Create players based on player-picks.csv
 const samplePlayers: Player[] = [
-  { id: uuidv4(), name: 'Matthew', selectionsMade: 0, picks: [sampleGames[1].id, sampleGames[8].id], actionTakenInCurrentRound: false },
-  { id: uuidv4(), name: 'Jourdan', selectionsMade: 0, picks: [sampleGames[0].id, sampleGames[7].id], actionTakenInCurrentRound: false },
-  { id: uuidv4(), name: 'Chris', selectionsMade: 0, picks: [sampleGames[5].id, sampleGames[12].id], actionTakenInCurrentRound: false },
-  { id: uuidv4(), name: 'Jonny', selectionsMade: 0, picks: [sampleGames[3].id, sampleGames[10].id], actionTakenInCurrentRound: false },
-  { id: uuidv4(), name: 'Felipe', selectionsMade: 0, picks: [sampleGames[4].id, sampleGames[11].id], actionTakenInCurrentRound: false },
-  { id: uuidv4(), name: 'Paul', selectionsMade: 0, picks: [sampleGames[6].id, sampleGames[13].id], actionTakenInCurrentRound: false },
-  { id: uuidv4(), name: 'Cam', selectionsMade: 0, picks: [sampleGames[2].id, sampleGames[9].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Matthew', icon: '🦊', selectionsMade: 0, picks: [sampleGames[1].id, sampleGames[8].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Jourdan', icon: '🐼', selectionsMade: 0, picks: [sampleGames[0].id, sampleGames[7].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Chris', icon: '🦁', selectionsMade: 0, picks: [sampleGames[5].id, sampleGames[12].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Jonny', icon: '🐯', selectionsMade: 0, picks: [sampleGames[3].id, sampleGames[10].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Felipe', icon: '🐻', selectionsMade: 0, picks: [sampleGames[4].id, sampleGames[11].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Paul', icon: '🦉', selectionsMade: 0, picks: [sampleGames[6].id, sampleGames[13].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Cam', icon: '🐺', selectionsMade: 0, picks: [sampleGames[2].id, sampleGames[9].id], actionTakenInCurrentRound: false },
 ];
 
 const sampleTables: Table[] = [
