@@ -3,6 +3,7 @@
 import { useGameStore } from '../store/store';
 import { Table, Game, Player } from '../types/types';
 import DroppableTable from './DroppableTable';
+import { useState } from 'react';
 
 export default function TablesArea() {
   const tables = useGameStore(state => state.tables);
@@ -19,6 +20,9 @@ export default function TablesArea() {
   const viewPreviousRound = useGameStore(state => state.viewPreviousRound);
   const viewNextRound = useGameStore(state => state.viewNextRound);
   const returnToCurrentRound = useGameStore(state => state.returnToCurrentRound);
+
+  // State for reset confirmation dialogue
+  const [showResetConfirmation, setShowResetConfirmation] = useState(false);
 
   // Create a map of all games by ID for easy lookup
   const allGamesById = allGames.reduce((acc, game) => {
@@ -70,13 +74,48 @@ export default function TablesArea() {
     }
   };
 
-  // Handle reset round button click
+  // Handle reset round button click - show confirmation
   const handleResetRound = () => {
+    setShowResetConfirmation(true);
+  };
+
+  // Handle actual reset when confirmed
+  const confirmReset = () => {
     resetRound();
+    setShowResetConfirmation(false);
+  };
+
+  // Handle cancel reset
+  const cancelReset = () => {
+    setShowResetConfirmation(false);
   };
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
+      {/* Reset Confirmation Modal */}
+      {showResetConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Reset Round</h3>
+            <p className="mb-6">Are you sure you want to reset this round? All placements will be cleared.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelReset}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReset}
+                className="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Tables</h2>
         <div className="flex items-center">
@@ -123,9 +162,13 @@ export default function TablesArea() {
             <div className="flex space-x-2">
               <button
                 onClick={handleResetRound}
-                className="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white"
+                className="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white flex items-center justify-center"
+                aria-label="Reset Round"
               >
-                Reset Round
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                </svg>
               </button>
               <button
                 onClick={handleNextRound}
