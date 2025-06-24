@@ -62,12 +62,23 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
         </div>
       )}
 
-      {filteredGames.length === 0 ? (
+      {/* Hide game images in footer when all tables have games */}
+      {isFooter && allTablesHaveGames ? (
+        <p className="text-gray-500"></p>
+      ) : filteredGames.length === 0 ? (
         <p className="text-gray-500">No games available</p>
       ) : (
         <div className={isFooter ? 'flex overflow-x-auto pb-2 space-x-2' : 'space-y-2'}>
-          {filteredGames.map((game: Game) => (
-            <div key={game.id} className={isFooter ? 'flex-shrink-0 w-40' : ''}>
+          {filteredGames.map((game: Game, index) => (
+            <div 
+              key={game.id} 
+              className={isFooter 
+                ? filteredGames.length <= 2 
+                  ? 'flex-1 min-w-0' // Equal width for 1-2 games
+                  : 'flex-shrink-0 w-40' // Fixed width for 3+ games with horizontal scroll
+                : ''
+              }
+            >
               <DraggableGame game={game} />
             </div>
           ))}

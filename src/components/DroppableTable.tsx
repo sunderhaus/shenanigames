@@ -201,7 +201,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
       className={`table-card ${table.gameId ? 'has-game' : ''} ${getDropTargetClass()} ${getCursorStyle()} ${getRecentlyClickedClass()} ${isLongPressing ? 'long-pressing' : ''}`}
       style={{
         transition: 'all 0.2s ease',
-        transform: recentlyClicked || isLongPressing ? 'scale(1.02)' : 'scale(1)',
+        transform: recentlyClicked || isLongPressing ? 'scale(1.015)' : 'scale(1)', /* Reduced scale factor to prevent viewport clipping */
         boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : isLongPressing ? '0 0 12px rgba(59, 130, 246, 0.7)' : '',
         opacity: isReadOnly ? 0.85 : 1,
         pointerEvents: isReadOnly ? 'none' : 'auto',

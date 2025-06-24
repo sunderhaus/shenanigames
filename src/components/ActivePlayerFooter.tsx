@@ -20,6 +20,7 @@ export default function ActivePlayerFooter() {
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
 
+
   // Set isClient to true after component mounts (client-side only)
   useEffect(() => {
     setIsClient(true);

@@ -308,11 +308,17 @@ main {
 @media (max-width: 1023px) {
   /* Table card in swipe view */
   .table-card-swipe {
-    width: 100%;
+    width: 95%; /* Reduced from 100% to provide space for animation */
     height: 100%;
-    max-width: 500px;
+    max-width: 480px; /* Reduced from 500px to provide space for animation */
     margin: 0 auto;
     transition: transform 0.3s ease-in-out;
+  }
+
+  /* Make table cards smaller on mobile to prevent clipping during animations */
+  .table-card {
+    padding: 0.75rem; /* Reduced padding */
+    width: 95%; /* Slightly narrower to prevent clipping */
   }
 
   /* Swipe indicators */
