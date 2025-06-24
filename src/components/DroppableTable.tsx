@@ -136,6 +136,17 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
 
       {game ? (
         <div className="text-center">
+          {game.image && (
+            <div className="mb-2 w-full">
+              <img 
+                src={game.image} 
+                alt={game.title} 
+                className="game-image w-full h-auto"
+                style={{ maxHeight: '120px' }}
+              />
+            </div>
+          )}
+
           <div className="font-bold mb-2">{game.title}</div>
 
           <div className="mb-2">
