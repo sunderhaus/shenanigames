@@ -24,7 +24,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
   const turnOrder = useGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useGameStore(state => state.draftingComplete);
-  
+
   // Get the current player's ID
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
 
@@ -53,22 +53,25 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
   // Handle drag end event
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over) return; // Dropped outside a droppable area
-    
+
     // Extract the draggable item data
     const draggableItem = active.data.current as DraggableItem;
-    
+
     // Extract the table ID from the over element
     const tableId = over.id as string;
-    
+
     // Handle different types of draggable items
     if (draggableItem.type === DraggableType.GAME) {
       // A game was dropped on a table
       placeGame(draggableItem.id, tableId, currentPlayerId);
     } else if (draggableItem.type === DraggableType.PLAYER) {
       // A player was dropped on a table
-      joinGame(tableId, draggableItem.id);
+      // Check if the dropped player is the current player
+      if (draggableItem.id === currentPlayerId) {
+        joinGame(tableId, currentPlayerId);
+      }
     }
   };
 

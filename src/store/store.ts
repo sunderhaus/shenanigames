@@ -173,10 +173,12 @@ export const useGameStore = create<GameStore>((set) => ({
       }
 
       // Find the game to check max players
-      const game = state.availableGames.find(g => g.id === table.gameId) || 
-                  state.tables.find(t => t.gameId === table.gameId && t.id !== tableId)?.gameId;
+      const game = state.availableGames.find(g => g.id === table.gameId);
 
-      if (!game || table.seatedPlayerIds.length >= (typeof game === 'string' ? 4 : game.maxPlayers)) {
+      // If game is not in availableGames, use a default maxPlayers value
+      const maxPlayers = game ? game.maxPlayers : 4;
+
+      if (table.seatedPlayerIds.length >= maxPlayers) {
         return state; // Table is full, return unchanged state
       }
 
