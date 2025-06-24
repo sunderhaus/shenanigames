@@ -13,6 +13,7 @@ export default function TablesArea() {
   const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
   const isRoundComplete = useGameStore(state => state.isRoundComplete);
   const createNewRound = useGameStore(state => state.createNewRound);
+  const resetRound = useGameStore(state => state.resetRound);
 
   // Create a map of all games by ID for easy lookup
   const allGamesById = allGames.reduce((acc, game) => {
@@ -57,6 +58,11 @@ export default function TablesArea() {
     }
   };
 
+  // Handle reset round button click
+  const handleResetRound = () => {
+    resetRound();
+  };
+
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
@@ -66,17 +72,25 @@ export default function TablesArea() {
             {!allPlayersHaveActed && `Round ${currentRoundIndex + 1} of ${rounds.length}`}
             {roundComplete && " (Set)"}
           </span>
-          <button
-            onClick={handleNextRound}
-            disabled={!roundComplete}
-            className={`px-4 py-2 rounded ${
-              roundComplete
-                ? "bg-blue-500 hover:bg-blue-600 text-white"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
-          >
-            Next Round
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleResetRound}
+              className="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white"
+            >
+              Reset Round
+            </button>
+            <button
+              onClick={handleNextRound}
+              disabled={!roundComplete}
+              className={`px-4 py-2 rounded ${
+                roundComplete
+                  ? "bg-blue-500 hover:bg-blue-600 text-white"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
+            >
+              Next Round
+            </button>
+          </div>
         </div>
       </div>
 

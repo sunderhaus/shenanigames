@@ -108,11 +108,97 @@ interface GameStore extends SessionState {
 
   // Action to update the turn order
   updateTurnOrder: (newTurnOrder: string[]) => void;
+
+  // Action to reset the current round to its initial state
+  resetRound: () => void;
 }
 
 // Create the store
 export const useGameStore = create<GameStore>((set, get) => ({
   ...initialState,
+
+  // Reset the current round to its initial state
+  resetRound: () => {
+    set(state => {
+      // Get the current round
+      const currentRound = state.rounds[state.currentRoundIndex];
+
+      // Keep track of games that need to be restored to availableGames
+      const gamesToRestore: Game[] = [];
+
+      // Keep track of which games were placed by which players
+      const gamesByPlacedPlayer: Record<string, string[]> = {};
+
+      // Identify games on tables and who placed them
+      state.tables.forEach(table => {
+        if (table.gameId && table.placedByPlayerId) {
+          // Find the game in allGames
+          const game = state.allGames.find(g => g.id === table.gameId);
+          if (game) {
+            // Add to games to restore
+            gamesToRestore.push(game);
+
+            // Track which player placed this game
+            if (!gamesByPlacedPlayer[table.placedByPlayerId]) {
+              gamesByPlacedPlayer[table.placedByPlayerId] = [];
+            }
+            gamesByPlacedPlayer[table.placedByPlayerId].push(table.gameId);
+          }
+        }
+      });
+
+      // Create empty tables (clear games)
+      const resetTables = state.tables.map(table => ({
+        id: table.id,
+        gameId: null,
+        seatedPlayerIds: [],
+        placedByPlayerId: undefined
+      }));
+
+      // Reset all players' actionTakenInCurrentRound to false and restore games to their picks
+      const resetPlayers = state.players.map(player => {
+        // Get games placed by this player
+        const gamesPlacedByPlayer = gamesByPlacedPlayer[player.id] || [];
+
+        // Create a new picks array with the restored games
+        const updatedPicks = [...player.picks];
+
+        // Add back any games that were placed by this player
+        gamesPlacedByPlayer.forEach(gameId => {
+          // Only add if not already in picks
+          if (!updatedPicks.includes(gameId)) {
+            updatedPicks.push(gameId);
+          }
+        });
+
+        return {
+          ...player,
+          picks: updatedPicks,
+          selectionsMade: 0, // Reset selections made
+          actionTakenInCurrentRound: false
+        };
+      });
+
+      // Update availableGames to include the restored games
+      // First, filter out any duplicates
+      const updatedAvailableGames = [...state.availableGames];
+      gamesToRestore.forEach(game => {
+        // Only add if not already in availableGames
+        if (!updatedAvailableGames.some(g => g.id === game.id)) {
+          updatedAvailableGames.push(game);
+        }
+      });
+
+      // Return the updated state
+      return {
+        ...state,
+        tables: resetTables,
+        players: resetPlayers,
+        availableGames: updatedAvailableGames,
+        currentPlayerTurnIndex: 0 // Reset to the first player in the turn order
+      };
+    });
+  },
 
   // Helper to check if a round is complete
   isRoundComplete: () => {
