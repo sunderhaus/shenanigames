@@ -334,6 +334,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         t.seatedPlayerIds.includes(player.id)
       );
 
+      // Check if player is already seated at another table
+      const isPlayerSeatedAtAnotherTable = state.tables.some(t => 
+        t.id !== tableId && t.seatedPlayerIds.includes(playerId)
+      );
+
       // Check if the game is in the player's picks
       const isInPlayerPicks = player.picks.includes(gameId);
 
@@ -343,7 +348,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       );
 
       // Validate the action
-      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isGameUsedInPreviousRound) {
+      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isGameUsedInPreviousRound || isPlayerSeatedAtAnotherTable) {
         return state; // Invalid action, return unchanged state
       }
 
@@ -443,9 +448,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const table = state.tables.find(t => t.id === tableId);
       const player = state.players.find(p => p.id === playerId);
 
+      // Check if player is already seated at another table
+      const isPlayerSeatedAtAnotherTable = state.tables.some(t => 
+        t.id !== tableId && t.seatedPlayerIds.includes(playerId)
+      );
+
       // Validate the action
       if (!table || !player || table.gameId === null || 
-          table.seatedPlayerIds.includes(playerId)) {
+          table.seatedPlayerIds.includes(playerId) ||
+          isPlayerSeatedAtAnotherTable) {
         return state; // Invalid action, return unchanged state
       }
 
