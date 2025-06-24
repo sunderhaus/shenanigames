@@ -16,8 +16,8 @@ const SortablePlayer: React.FC<{ player: Player, id: string }> = ({ player, id }
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1000 : 1,
     backgroundColor: '#f3f4f6',
-    padding: '8px 12px',
-    margin: '4px 0',
+    padding: '6px 10px',
+    margin: '2px 0',
     borderRadius: '4px',
     border: '1px solid #e5e7eb',
     cursor: 'grab',
@@ -80,8 +80,8 @@ export const TurnOrderForm: React.FC<{
   };
 
   return (
-    <div className="bg-white rounded-lg p-4">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white rounded-lg p-3">
+      <div className="flex justify-between items-center mb-3">
         <h3 className="text-lg font-semibold">Reorder Players</h3>
         <button 
           onClick={() => setIsEditing(false)}
@@ -91,7 +91,7 @@ export const TurnOrderForm: React.FC<{
         </button>
       </div>
 
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-gray-600 mb-2">
         Drag and drop players to change the turn order.
       </p>
 
@@ -103,7 +103,7 @@ export const TurnOrderForm: React.FC<{
           items={turnOrder}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-2">
+          <div className="space-y-1">
             {orderedPlayers.map((player, index) => (
               <div key={player.id} className={index === currentPlayerTurnIndex ? "border-l-4 border-blue-500 pl-2" : ""}>
                 <SortablePlayer player={player} id={player.id} />

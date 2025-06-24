@@ -59,12 +59,12 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
       style={style}
       {...attributes}
       {...listeners}
-      className={`player-tile flex justify-between items-center p-3 border rounded-lg ${
+      className={`player-tile flex justify-between items-center p-2 border rounded-lg ${
         isCurrentPlayer ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
       } ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''}`}
     >
       <div className="flex items-center">
-        <div className={`player-token mr-3 ${isCurrentPlayer ? 'current-player' : ''}`}>
+        <div className={`player-token mr-2 ${isCurrentPlayer ? 'current-player' : ''}`}>
           <span>{player.name.charAt(0)}</span>
         </div>
         <span className="font-medium">{player.name}</span>
@@ -75,7 +75,7 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
           className="pass-button text-sm px-2 py-1"
           onClick={handlePassTurn}
         >
-          Pass Turn
+          Pass
         </button>
       )}
     </div>

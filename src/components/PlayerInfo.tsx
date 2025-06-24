@@ -24,8 +24,8 @@ export default function PlayerInfo() {
   }, {} as Record<string, Player>);
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white p-3 rounded-lg shadow-md">
+      <div className="flex justify-between items-center mb-3">
         <h2 className="text-xl font-bold">Players</h2>
 
         <div>
@@ -36,9 +36,9 @@ export default function PlayerInfo() {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         {isEditingTurnOrder ? (
-          <div className="mt-2">
+          <div className="mt-1">
             <TurnOrderForm 
               players={players}
               turnOrder={turnOrder}
@@ -48,7 +48,7 @@ export default function PlayerInfo() {
             />
           </div>
         ) : (
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-1">
             {turnOrder.map((playerId, index) => {
               const player = playersById[playerId];
               const isCurrentPlayer = index === currentPlayerTurnIndex;
@@ -67,7 +67,7 @@ export default function PlayerInfo() {
         )}
 
         {draftingComplete && (
-          <div className="mt-4 p-2 bg-green-100 text-green-800 rounded">
+          <div className="mt-2 p-2 bg-green-100 text-green-800 rounded">
             Drafting complete! All players have passed.
           </div>
         )}
