@@ -63,6 +63,8 @@ export interface SessionState {
   tables: Table[];
   rounds: Round[];
   currentRoundIndex: number;
+  viewingRoundIndex: number;  // Index of the round currently being viewed (may differ from currentRoundIndex when viewing history)
+  isViewingHistory: boolean;  // Flag to indicate if user is viewing a historical round
   turnOrder: string[];
   currentPlayerTurnIndex: number;
   draftingComplete: boolean;

@@ -7,9 +7,10 @@ interface DroppableTableProps {
   table: Table;
   game?: Game;
   seatedPlayers: Player[];
+  isReadOnly?: boolean;
 }
 
-const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlayers }) => {
+const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlayers, isReadOnly = false }) => {
   const turnOrder = useGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useGameStore(state => state.draftingComplete);
@@ -23,6 +24,9 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
 
   // Handle click on the table
   const handleTableClick = () => {
+    // If in read-only mode, do nothing
+    if (isReadOnly) return;
+
     const now = Date.now();
 
     // Check if this is a double-click (two clicks within 300ms)
@@ -79,11 +83,15 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   // Set up droppable
   const { isOver, setNodeRef } = useDroppable({
     id: table.id,
-    disabled: draftingComplete || (!isValidGameTarget && !isValidPlayerTarget)
+    disabled: isReadOnly || draftingComplete || (!isValidGameTarget && !isValidPlayerTarget)
   });
 
   // Determine the appropriate class based on the drop target validity and hover state
   const getDropTargetClass = () => {
+    if (isReadOnly) {
+      return 'read-only-table';
+    }
+
     if (isOver) {
       return 'drop-target-hover';
     }
@@ -97,7 +105,9 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
 
   // Determine the tooltip text based on the table state
   const getTooltipText = () => {
-    if (isValidPlayerTarget) {
+    if (isReadOnly) {
+      return "Historical view - read only";
+    } else if (isValidPlayerTarget) {
       return "Double-click to join this table";
     } else if (table.gameId === null) {
       return "Drop a game here";
@@ -129,7 +139,10 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
       style={{
         transition: 'all 0.2s ease',
         transform: recentlyClicked ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : ''
+        boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : '',
+        opacity: isReadOnly ? 0.85 : 1,
+        pointerEvents: isReadOnly ? 'none' : 'auto',
+        border: isReadOnly ? '1px dashed #ccc' : ''
       }}
     >
       <h3 className="font-medium text-center mb-2">{game ? game.title : table.id}</h3>

@@ -11,9 +11,14 @@ export default function TablesArea() {
   const players = useGameStore(state => state.players);
   const rounds = useGameStore(state => state.rounds);
   const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
+  const viewingRoundIndex = useGameStore(state => state.viewingRoundIndex);
+  const isViewingHistory = useGameStore(state => state.isViewingHistory);
   const isRoundComplete = useGameStore(state => state.isRoundComplete);
   const createNewRound = useGameStore(state => state.createNewRound);
   const resetRound = useGameStore(state => state.resetRound);
+  const viewPreviousRound = useGameStore(state => state.viewPreviousRound);
+  const viewNextRound = useGameStore(state => state.viewNextRound);
+  const returnToCurrentRound = useGameStore(state => state.returnToCurrentRound);
 
   // Create a map of all games by ID for easy lookup
   const allGamesById = allGames.reduce((acc, game) => {
@@ -45,11 +50,18 @@ export default function TablesArea() {
   const roundComplete = isRoundComplete();
   const currentRound = rounds[currentRoundIndex];
 
+  // Get the round that is currently being viewed (may be a historical round)
+  const viewingRound = rounds[viewingRoundIndex];
+
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
 
   // Check if all players have taken actions in the current round
   const allPlayersHaveActed = players.every(player => player.actionTakenInCurrentRound);
+
+  // Determine if we can navigate to previous or next rounds
+  const hasPreviousRound = viewingRoundIndex > 0;
+  const hasNextRound = viewingRoundIndex < rounds.length - 1;
 
   // Handle next round button click
   const handleNextRound = () => {
@@ -68,50 +80,116 @@ export default function TablesArea() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Tables</h2>
         <div className="flex items-center">
-          <span className="mr-4">
-            {!allPlayersHaveActed && `Round ${currentRoundIndex + 1} of ${rounds.length}`}
-            {roundComplete && " (Set)"}
-          </span>
-          <div className="flex space-x-2">
+          <div className="flex items-center mr-4">
             <button
-              onClick={handleResetRound}
-              className="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white"
-            >
-              Reset Round
-            </button>
-            <button
-              onClick={handleNextRound}
-              disabled={!roundComplete}
-              className={`px-4 py-2 rounded ${
-                roundComplete
-                  ? "bg-blue-500 hover:bg-blue-600 text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              onClick={viewPreviousRound}
+              disabled={!hasPreviousRound}
+              className={`px-2 py-1 rounded ${
+                hasPreviousRound
+                  ? "text-blue-500 hover:text-blue-700"
+                  : "text-gray-300 cursor-not-allowed"
               }`}
+              aria-label="Previous Round"
             >
-              Next Round
+              ←
             </button>
+            <span className="mx-2">
+              {`Round ${viewingRoundIndex + 1} of ${rounds.length}`}
+              {isViewingHistory && " (History)"}
+              {!isViewingHistory && roundComplete && " (Set)"}
+            </span>
+            <button
+              onClick={viewNextRound}
+              disabled={!hasNextRound}
+              className={`px-2 py-1 rounded ${
+                hasNextRound
+                  ? "text-blue-500 hover:text-blue-700"
+                  : "text-gray-300 cursor-not-allowed"
+              }`}
+              aria-label="Next Round"
+            >
+              →
+            </button>
+            {isViewingHistory && (
+              <button
+                onClick={returnToCurrentRound}
+                className="ml-2 px-2 py-1 text-sm rounded bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                Return to Current
+              </button>
+            )}
           </div>
+          {!isViewingHistory && (
+            <div className="flex space-x-2">
+              <button
+                onClick={handleResetRound}
+                className="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white"
+              >
+                Reset Round
+              </button>
+              <button
+                onClick={handleNextRound}
+                disabled={!roundComplete}
+                className={`px-4 py-2 rounded ${
+                  roundComplete
+                    ? "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Next Round
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-        {tables.map((table: Table) => {
-          const game = findGameById(table.gameId);
+        {isViewingHistory 
+          ? viewingRound.tableStates.map((tableState) => {
+              const game = findGameById(tableState.gameId);
 
-          // Get the seated players for this table
-          const seatedPlayers = table.seatedPlayerIds
-            .map(playerId => playersById[playerId])
-            .filter(player => player !== undefined) as Player[];
+              // Get the seated players for this table state
+              const seatedPlayers = tableState.seatedPlayerIds
+                .map(playerId => playersById[playerId])
+                .filter(player => player !== undefined) as Player[];
 
-          return (
-            <DroppableTable 
-              key={table.id}
-              table={table}
-              game={game}
-              seatedPlayers={seatedPlayers}
-            />
-          );
-        })}
+              // Convert TableState to Table for DroppableTable
+              const tableForDisplay: Table = {
+                id: tableState.id,
+                gameId: tableState.gameId,
+                seatedPlayerIds: tableState.seatedPlayerIds,
+                placedByPlayerId: tableState.placedByPlayerId
+              };
+
+              return (
+                <DroppableTable 
+                  key={tableState.id}
+                  table={tableForDisplay}
+                  game={game}
+                  seatedPlayers={seatedPlayers}
+                  isReadOnly={true}
+                />
+              );
+            })
+          : tables.map((table: Table) => {
+              const game = findGameById(table.gameId);
+
+              // Get the seated players for this table
+              const seatedPlayers = table.seatedPlayerIds
+                .map(playerId => playersById[playerId])
+                .filter(player => player !== undefined) as Player[];
+
+              return (
+                <DroppableTable 
+                  key={table.id}
+                  table={table}
+                  game={game}
+                  seatedPlayers={seatedPlayers}
+                  isReadOnly={false}
+                />
+              );
+            })
+        }
       </div>
     </div>
   );

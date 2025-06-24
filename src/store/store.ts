@@ -78,6 +78,8 @@ const initialState: SessionState = {
   tables: sampleTables,
   rounds: [createInitialRound(sampleTables)],
   currentRoundIndex: 0,
+  viewingRoundIndex: 0,
+  isViewingHistory: false,
   turnOrder: samplePlayers.map(player => player.id),
   currentPlayerTurnIndex: 0,
   draftingComplete: false,
@@ -111,6 +113,18 @@ interface GameStore extends SessionState {
 
   // Action to reset the current round to its initial state
   resetRound: () => void;
+
+  // Action to view a specific round by index
+  viewRound: (roundIndex: number) => void;
+
+  // Action to view the previous round
+  viewPreviousRound: () => void;
+
+  // Action to view the next round
+  viewNextRound: () => void;
+
+  // Action to return to the current active round
+  returnToCurrentRound: () => void;
 }
 
 // Create the store
@@ -195,7 +209,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         tables: resetTables,
         players: resetPlayers,
         availableGames: updatedAvailableGames,
-        currentPlayerTurnIndex: 0 // Reset to the first player in the turn order
+        currentPlayerTurnIndex: 0, // Reset to the first player in the turn order
+        viewingRoundIndex: state.currentRoundIndex, // Ensure we're viewing the current round
+        isViewingHistory: false // Exit history mode when resetting a round
       };
     });
   },
@@ -240,11 +256,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
         completed: false
       };
 
+      // Calculate the new current round index
+      const newCurrentRoundIndex = state.currentRoundIndex + 1;
+
       // Add the new round and increment the current round index
       return {
         ...state,
         rounds: [...updatedRounds, newRound],
-        currentRoundIndex: state.currentRoundIndex + 1,
+        currentRoundIndex: newCurrentRoundIndex,
+        viewingRoundIndex: newCurrentRoundIndex, // Update viewingRoundIndex to match currentRoundIndex
+        isViewingHistory: false, // Exit history mode when creating a new round
         // Reset tables for the new round
         tables: state.tables.map(table => ({
           ...table,
@@ -593,5 +614,73 @@ export const useGameStore = create<GameStore>((set, get) => ({
         });
       }
     }
+  },
+
+  // View a specific round by index
+  viewRound: (roundIndex: number) => {
+    set(state => {
+      // Validate the round index
+      if (roundIndex < 0 || roundIndex >= state.rounds.length) {
+        console.error('Invalid round index');
+        return state;
+      }
+
+      // If viewing the current round, exit history mode
+      if (roundIndex === state.currentRoundIndex) {
+        return {
+          ...state,
+          viewingRoundIndex: roundIndex,
+          isViewingHistory: false
+        };
+      }
+
+      // Otherwise, enter history mode with the specified round
+      return {
+        ...state,
+        viewingRoundIndex: roundIndex,
+        isViewingHistory: true
+      };
+    });
+  },
+
+  // View the previous round
+  viewPreviousRound: () => {
+    set(state => {
+      const prevIndex = state.viewingRoundIndex - 1;
+      if (prevIndex < 0) {
+        return state; // No previous round
+      }
+
+      return {
+        ...state,
+        viewingRoundIndex: prevIndex,
+        isViewingHistory: prevIndex !== state.currentRoundIndex
+      };
+    });
+  },
+
+  // View the next round
+  viewNextRound: () => {
+    set(state => {
+      const nextIndex = state.viewingRoundIndex + 1;
+      if (nextIndex >= state.rounds.length) {
+        return state; // No next round
+      }
+
+      return {
+        ...state,
+        viewingRoundIndex: nextIndex,
+        isViewingHistory: nextIndex !== state.currentRoundIndex
+      };
+    });
+  },
+
+  // Return to the current active round
+  returnToCurrentRound: () => {
+    set(state => ({
+      ...state,
+      viewingRoundIndex: state.currentRoundIndex,
+      isViewingHistory: false
+    }));
   },
 }));
