@@ -1,6 +1,6 @@
 'use client';
 
-import AvailableGamesList from '../components/AvailableGamesList';
+import PlayersRemainingPicks from '../components/PlayersRemainingPicks';
 import PlayerInfo from '../components/PlayerInfo';
 import TablesArea from '../components/TablesArea';
 import DragAndDropProvider from '../components/DragAndDropProvider';
@@ -16,9 +16,9 @@ export default function Home() {
 
         <DragAndDropProvider>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left sidebar - Available Games */}
+            {/* Left sidebar - Player's Remaining Picks */}
             <div className="lg:col-span-3">
-              <AvailableGamesList />
+              <PlayersRemainingPicks />
             </div>
 
             {/* Main content - Tables */}

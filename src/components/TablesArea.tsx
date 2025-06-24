@@ -44,6 +44,9 @@ export default function TablesArea() {
   const roundComplete = isRoundComplete();
   const currentRound = rounds[currentRoundIndex];
 
+  // Check if all tables have games
+  const allTablesHaveGames = tables.every(table => table.gameId !== null);
+
   // Handle next round button click
   const handleNextRound = () => {
     if (roundComplete) {
