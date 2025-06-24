@@ -8,6 +8,10 @@ export default function TablesArea() {
   const tables = useGameStore(state => state.tables);
   const availableGames = useGameStore(state => state.availableGames);
   const players = useGameStore(state => state.players);
+  const rounds = useGameStore(state => state.rounds);
+  const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
+  const isRoundComplete = useGameStore(state => state.isRoundComplete);
+  const createNewRound = useGameStore(state => state.createNewRound);
 
   // Create a map of games by ID for easy lookup
   const gamesById = availableGames.reduce((acc, game) => {
@@ -48,9 +52,39 @@ export default function TablesArea() {
     return undefined;
   };
 
+  // Check if the current round is complete
+  const roundComplete = isRoundComplete();
+  const currentRound = rounds[currentRoundIndex];
+
+  // Handle next round button click
+  const handleNextRound = () => {
+    if (roundComplete) {
+      createNewRound();
+    }
+  };
+
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Tables</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Tables</h2>
+        <div className="flex items-center">
+          <span className="mr-4">
+            Round {currentRoundIndex + 1} of {rounds.length}
+            {roundComplete && " (Complete)"}
+          </span>
+          <button
+            onClick={handleNextRound}
+            disabled={!roundComplete}
+            className={`px-4 py-2 rounded ${
+              roundComplete
+                ? "bg-blue-500 hover:bg-blue-600 text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            Next Round
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {tables.map((table: Table) => {

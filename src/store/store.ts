@@ -14,10 +14,10 @@ const sampleGames: Game[] = [
   { id: uuidv4(), title: 'Realm of Reckoning', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/446893/realm-of-reckoning', image: 'https://cf.geekdo-images.com/xElMYLyj1pqtCIOhRNzA9w__imagepagezoom/img/JdGJ4hQ1GsNMuYl0AeOh0rRfqJ8=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic8899476.png' },
   { id: uuidv4(), title: 'Stupor Mundi', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/392492/stupor-mundi', image: 'https://cf.geekdo-images.com/SJvK-Hq72xOiJ_JsmB1dGA__imagepagezoom/img/lsPEsMAQx4KcaLrYnwwNArS44VM=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7585104.jpg' },
   { id: uuidv4(), title: 'Brass: Birmingham', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/224517/brass-birmingham', image: 'https://cf.geekdo-images.com/x3zxjr-Vw5iU4yDPg70Jgw__imagepagezoom/img/7a0LOL48K-7JNIOSGtcsNsIxkN0=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic3490053.jpg' },
-  { id: uuidv4(), title: 'Cyclades Legendary', maxPlayers: 5, link: '', image: '' },
-  { id: uuidv4(), title: 'Pillars of Earth', maxPlayers: 4, link: '', image: '' },
-  { id: uuidv4(), title: 'Dune War for Arakis', maxPlayers: 2, link: '', image: '' },
-  { id: uuidv4(), title: 'The White Castle', maxPlayers: 4, link: '', image: '' },
+  { id: uuidv4(), title: 'Cyclades Legendary', maxPlayers: 5, link: 'https://boardgamegeek.com/boardgame/380619/cyclades-legendary-edition', image: 'https://cf.geekdo-images.com/g4bC44H7rdrl0KLW7LGV5A__imagepagezoom/img/f0XWPOgK2ZVU_s3dQvc3uZv03Zo=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7566828.png' },
+  { id: uuidv4(), title: 'Pillars of Earth', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/24480/the-pillars-of-the-earth', image: 'https://cf.geekdo-images.com/J897fuu-nl83_o90uOakVQ__imagepagezoom/img/mTT1CCkmkkdZEdfSPt4cUlXBo6o=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic3691155.jpg' },
+  { id: uuidv4(), title: 'Dune War for Arakis', maxPlayers: 2, link: 'https://boardgamegeek.com/boardgame/367150/dune-war-for-arrakis', image: 'https://cf.geekdo-images.com/b_Uo-x3szhupSWeQdw5bdg__imagepage/img/87_6KXsy1UFOg4HDpiC62JWH68M=/fit-in/900x600/filters:no_upscale():strip_icc()/pic7088918.jpg' },
+  { id: uuidv4(), title: 'The White Castle', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/371942/the-white-castle', image: 'https://cf.geekdo-images.com/qXT1U-nFh9PE8ujfdmI7dA__imagepagezoom/img/al4q0nFn_fArrNM_cXvz6jIbe8U=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7754663.jpg' },
 ];
 
 // Create players based on player-picks.csv
@@ -49,12 +49,32 @@ const getAllPlayerPicks = (players: Player[]): string[] => {
   return allPicks;
 };
 
+// Helper function to calculate the number of rounds based on games and tables
+const calculateTotalRounds = (games: Game[], tables: Table[]): number => {
+  return Math.ceil(games.length / tables.length);
+};
+
+// Helper function to create an initial round
+const createInitialRound = (tables: Table[]): Round => {
+  return {
+    id: uuidv4(),
+    tableStates: tables.map(table => ({
+      id: table.id,
+      gameId: table.gameId,
+      seatedPlayerIds: [...table.seatedPlayerIds]
+    })),
+    completed: false
+  };
+};
+
 // Initial state
 const initialState: SessionState = {
   players: samplePlayers,
   // Initialize availableGames with all games that are in players' picks
   availableGames: sampleGames.filter(game => getAllPlayerPicks(samplePlayers).includes(game.id)),
   tables: sampleTables,
+  rounds: [createInitialRound(sampleTables)],
+  currentRoundIndex: 0,
   turnOrder: samplePlayers.map(player => player.id),
   currentPlayerTurnIndex: 0,
   draftingComplete: false,
@@ -73,11 +93,97 @@ interface GameStore extends SessionState {
 
   // Helper to advance to the next player's turn
   advanceTurn: () => void;
+
+  // Helper to check if a round is complete
+  isRoundComplete: () => boolean;
+
+  // Helper to create a new round
+  createNewRound: () => void;
+
+  // Helper to update the current round's table states
+  updateRoundTableStates: () => void;
 }
 
 // Create the store
-export const useGameStore = create<GameStore>((set) => ({
+export const useGameStore = create<GameStore>((set, get) => ({
   ...initialState,
+
+  // Helper to check if a round is complete
+  isRoundComplete: () => {
+    const state = get();
+    const currentRound = state.rounds[state.currentRoundIndex];
+
+    // A round is complete when all tables have a game and all players have made their selections for this round
+    const allTablesHaveGames = state.tables.every(table => table.gameId !== null);
+
+    // Check if all players have made their selections for this round
+    // This is a simplified check - in a real app, you might need more complex logic
+    const allPlayersHaveSelected = state.players.every(player => {
+      // Check if player has selected a game or joined a table in this round
+      return state.tables.some(table => table.seatedPlayerIds.includes(player.id));
+    });
+
+    return allTablesHaveGames && allPlayersHaveSelected;
+  },
+
+  // Helper to create a new round
+  createNewRound: () => {
+    set(state => {
+      // Mark the current round as completed
+      const updatedRounds = [...state.rounds];
+      updatedRounds[state.currentRoundIndex] = {
+        ...updatedRounds[state.currentRoundIndex],
+        completed: true
+      };
+
+      // Create a new round with empty tables
+      const newRound: Round = {
+        id: uuidv4(),
+        tableStates: state.tables.map(table => ({
+          id: table.id,
+          gameId: null,
+          seatedPlayerIds: []
+        })),
+        completed: false
+      };
+
+      // Add the new round and increment the current round index
+      return {
+        ...state,
+        rounds: [...updatedRounds, newRound],
+        currentRoundIndex: state.currentRoundIndex + 1,
+        // Reset tables for the new round
+        tables: state.tables.map(table => ({
+          ...table,
+          gameId: null,
+          seatedPlayerIds: []
+        })),
+        // Rotate turn order for the new round
+        turnOrder: [...state.turnOrder.slice(1), state.turnOrder[0]],
+        currentPlayerTurnIndex: 0
+      };
+    });
+  },
+
+  // Helper to update the current round's table states
+  updateRoundTableStates: () => {
+    set(state => {
+      const updatedRounds = [...state.rounds];
+      updatedRounds[state.currentRoundIndex] = {
+        ...updatedRounds[state.currentRoundIndex],
+        tableStates: state.tables.map(table => ({
+          id: table.id,
+          gameId: table.gameId,
+          seatedPlayerIds: [...table.seatedPlayerIds]
+        }))
+      };
+
+      return {
+        ...state,
+        rounds: updatedRounds
+      };
+    });
+  },
 
   // Place a game on a table
   placeGame: (gameId: string, tableId: string, playerId: string) => {
@@ -97,8 +203,13 @@ export const useGameStore = create<GameStore>((set) => ({
       // Check if the game is in the player's picks
       const isInPlayerPicks = player.picks.includes(gameId);
 
+      // Check if the game was used in a previous round
+      const isGameUsedInPreviousRound = state.rounds.slice(0, state.currentRoundIndex).some(round => 
+        round.tableStates.some(tableState => tableState.gameId === gameId)
+      );
+
       // Validate the action
-      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks) {
+      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isGameUsedInPreviousRound) {
         return state; // Invalid action, return unchanged state
       }
 
@@ -139,11 +250,35 @@ export const useGameStore = create<GameStore>((set) => ({
 
       // Calculate next player turn index
       let nextIndex = (state.currentPlayerTurnIndex + 1) % state.players.length;
-      let newTurnOrder = [...state.turnOrder];
 
-      // If we've completed a round, rotate the turn order
-      if (nextIndex === 0) {
-        newTurnOrder = [...state.turnOrder.slice(1), state.turnOrder[0]];
+      // Update the current round's table states
+      const updatedRounds = [...state.rounds];
+      updatedRounds[state.currentRoundIndex] = {
+        ...updatedRounds[state.currentRoundIndex],
+        tableStates: updatedTables.map(table => ({
+          id: table.id,
+          gameId: table.gameId,
+          seatedPlayerIds: [...table.seatedPlayerIds]
+        }))
+      };
+
+      // Check if the round is complete after this action
+      const isRoundComplete = () => {
+        // A round is complete when all tables have a game and all players have made their selections for this round
+        const allTablesHaveGames = updatedTables.every(table => table.gameId !== null);
+
+        // Check if all players have selected a game or joined a table in this round
+        const allPlayersHaveSelected = updatedPlayers.every(player => {
+          return updatedTables.some(table => table.seatedPlayerIds.includes(player.id));
+        });
+
+        return allTablesHaveGames && allPlayersHaveSelected;
+      };
+
+      // If the round is complete, mark it as completed but don't create a new round yet
+      // The UI will need to handle transitioning to a new round
+      if (isRoundComplete()) {
+        updatedRounds[state.currentRoundIndex].completed = true;
       }
 
       return {
@@ -151,10 +286,19 @@ export const useGameStore = create<GameStore>((set) => ({
         tables: updatedTables,
         players: updatedPlayers,
         availableGames: updatedAvailableGames,
+        rounds: updatedRounds,
         currentPlayerTurnIndex: nextIndex,
-        turnOrder: newTurnOrder,
+        // Only rotate turn order if we've completed a round AND cycled through all players
+        turnOrder: state.turnOrder, // Don't rotate turn order here, only at the end of a round
       };
     });
+
+    // After updating the state, check if the round is complete and we need to create a new round
+    const state = useGameStore.getState();
+    if (state.rounds[state.currentRoundIndex].completed) {
+      // Don't automatically create a new round, let the UI handle it
+      // This allows the UI to show the completed round before moving to the next one
+    }
   },
 
   // Join a game at a table
@@ -195,21 +339,53 @@ export const useGameStore = create<GameStore>((set) => ({
 
       // Calculate next player turn index
       let nextIndex = (state.currentPlayerTurnIndex + 1) % state.players.length;
-      let newTurnOrder = [...state.turnOrder];
 
-      // If we've completed a round, rotate the turn order
-      if (nextIndex === 0) {
-        newTurnOrder = [...state.turnOrder.slice(1), state.turnOrder[0]];
+      // Update the current round's table states
+      const updatedRounds = [...state.rounds];
+      updatedRounds[state.currentRoundIndex] = {
+        ...updatedRounds[state.currentRoundIndex],
+        tableStates: updatedTables.map(table => ({
+          id: table.id,
+          gameId: table.gameId,
+          seatedPlayerIds: [...table.seatedPlayerIds]
+        }))
+      };
+
+      // Check if the round is complete after this action
+      const isRoundComplete = () => {
+        // A round is complete when all tables have a game and all players have made their selections for this round
+        const allTablesHaveGames = updatedTables.every(table => table.gameId !== null);
+
+        // Check if all players have selected a game or joined a table in this round
+        const allPlayersHaveSelected = updatedPlayers.every(player => {
+          return updatedTables.some(table => table.seatedPlayerIds.includes(player.id));
+        });
+
+        return allTablesHaveGames && allPlayersHaveSelected;
+      };
+
+      // If the round is complete, mark it as completed but don't create a new round yet
+      if (isRoundComplete()) {
+        updatedRounds[state.currentRoundIndex].completed = true;
       }
 
       return {
         ...state,
         tables: updatedTables,
         players: updatedPlayers,
+        rounds: updatedRounds,
         currentPlayerTurnIndex: nextIndex,
-        turnOrder: newTurnOrder,
+        // Don't rotate turn order here, only at the end of a round
+        turnOrder: state.turnOrder,
       };
     });
+
+    // After updating the state, check if the round is complete and we need to create a new round
+    const state = useGameStore.getState();
+    if (state.rounds[state.currentRoundIndex].completed) {
+      // Don't automatically create a new round, let the UI handle it
+      // This allows the UI to show the completed round before moving to the next one
+    }
   },
 
   // Pass a turn
@@ -222,12 +398,16 @@ export const useGameStore = create<GameStore>((set) => ({
   advanceTurn: () => {
     set(state => {
       let nextIndex = (state.currentPlayerTurnIndex + 1) % state.players.length;
+
+      // Check if the current round is complete
+      const currentRound = state.rounds[state.currentRoundIndex];
+      const isComplete = currentRound.completed;
+
+      // Only rotate turn order if the round is complete and we've gone through all players
       let newTurnOrder = [...state.turnOrder];
 
-      // If we've completed a round, rotate the turn order
-      if (nextIndex === 0) {
-        newTurnOrder = [...state.turnOrder.slice(1), state.turnOrder[0]];
-      }
+      // If we've completed a round AND cycled through all players, we'll handle rotation
+      // when creating a new round, not here
 
       return {
         ...state,
@@ -235,5 +415,27 @@ export const useGameStore = create<GameStore>((set) => ({
         turnOrder: newTurnOrder,
       };
     });
+
+    // After updating the state, check if we need to update the round's completion status
+    const state = useGameStore.getState();
+    if (!state.rounds[state.currentRoundIndex].completed) {
+      // Check if the round is complete now
+      const isComplete = useGameStore.getState().isRoundComplete();
+      if (isComplete) {
+        // Update the round's completion status
+        set(state => {
+          const updatedRounds = [...state.rounds];
+          updatedRounds[state.currentRoundIndex] = {
+            ...updatedRounds[state.currentRoundIndex],
+            completed: true
+          };
+
+          return {
+            ...state,
+            rounds: updatedRounds
+          };
+        });
+      }
+    }
   },
 }));

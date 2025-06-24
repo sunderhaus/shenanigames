@@ -20,6 +20,8 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
 
   // Get tables to check if player has already assigned picks
   const tables = useGameStore(state => state.tables);
+  const rounds = useGameStore(state => state.rounds);
+  const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
 
   // Check if the current player has already assigned any of their picks to a table
   const hasAssignedPicks = currentPlayer && tables.some(table => 
@@ -28,14 +30,20 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
     table.seatedPlayerIds.includes(currentPlayer.id)
   );
 
+  // Check if the game was used in a previous round
+  const isGameUsedInPreviousRound = rounds.slice(0, currentRoundIndex).some(round => 
+    round.tableStates.some(tableState => tableState.gameId === game.id)
+  );
+
   // Determine if the game is draggable
   // A game is draggable if:
   // 1. It's the current player's turn
   // 2. Drafting is not complete
   // 3. The current player hasn't already assigned their picks to a table
   // 4. The game is in the player's picks
+  // 5. The game wasn't used in a previous round
   const isInPlayerPicks = currentPlayer && currentPlayer.picks.includes(game.id);
-  const isDraggable = !draftingComplete && currentPlayer && !hasAssignedPicks && isInPlayerPicks;
+  const isDraggable = !draftingComplete && currentPlayer && !hasAssignedPicks && isInPlayerPicks && !isGameUsedInPreviousRound;
 
   // Set up draggable
   const draggableItem: DraggableItem = {
