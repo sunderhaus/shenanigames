@@ -8,6 +8,7 @@ import ResetStateButton from '../components/ResetStateButton';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/store';
+import AnimationProvider from '../components/AnimationProvider';
 
 export default function Home() {
   // State to track if we're on a mobile device
@@ -50,47 +51,49 @@ export default function Home() {
   }, [isMobile, allTablesHaveGames]);
 
   return (
-    <main className={`min-h-screen p-4 ${isMobile && allTablesHaveGames ? 'pb-64' : 'pb-52'} bg-gray-100`}>
-      <div className="container mx-auto">
-        <header className="mb-8 sticky top-0 bg-gray-100 z-30 pt-2 pb-4">
-          <h1 className="text-3xl font-bold text-center">Shenanigames</h1>
-          <p className="text-center text-gray-600">Ellijay Edition</p>
-        </header>
+    <AnimationProvider>
+      <main className={`min-h-screen p-4 ${isMobile && allTablesHaveGames ? 'pb-64' : 'pb-52'} bg-gray-100`}>
+        <div className="container mx-auto">
+          <header className="mb-8 sticky top-0 bg-gray-100 z-30 pt-2 pb-4">
+            <h1 className="text-3xl font-bold text-center">Shenanigames</h1>
+            <p className="text-center text-gray-600">Ellijay Edition</p>
+          </header>
 
-        <DragAndDropProvider>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left sidebar - Player's Remaining Picks (hidden on mobile) */}
-            {!isMobile && (
-              <div className="lg:col-span-3">
-                <PlayersRemainingPicks />
+          <DragAndDropProvider>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left sidebar - Player's Remaining Picks (hidden on mobile) */}
+              {!isMobile && (
+                <div className="lg:col-span-3">
+                  <PlayersRemainingPicks />
+                </div>
+              )}
+
+              {/* Main content - Tables */}
+              <div className={`${isMobile ? `fixed inset-0 pt-20 ${allTablesHaveGames ? 'pb-64' : 'pb-52'} px-4 mt-0` : 'lg:col-span-6'}`}>
+                <TablesArea isMobile={isMobile} />
               </div>
-            )}
 
-            {/* Main content - Tables */}
-            <div className={`${isMobile ? `fixed inset-0 pt-20 ${allTablesHaveGames ? 'pb-64' : 'pb-52'} px-4 mt-0` : 'lg:col-span-6'}`}>
-              <TablesArea isMobile={isMobile} />
+              {/* Right sidebar - Player Info (hidden on mobile) */}
+              {!isMobile && (
+                <div className="lg:col-span-3">
+                  <PlayerInfo />
+                </div>
+              )}
             </div>
+          </DragAndDropProvider>
 
-            {/* Right sidebar - Player Info (hidden on mobile) */}
-            {!isMobile && (
-              <div className="lg:col-span-3">
-                <PlayerInfo />
-              </div>
-            )}
-          </div>
-        </DragAndDropProvider>
+          {/* Fixed footer for mobile */}
+          {isMobile && <ActivePlayerFooter />}
 
-        {/* Fixed footer for mobile */}
-        {isMobile && <ActivePlayerFooter />}
-
-        <footer className="mt-8 text-center text-gray-500 text-sm pb-16">
-          <p>Drag and drop games to tables or players to tables with games to make selections.</p>
-          <p className="mt-2">© 2025 Shenanigames, LLC</p>
-          <div className="mt-4">
-            <ResetStateButton />
-          </div>
-        </footer>
-      </div>
-    </main>
+          <footer className="mt-8 text-center text-gray-500 text-sm pb-16">
+            <p>Drag and drop games to tables or players to tables with games to make selections.</p>
+            <p className="mt-2">© 2025 Shenanigames, LLC</p>
+            <div className="mt-4">
+              <ResetStateButton />
+            </div>
+          </footer>
+        </div>
+      </main>
+    </AnimationProvider>
   );
 }

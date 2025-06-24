@@ -61,6 +61,7 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
       style={{...style, position: 'relative'}}
       {...attributes}
       {...listeners}
+      data-player-id={player.id}
       className={`player-tile flex justify-between items-center p-2 border rounded-lg ${
         isCurrentPlayer && !allPlayersHaveActed ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
       } ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''} ${

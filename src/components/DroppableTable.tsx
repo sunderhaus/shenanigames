@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, TouchEvent } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Table, Game, Player } from '../types/types';
 import { useGameStore } from '../store/store';
+import { useAnimation } from './AnimationProvider';
 
 interface DroppableTableProps {
   table: Table;
@@ -16,11 +17,16 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   const draftingComplete = useGameStore(state => state.draftingComplete);
   const players = useGameStore(state => state.players);
   const joinGame = useGameStore(state => state.joinGame);
+  const { animatePlayerToTable } = useAnimation();
 
   // State to track clicks for double-click detection
   const [lastClickTime, setLastClickTime] = useState<number | null>(null);
   // State to track if the table was recently clicked (for visual feedback)
   const [recentlyClicked, setRecentlyClicked] = useState(false);
+  // State and refs for long press detection
+  const [isLongPressing, setIsLongPressing] = useState(false);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressDuration = 500; // ms, matching the TouchSensor delay
 
   // Handle click on the table
   const handleTableClick = () => {
@@ -54,11 +60,63 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
     }
   };
 
-  // Clear the click state when the component unmounts or when the table changes
+  // Handle touch start - start the long press timer
+  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
+    // If in read-only mode or not a valid target, do nothing
+    if (isReadOnly || !isValidPlayerTarget || !currentPlayerId) return;
+
+    // Start the long press timer
+    longPressTimeoutRef.current = setTimeout(async () => {
+      // Get the current player
+      const player = players.find(p => p.id === currentPlayerId);
+
+      if (player) {
+        // Animate the player card to the table
+        await animatePlayerToTable(player, table.id);
+
+        // After animation completes, trigger join action
+        joinGame(table.id, currentPlayerId);
+      } else {
+        // Fallback if player not found
+        joinGame(table.id, currentPlayerId);
+      }
+
+      setIsLongPressing(false);
+
+      // Visual feedback
+      setRecentlyClicked(true);
+      setTimeout(() => {
+        setRecentlyClicked(false);
+      }, 300);
+    }, longPressDuration);
+
+    setIsLongPressing(true);
+  };
+
+  // Handle touch end - clear the long press timer
+  const handleTouchEnd = () => {
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+    setIsLongPressing(false);
+  };
+
+  // Handle touch move - cancel long press if moved too much
+  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
+    // Cancel long press on significant movement
+    handleTouchEnd();
+  };
+
+  // Clear the click state and long press timer when the component unmounts or when the table changes
   useEffect(() => {
     return () => {
       setLastClickTime(null);
       setRecentlyClicked(false);
+      if (longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current);
+        longPressTimeoutRef.current = null;
+      }
     };
   }, [table.id]);
 
@@ -108,7 +166,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
     if (isReadOnly) {
       return "Historical view - read only";
     } else if (isValidPlayerTarget) {
-      return "Double-click to join this table";
+      return "Double-click or long press to join this table";
     } else if (table.gameId === null) {
       return "Drop a game here";
     } else if (table.seatedPlayerIds.includes(currentPlayerId)) {
@@ -134,12 +192,17 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
     <div 
       ref={setNodeRef}
       onClick={handleTableClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchMove}
+      onTouchCancel={handleTouchEnd}
       title={getTooltipText()}
-      className={`table-card ${table.gameId ? 'has-game' : ''} ${getDropTargetClass()} ${getCursorStyle()} ${getRecentlyClickedClass()}`}
+      data-table-id={table.id}
+      className={`table-card ${table.gameId ? 'has-game' : ''} ${getDropTargetClass()} ${getCursorStyle()} ${getRecentlyClickedClass()} ${isLongPressing ? 'long-pressing' : ''}`}
       style={{
         transition: 'all 0.2s ease',
-        transform: recentlyClicked ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : '',
+        transform: recentlyClicked || isLongPressing ? 'scale(1.02)' : 'scale(1)',
+        boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : isLongPressing ? '0 0 12px rgba(59, 130, 246, 0.7)' : '',
         opacity: isReadOnly ? 0.85 : 1,
         pointerEvents: isReadOnly ? 'none' : 'auto',
         border: isReadOnly ? '1px dashed #ccc' : '',
@@ -150,6 +213,11 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
       {isValidPlayerTarget && (
         <div className="absolute top-1 right-1 block md:hidden text-xs text-gray-500 bg-white bg-opacity-80 px-1 rounded">
           <span className="mr-1">👆</span>Long press to join
+        </div>
+      )}
+      {/* Visual feedback during long press */}
+      {isLongPressing && isValidPlayerTarget && (
+        <div className="absolute inset-0 flex items-center justify-center bg-blue-100 bg-opacity-40 rounded">
         </div>
       )}
       <h3 className="font-medium text-center mb-2">{game ? game.title : table.id}</h3>
