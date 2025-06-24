@@ -132,7 +132,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : ''
       }}
     >
-      <h3 className="font-medium text-center mb-2">{table.id}</h3>
+      <h3 className="font-medium text-center mb-2">{game ? game.title : table.id}</h3>
 
       {game ? (
         <div className="text-center">
@@ -146,8 +146,6 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
               />
             </div>
           )}
-
-          <div className="font-bold mb-2">{game.title}</div>
 
           <div className="mb-2">
             <span className="text-sm text-gray-500">
