@@ -32,8 +32,8 @@ const samplePlayers: Player[] = [
 ];
 
 const sampleTables: Table[] = [
-  { id: 'table-1', gameId: null, seatedPlayerIds: [] },
-  { id: 'table-2', gameId: null, seatedPlayerIds: [] }
+  { id: 'table-1', gameId: null, seatedPlayerIds: [], placedByPlayerId: undefined },
+  { id: 'table-2', gameId: null, seatedPlayerIds: [], placedByPlayerId: undefined }
 ];
 
 // Helper function to get all unique game IDs from players' picks
@@ -61,7 +61,8 @@ const createInitialRound = (tables: Table[]): Round => {
     tableStates: tables.map(table => ({
       id: table.id,
       gameId: table.gameId,
-      seatedPlayerIds: [...table.seatedPlayerIds]
+      seatedPlayerIds: [...table.seatedPlayerIds],
+      placedByPlayerId: table.placedByPlayerId
     })),
     completed: false
   };
@@ -147,7 +148,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         tableStates: state.tables.map(table => ({
           id: table.id,
           gameId: null,
-          seatedPlayerIds: []
+          seatedPlayerIds: [],
+          placedByPlayerId: undefined
         })),
         completed: false
       };
@@ -161,7 +163,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         tables: state.tables.map(table => ({
           ...table,
           gameId: null,
-          seatedPlayerIds: []
+          seatedPlayerIds: [],
+          placedByPlayerId: undefined
         })),
         // Reset actionTakenInCurrentRound for all players
         players: state.players.map(player => ({
@@ -184,7 +187,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         tableStates: state.tables.map(table => ({
           id: table.id,
           gameId: table.gameId,
-          seatedPlayerIds: [...table.seatedPlayerIds]
+          seatedPlayerIds: [...table.seatedPlayerIds],
+          placedByPlayerId: table.placedByPlayerId
         }))
       };
 
@@ -227,7 +231,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // Update the state
       const updatedTables = state.tables.map(t => 
         t.id === tableId 
-          ? { ...t, gameId: gameId, seatedPlayerIds: [...t.seatedPlayerIds, playerId] } 
+          ? { ...t, gameId: gameId, seatedPlayerIds: [...t.seatedPlayerIds, playerId], placedByPlayerId: playerId } 
           : t
       );
 
@@ -269,7 +273,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         tableStates: updatedTables.map(table => ({
           id: table.id,
           gameId: table.gameId,
-          seatedPlayerIds: [...table.seatedPlayerIds]
+          seatedPlayerIds: [...table.seatedPlayerIds],
+          placedByPlayerId: table.placedByPlayerId
         }))
       };
 
@@ -359,7 +364,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         tableStates: updatedTables.map(table => ({
           id: table.id,
           gameId: table.gameId,
-          seatedPlayerIds: [...table.seatedPlayerIds]
+          seatedPlayerIds: [...table.seatedPlayerIds],
+          placedByPlayerId: table.placedByPlayerId
         }))
       };
 

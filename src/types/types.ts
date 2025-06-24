@@ -31,6 +31,7 @@ export interface Table {
   id: string;
   gameId: string | null;
   seatedPlayerIds: string[];
+  placedByPlayerId?: string; // ID of the player who placed the game
 }
 
 /**
@@ -40,6 +41,7 @@ export interface TableState {
   id: string;
   gameId: string | null;
   seatedPlayerIds: string[];
+  placedByPlayerId?: string; // ID of the player who placed the game
 }
 
 /**

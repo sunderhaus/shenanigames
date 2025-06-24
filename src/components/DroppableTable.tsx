@@ -155,7 +155,13 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
 
           <div className="flex flex-wrap justify-center gap-1">
             {seatedPlayers.map(player => (
-              <div key={player.id} className="player-token">
+              <div 
+                key={player.id} 
+                className={`player-token ${player.id === table.placedByPlayerId ? 'game-picker font-bold' : ''}`}
+              >
+                {player.id === table.placedByPlayerId && (
+                  <span className="mr-1 text-yellow-400">★</span>
+                )}
                 {player.name}
               </div>
             ))}

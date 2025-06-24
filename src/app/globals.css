@@ -81,6 +81,15 @@ body {
   background-color: #48bb78;
 }
 
+/* Game picker styles - for the player who placed the game */
+.game-picker {
+  background-color: #f6ad55;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+  z-index: 5;
+}
+
 /* Pass button styles */
 .pass-button {
   background-color: #f56565;
