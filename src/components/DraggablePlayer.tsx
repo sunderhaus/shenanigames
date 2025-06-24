@@ -7,9 +7,16 @@ import { useGameStore } from '../store/store';
 interface DraggablePlayerProps {
   player: Player;
   isCurrentPlayer: boolean;
+  showPassButton?: boolean;
+  onPassTurn?: () => void;
 }
 
-const DraggablePlayer: React.FC<DraggablePlayerProps> = ({ player, isCurrentPlayer }) => {
+const DraggablePlayer: React.FC<DraggablePlayerProps> = ({ 
+  player, 
+  isCurrentPlayer, 
+  showPassButton = false, 
+  onPassTurn 
+}) => {
   const draftingComplete = useGameStore(state => state.draftingComplete);
 
   // Determine if the player is draggable
@@ -39,15 +46,38 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({ player, isCurrentPlay
     cursor: isDraggable ? 'grab' : 'default'
   };
 
+  const handlePassTurn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onPassTurn) {
+      onPassTurn();
+    }
+  };
+
   return (
     <div 
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className={`player-token ${isCurrentPlayer ? 'current-player' : ''} ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''}`}
+      className={`player-tile flex justify-between items-center p-3 border rounded-lg ${
+        isCurrentPlayer ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+      } ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''}`}
     >
-      <span>{player.name}</span>
+      <div className="flex items-center">
+        <div className={`player-token mr-3 ${isCurrentPlayer ? 'current-player' : ''}`}>
+          <span>{player.name.charAt(0)}</span>
+        </div>
+        <span className="font-medium">{player.name}</span>
+      </div>
+
+      {showPassButton && (
+        <button 
+          className="pass-button text-sm px-2 py-1"
+          onClick={handlePassTurn}
+        >
+          Pass Turn
+        </button>
+      )}
     </div>
   );
 };

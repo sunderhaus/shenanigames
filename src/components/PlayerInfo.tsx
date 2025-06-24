@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { useGameStore } from '../store/store';
 import { Player } from '../types/types';
 import DraggablePlayer from './DraggablePlayer';
+import TurnOrderEditor, { TurnOrderForm } from './TurnOrderEditor';
 
 export default function PlayerInfo() {
+  const [isEditingTurnOrder, setIsEditingTurnOrder] = useState(false);
   const players = useGameStore(state => state.players);
   const turnOrder = useGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
@@ -25,34 +28,43 @@ export default function PlayerInfo() {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Players</h2>
 
-        {!draftingComplete && (
-          <button 
-            className="pass-button"
-            onClick={() => passTurn()}
-            disabled={draftingComplete}
-          >
-            Pass Turn
-          </button>
-        )}
+        <div>
+          <TurnOrderEditor 
+            isEditing={isEditingTurnOrder} 
+            setIsEditing={setIsEditingTurnOrder} 
+          />
+        </div>
       </div>
 
       <div className="space-y-2">
-        <h3 className="font-medium text-sm text-gray-500">Turn Order:</h3>
+        {isEditingTurnOrder ? (
+          <div className="mt-2">
+            <TurnOrderForm 
+              players={players}
+              turnOrder={turnOrder}
+              updateTurnOrder={useGameStore.getState().updateTurnOrder}
+              currentPlayerTurnIndex={currentPlayerTurnIndex}
+              setIsEditing={setIsEditingTurnOrder}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col space-y-2">
+            {turnOrder.map((playerId, index) => {
+              const player = playersById[playerId];
+              const isCurrentPlayer = index === currentPlayerTurnIndex;
 
-        <div className="flex flex-wrap gap-2">
-          {turnOrder.map((playerId, index) => {
-            const player = playersById[playerId];
-            const isCurrentPlayer = index === currentPlayerTurnIndex;
-
-            return (
-              <DraggablePlayer 
-                key={player.id}
-                player={player}
-                isCurrentPlayer={isCurrentPlayer}
-              />
-            );
-          })}
-        </div>
+              return (
+                <DraggablePlayer 
+                  key={player.id}
+                  player={player}
+                  isCurrentPlayer={isCurrentPlayer}
+                  showPassButton={isCurrentPlayer && !draftingComplete}
+                  onPassTurn={passTurn}
+                />
+              );
+            })}
+          </div>
+        )}
 
         {draftingComplete && (
           <div className="mt-4 p-2 bg-green-100 text-green-800 rounded">

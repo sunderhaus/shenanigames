@@ -5,7 +5,8 @@ import { useGameStore } from '../store/store';
 // Define the types of draggable items
 export enum DraggableType {
   GAME = 'game',
-  PLAYER = 'player'
+  PLAYER = 'player',
+  TURN_ORDER_PLAYER = 'turn_order_player'
 }
 
 // Define the structure of draggable items

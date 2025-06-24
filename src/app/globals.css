@@ -47,15 +47,29 @@ body {
   border: 2px solid #4a5568;
 }
 
+/* Player tile styles */
+.player-tile {
+  width: 100%;
+  background-color: white;
+  transition: all 0.2s ease-in-out;
+}
+
+.player-tile:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* Player token styles */
 .player-token {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
   border-radius: 9999px;
   background-color: #4a5568;
   color: white;
-  margin-right: 0.25rem;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: bold;
   transition: all 0.2s ease-in-out;
 }
 

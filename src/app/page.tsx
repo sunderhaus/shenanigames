@@ -11,7 +11,7 @@ export default function Home() {
       <div className="container mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-center">Shenanigames</h1>
-          <p className="text-center text-gray-600">A board game drafting web app</p>
+          <p className="text-center text-gray-600">Ellijay Edition</p>
         </header>
 
         <DragAndDropProvider>
@@ -34,8 +34,8 @@ export default function Home() {
         </DragAndDropProvider>
 
         <footer className="mt-8 text-center text-gray-500 text-sm">
-          <p>Drag and drop games to tables or players to games to make selections.</p>
-          <p className="mt-2">© 2023 Shenanigames</p>
+          <p>Drag and drop games to tables or players to tables with games to make selections.</p>
+          <p className="mt-2">© 2025 Shenanigames, LLC</p>
         </footer>
       </div>
     </main>

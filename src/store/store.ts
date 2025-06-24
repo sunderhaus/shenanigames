@@ -22,13 +22,13 @@ const sampleGames: Game[] = [
 
 // Create players based on player-picks.csv
 const samplePlayers: Player[] = [
-  { id: uuidv4(), name: 'Jourdan', selectionsMade: 0, picks: [sampleGames[0].id, sampleGames[7].id] },
   { id: uuidv4(), name: 'Matthew', selectionsMade: 0, picks: [sampleGames[1].id, sampleGames[8].id] },
-  { id: uuidv4(), name: 'Cam', selectionsMade: 0, picks: [sampleGames[2].id, sampleGames[9].id] },
+  { id: uuidv4(), name: 'Jourdan', selectionsMade: 0, picks: [sampleGames[0].id, sampleGames[7].id] },
+  { id: uuidv4(), name: 'Chris', selectionsMade: 0, picks: [sampleGames[5].id, sampleGames[12].id] },
   { id: uuidv4(), name: 'Jonny', selectionsMade: 0, picks: [sampleGames[3].id, sampleGames[10].id] },
   { id: uuidv4(), name: 'Felipe', selectionsMade: 0, picks: [sampleGames[4].id, sampleGames[11].id] },
-  { id: uuidv4(), name: 'Chris', selectionsMade: 0, picks: [sampleGames[5].id, sampleGames[12].id] },
   { id: uuidv4(), name: 'Paul', selectionsMade: 0, picks: [sampleGames[6].id, sampleGames[13].id] },
+  { id: uuidv4(), name: 'Cam', selectionsMade: 0, picks: [sampleGames[2].id, sampleGames[9].id] },
 ];
 
 const sampleTables: Table[] = [
@@ -104,6 +104,9 @@ interface GameStore extends SessionState {
 
   // Helper to update the current round's table states
   updateRoundTableStates: () => void;
+
+  // Action to update the turn order
+  updateTurnOrder: (newTurnOrder: string[]) => void;
 }
 
 // Create the store
@@ -417,6 +420,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
         ...state,
         currentPlayerTurnIndex: nextIndex,
         turnOrder: newTurnOrder,
+      };
+    });
+  },
+
+  // Update the turn order
+  updateTurnOrder: (newTurnOrder: string[]) => {
+    set(state => {
+      // Validate that the new turn order contains the same players
+      if (newTurnOrder.length !== state.turnOrder.length || 
+          !newTurnOrder.every(id => state.turnOrder.includes(id))) {
+        console.error('Invalid turn order update');
+        return state;
+      }
+
+      // Calculate the new current player turn index
+      // Find the current player ID
+      const currentPlayerId = state.turnOrder[state.currentPlayerTurnIndex];
+      // Find its index in the new turn order
+      const newCurrentPlayerIndex = newTurnOrder.findIndex(id => id === currentPlayerId);
+
+      return {
+        ...state,
+        turnOrder: newTurnOrder,
+        currentPlayerTurnIndex: newCurrentPlayerIndex,
       };
     });
 
