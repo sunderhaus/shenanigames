@@ -7,14 +7,21 @@ import DroppableTable from './DroppableTable';
 export default function TablesArea() {
   const tables = useGameStore(state => state.tables);
   const availableGames = useGameStore(state => state.availableGames);
+  const allGames = useGameStore(state => state.allGames);
   const players = useGameStore(state => state.players);
   const rounds = useGameStore(state => state.rounds);
   const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
   const isRoundComplete = useGameStore(state => state.isRoundComplete);
   const createNewRound = useGameStore(state => state.createNewRound);
 
-  // Create a map of games by ID for easy lookup
-  const gamesById = availableGames.reduce((acc, game) => {
+  // Create a map of all games by ID for easy lookup
+  const allGamesById = allGames.reduce((acc, game) => {
+    acc[game.id] = game;
+    return acc;
+  }, {} as Record<string, Game>);
+
+  // Create a map of available games by ID for easy lookup
+  const availableGamesById = availableGames.reduce((acc, game) => {
     acc[game.id] = game;
     return acc;
   }, {} as Record<string, Game>);
@@ -29,27 +36,8 @@ export default function TablesArea() {
   const findGameById = (gameId: string | null): Game | undefined => {
     if (!gameId) return undefined;
 
-    // Check available games first
-    if (gamesById[gameId]) return gamesById[gameId];
-
-    // If not found in available games, check tables
-    for (const table of tables) {
-      if (table.gameId === gameId) {
-        // Find the game in another table
-        const tableWithGame = tables.find(t => t.gameId === gameId);
-        if (tableWithGame) {
-          // This is a placeholder since we don't have the actual game object
-          // In a real implementation, you would store all games in the state
-          return {
-            id: gameId,
-            title: `Game at ${tableWithGame.id}`,
-            maxPlayers: 4, // Default value
-          };
-        }
-      }
-    }
-
-    return undefined;
+    // Look up the game in allGamesById which contains all games
+    return allGamesById[gameId];
   };
 
   // Check if the current round is complete

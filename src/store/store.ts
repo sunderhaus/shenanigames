@@ -72,6 +72,8 @@ const initialState: SessionState = {
   players: samplePlayers,
   // Initialize availableGames with all games that are in players' picks
   availableGames: sampleGames.filter(game => getAllPlayerPicks(samplePlayers).includes(game.id)),
+  // Store all games for lookup purposes
+  allGames: sampleGames,
   tables: sampleTables,
   rounds: [createInitialRound(sampleTables)],
   currentRoundIndex: 0,
@@ -189,7 +191,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   placeGame: (gameId: string, tableId: string, playerId: string) => {
     set((state) => {
       // Find the game and table
-      const game = state.availableGames.find(g => g.id === gameId);
+      // Look in allGames first, which contains all games
+      const game = state.allGames.find(g => g.id === gameId);
       const table = state.tables.find(t => t.id === tableId);
       const player = state.players.find(p => p.id === playerId);
 
@@ -315,9 +318,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       }
 
       // Find the game to check max players
-      const game = state.availableGames.find(g => g.id === table.gameId);
+      // Look in allGames first, which contains all games
+      const game = state.allGames.find(g => g.id === table.gameId);
 
-      // If game is not in availableGames, use a default maxPlayers value
+      // If game is not found (which shouldn't happen), use a default maxPlayers value
       const maxPlayers = game ? game.maxPlayers : 4;
 
       if (table.seatedPlayerIds.length >= maxPlayers) {

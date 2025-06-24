@@ -56,6 +56,7 @@ export interface Round {
 export interface SessionState {
   players: Player[];
   availableGames: Game[];
+  allGames: Game[];  // Store all games for lookup purposes
   tables: Table[];
   rounds: Round[];
   currentRoundIndex: number;
