@@ -145,6 +145,29 @@ body {
   transform: translateY(-2px);
 }
 
+/* Action taken styles */
+.action-taken {
+  border-left: 4px solid #48bb78 !important;
+  background-color: rgba(72, 187, 120, 0.05) !important;
+  position: relative;
+}
+
+.action-taken::after {
+  content: '✓';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #48bb78;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Hide checkmark when showing pass button */
+.hide-checkmark::after {
+  display: none !important;
+}
+
 /* Game image styles */
 .game-image {
   border-radius: 0.375rem;

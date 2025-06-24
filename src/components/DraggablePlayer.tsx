@@ -61,7 +61,9 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
       {...listeners}
       className={`player-tile flex justify-between items-center p-2 border rounded-lg ${
         isCurrentPlayer ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
-      } ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''}`}
+      } ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''} ${
+        player.actionTakenInCurrentRound ? 'action-taken' : ''
+      } ${player.actionTakenInCurrentRound && showPassButton ? 'hide-checkmark' : ''}`}
     >
       <div className="flex items-center">
         <div className={`player-token mr-2 ${isCurrentPlayer ? 'current-player' : ''}`}>

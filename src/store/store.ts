@@ -11,24 +11,24 @@ const sampleGames: Game[] = [
   { id: uuidv4(), title: 'Champions of Midgard', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/172287/champions-of-midgard', image: 'https://cf.geekdo-images.com/VJwOnMF5vwJg2Yaq6ozn3Q__imagepagezoom/img/KTdvwhXefkXRFiOYbl8HVLq9aKk=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic2869714.jpg' },
   { id: uuidv4(), title: 'Last Light', maxPlayers: 8, link: 'https://boardgamegeek.com/boardgame/315727/last-light', image: 'https://cf.geekdo-images.com/zw7xI7gJD6r7zNDR-AbVAQ__imagepagezoom/img/uOxcanSS4PXD8y6rHNO3UxT8eVg=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic6338617.jpg' },
   { id: uuidv4(), title: 'Oath', maxPlayers: 6, link: 'https://boardgamegeek.com/boardgame/291572/oath', image: 'https://cf.geekdo-images.com/gTxav_KKQK1rDg-XuCjCSA__imagepagezoom/img/vZVvtufTceUYyWfvHwOBTRGmXdw=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic5164812.jpg' },
-  { id: uuidv4(), title: 'Realm of Reckoning', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/446893/realm-of-reckoning', image: 'https://cf.geekdo-images.com/xElMYLyj1pqtCIOhRNzA9w__imagepagezoom/img/JdGJ4hQ1GsNMuYl0AeOh0rRfqJ8=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic8899476.png' },
+  { id: uuidv4(), title: 'Realm of Reckoning', maxPlayers: 5, link: 'https://boardgamegeek.com/boardgame/446893/realm-of-reckoning', image: 'https://cf.geekdo-images.com/xElMYLyj1pqtCIOhRNzA9w__imagepagezoom/img/JdGJ4hQ1GsNMuYl0AeOh0rRfqJ8=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic8899476.png' },
   { id: uuidv4(), title: 'Stupor Mundi', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/392492/stupor-mundi', image: 'https://cf.geekdo-images.com/SJvK-Hq72xOiJ_JsmB1dGA__imagepagezoom/img/lsPEsMAQx4KcaLrYnwwNArS44VM=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7585104.jpg' },
   { id: uuidv4(), title: 'Brass: Birmingham', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/224517/brass-birmingham', image: 'https://cf.geekdo-images.com/x3zxjr-Vw5iU4yDPg70Jgw__imagepagezoom/img/7a0LOL48K-7JNIOSGtcsNsIxkN0=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic3490053.jpg' },
-  { id: uuidv4(), title: 'Cyclades Legendary', maxPlayers: 5, link: 'https://boardgamegeek.com/boardgame/380619/cyclades-legendary-edition', image: 'https://cf.geekdo-images.com/g4bC44H7rdrl0KLW7LGV5A__imagepagezoom/img/f0XWPOgK2ZVU_s3dQvc3uZv03Zo=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7566828.png' },
+  { id: uuidv4(), title: 'Cyclades Legendary', maxPlayers: 6, link: 'https://boardgamegeek.com/boardgame/380619/cyclades-legendary-edition', image: 'https://cf.geekdo-images.com/g4bC44H7rdrl0KLW7LGV5A__imagepagezoom/img/f0XWPOgK2ZVU_s3dQvc3uZv03Zo=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7566828.png' },
   { id: uuidv4(), title: 'Pillars of Earth', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/24480/the-pillars-of-the-earth', image: 'https://cf.geekdo-images.com/J897fuu-nl83_o90uOakVQ__imagepagezoom/img/mTT1CCkmkkdZEdfSPt4cUlXBo6o=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic3691155.jpg' },
-  { id: uuidv4(), title: 'Dune War for Arakis', maxPlayers: 2, link: 'https://boardgamegeek.com/boardgame/367150/dune-war-for-arrakis', image: 'https://cf.geekdo-images.com/b_Uo-x3szhupSWeQdw5bdg__imagepage/img/87_6KXsy1UFOg4HDpiC62JWH68M=/fit-in/900x600/filters:no_upscale():strip_icc()/pic7088918.jpg' },
+  { id: uuidv4(), title: 'Dune War for Arakis', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/367150/dune-war-for-arrakis', image: 'https://cf.geekdo-images.com/b_Uo-x3szhupSWeQdw5bdg__imagepage/img/87_6KXsy1UFOg4HDpiC62JWH68M=/fit-in/900x600/filters:no_upscale():strip_icc()/pic7088918.jpg' },
   { id: uuidv4(), title: 'The White Castle', maxPlayers: 4, link: 'https://boardgamegeek.com/boardgame/371942/the-white-castle', image: 'https://cf.geekdo-images.com/qXT1U-nFh9PE8ujfdmI7dA__imagepagezoom/img/al4q0nFn_fArrNM_cXvz6jIbe8U=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7754663.jpg' },
 ];
 
 // Create players based on player-picks.csv
 const samplePlayers: Player[] = [
-  { id: uuidv4(), name: 'Matthew', selectionsMade: 0, picks: [sampleGames[1].id, sampleGames[8].id] },
-  { id: uuidv4(), name: 'Jourdan', selectionsMade: 0, picks: [sampleGames[0].id, sampleGames[7].id] },
-  { id: uuidv4(), name: 'Chris', selectionsMade: 0, picks: [sampleGames[5].id, sampleGames[12].id] },
-  { id: uuidv4(), name: 'Jonny', selectionsMade: 0, picks: [sampleGames[3].id, sampleGames[10].id] },
-  { id: uuidv4(), name: 'Felipe', selectionsMade: 0, picks: [sampleGames[4].id, sampleGames[11].id] },
-  { id: uuidv4(), name: 'Paul', selectionsMade: 0, picks: [sampleGames[6].id, sampleGames[13].id] },
-  { id: uuidv4(), name: 'Cam', selectionsMade: 0, picks: [sampleGames[2].id, sampleGames[9].id] },
+  { id: uuidv4(), name: 'Matthew', selectionsMade: 0, picks: [sampleGames[1].id, sampleGames[8].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Jourdan', selectionsMade: 0, picks: [sampleGames[0].id, sampleGames[7].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Chris', selectionsMade: 0, picks: [sampleGames[5].id, sampleGames[12].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Jonny', selectionsMade: 0, picks: [sampleGames[3].id, sampleGames[10].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Felipe', selectionsMade: 0, picks: [sampleGames[4].id, sampleGames[11].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Paul', selectionsMade: 0, picks: [sampleGames[6].id, sampleGames[13].id], actionTakenInCurrentRound: false },
+  { id: uuidv4(), name: 'Cam', selectionsMade: 0, picks: [sampleGames[2].id, sampleGames[9].id], actionTakenInCurrentRound: false },
 ];
 
 const sampleTables: Table[] = [
@@ -163,6 +163,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
           gameId: null,
           seatedPlayerIds: []
         })),
+        // Reset actionTakenInCurrentRound for all players
+        players: state.players.map(player => ({
+          ...player,
+          actionTakenInCurrentRound: false
+        })),
         // Rotate turn order for the new round
         turnOrder: [...state.turnOrder.slice(1), state.turnOrder[0]],
         currentPlayerTurnIndex: 0
@@ -228,7 +233,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const updatedPlayers = state.players.map(p => 
         p.id === playerId 
-          ? { ...p, selectionsMade: p.selectionsMade + 1 } 
+          ? { ...p, selectionsMade: p.selectionsMade + 1, actionTakenInCurrentRound: true } 
           : p
       );
 
@@ -340,7 +345,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const updatedPlayers = state.players.map(p => 
         p.id === playerId 
-          ? { ...p, selectionsMade: p.selectionsMade + 1 } 
+          ? { ...p, selectionsMade: p.selectionsMade + 1, actionTakenInCurrentRound: true } 
           : p
       );
 
@@ -404,7 +409,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
   // Advance to the next player's turn
   advanceTurn: () => {
     set(state => {
+      // Start with the next player in the turn order
       let nextIndex = (state.currentPlayerTurnIndex + 1) % state.players.length;
+      const startingIndex = nextIndex; // Remember where we started to detect full circle
+
+      // Get the players array and turn order for easier access
+      const { players, turnOrder } = state;
+
+      // Check if the next player has already taken an action in this round
+      // If they have, keep advancing until we find a player who hasn't
+      let nextPlayerId = turnOrder[nextIndex];
+      let nextPlayer = players.find(p => p.id === nextPlayerId);
+
+      // Skip players who have already taken actions in this round
+      while (nextPlayer && nextPlayer.actionTakenInCurrentRound) {
+        // Move to the next player
+        nextIndex = (nextIndex + 1) % players.length;
+
+        // If we've gone full circle and back to where we started, all players have taken actions
+        if (nextIndex === startingIndex) {
+          // All players have taken actions, the round is effectively complete
+          // We'll keep the current player's turn for now, as they'll need to start the next round
+          // The UI can handle transitioning to a new round
+          break;
+        }
+
+        // Get the next player
+        nextPlayerId = turnOrder[nextIndex];
+        nextPlayer = players.find(p => p.id === nextPlayerId);
+      }
 
       // Check if the current round is complete
       const currentRound = state.rounds[state.currentRoundIndex];

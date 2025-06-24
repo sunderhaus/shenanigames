@@ -10,6 +10,7 @@ export interface Player {
   name: string;
   selectionsMade: number;
   picks: string[]; // Array of game IDs the player has preselected
+  actionTakenInCurrentRound: boolean; // Tracks if player has taken an action in the current round
 }
 
 /**
