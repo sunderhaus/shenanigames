@@ -14,6 +14,7 @@ body {
   padding: 1rem;
 }
 
+/* Game card styles */
 .game-card {
   border: 1px solid #ccc;
   border-radius: 0.5rem;
@@ -28,6 +29,7 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Table card styles */
 .table-card {
   border: 2px dashed #ccc;
   border-radius: 0.5rem;
@@ -38,12 +40,14 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease-in-out;
 }
 
 .table-card.has-game {
   border: 2px solid #4a5568;
 }
 
+/* Player token styles */
 .player-token {
   display: inline-block;
   padding: 0.25rem 0.5rem;
@@ -52,12 +56,14 @@ body {
   color: white;
   margin-right: 0.25rem;
   font-size: 0.75rem;
+  transition: all 0.2s ease-in-out;
 }
 
 .current-player {
   background-color: #48bb78;
 }
 
+/* Pass button styles */
 .pass-button {
   background-color: #f56565;
   color: white;
@@ -75,4 +81,48 @@ body {
 .pass-button:disabled {
   background-color: #cbd5e0;
   cursor: not-allowed;
+}
+
+/* Drag and drop styles */
+.draggable {
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+.not-draggable {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dragging {
+  opacity: 0.8;
+  z-index: 1000;
+}
+
+/* Drop target styles */
+.valid-game-target {
+  border: 2px dashed #48bb78;
+}
+
+.invalid-game-target {
+  border: 2px dashed #ccc;
+  opacity: 0.7;
+}
+
+.valid-player-target {
+  border: 2px dashed #48bb78;
+}
+
+.invalid-player-target {
+  border: 2px dashed #ccc;
+  opacity: 0.7;
+}
+
+.drop-target-hover {
+  border: 2px solid #48bb78;
+  box-shadow: 0 4px 6px rgba(72, 187, 120, 0.2);
+  transform: translateY(-2px);
 }

@@ -2,31 +2,32 @@
 
 import { useGameStore } from '../store/store';
 import { Table, Game, Player } from '../types/types';
+import DroppableTable from './DroppableTable';
 
 export default function TablesArea() {
   const tables = useGameStore(state => state.tables);
   const availableGames = useGameStore(state => state.availableGames);
   const players = useGameStore(state => state.players);
-  
+
   // Create a map of games by ID for easy lookup
   const gamesById = availableGames.reduce((acc, game) => {
     acc[game.id] = game;
     return acc;
   }, {} as Record<string, Game>);
-  
+
   // Create a map of players by ID for easy lookup
   const playersById = players.reduce((acc, player) => {
     acc[player.id] = player;
     return acc;
   }, {} as Record<string, Player>);
-  
+
   // Function to find a game by ID (including games that are already placed on tables)
   const findGameById = (gameId: string | null): Game | undefined => {
     if (!gameId) return undefined;
-    
+
     // Check available games first
     if (gamesById[gameId]) return gamesById[gameId];
-    
+
     // If not found in available games, check tables
     for (const table of tables) {
       if (table.gameId === gameId) {
@@ -43,51 +44,30 @@ export default function TablesArea() {
         }
       }
     }
-    
+
     return undefined;
   };
-  
+
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4">Tables</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {tables.map((table: Table) => {
           const game = findGameById(table.gameId);
-          const hasGame = !!game;
-          
+
+          // Get the seated players for this table
+          const seatedPlayers = table.seatedPlayerIds
+            .map(playerId => playersById[playerId])
+            .filter(player => player !== undefined) as Player[];
+
           return (
-            <div 
+            <DroppableTable 
               key={table.id}
-              className={`table-card ${hasGame ? 'has-game' : ''}`}
-              // In a full implementation, this would be connected to a drag-and-drop library
-            >
-              <h3 className="font-medium text-center mb-2">{table.id}</h3>
-              
-              {hasGame ? (
-                <div className="text-center">
-                  <div className="font-bold mb-2">{game.title}</div>
-                  
-                  <div className="mb-2">
-                    <span className="text-sm text-gray-500">
-                      {table.seatedPlayerIds.length}/{game.maxPlayers} Players
-                    </span>
-                  </div>
-                  
-                  <div className="flex flex-wrap justify-center gap-1">
-                    {table.seatedPlayerIds.map(playerId => (
-                      <div key={playerId} className="player-token">
-                        {playersById[playerId]?.name || 'Unknown'}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center text-gray-500">
-                  Drop a game here
-                </div>
-              )}
-            </div>
+              table={table}
+              game={game}
+              seatedPlayers={seatedPlayers}
+            />
           );
         })}
       </div>
