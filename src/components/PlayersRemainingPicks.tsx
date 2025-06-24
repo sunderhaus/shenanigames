@@ -6,29 +6,40 @@ import DraggableGame from './DraggableGame';
 import { useEffect, useState } from 'react';
 
 export default function PlayersRemainingPicks() {
+  // Use useState to manage client-side state
+  const [isClient, setIsClient] = useState(false);
+
+  // Get state from the store
   const availableGames = useGameStore(state => state.availableGames);
   const players = useGameStore(state => state.players);
   const turnOrder = useGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
   const tables = useGameStore(state => state.tables);
 
+  // Set isClient to true after component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
 
   // Get the current player
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
-  const currentPlayer = players.find(p => p.id === currentPlayerId);
+  const currentPlayer = isClient ? players.find(p => p.id === currentPlayerId) : null;
 
   // Filter games to only show those in the current player's picks
-  const filteredGames = currentPlayer 
+  const filteredGames = isClient && currentPlayer 
     ? availableGames.filter(game => currentPlayer.picks.includes(game.id))
-    : availableGames;
+    : [];
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">{currentPlayer ? `${currentPlayer.name}'s Remaining Picks` : "Player's Remaining Picks"}</h2>
+      <h2 className="text-xl font-bold mb-4">
+        {isClient && currentPlayer ? `${currentPlayer.name}'s Remaining Picks` : "Player's Remaining Picks"}
+      </h2>
 
-      {allTablesHaveGames && (
+      {isClient && allTablesHaveGames && (
         <div className="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
           <div className="flex items-start">
             <div className="flex-shrink-0">

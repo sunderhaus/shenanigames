@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/store';
 import { Player } from '../types/types';
 import DraggablePlayer from './DraggablePlayer';
@@ -8,11 +8,18 @@ import TurnOrderEditor, { TurnOrderForm } from './TurnOrderEditor';
 
 export default function PlayerInfo() {
   const [isEditingTurnOrder, setIsEditingTurnOrder] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
   const players = useGameStore(state => state.players);
   const turnOrder = useGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useGameStore(state => state.draftingComplete);
   const passTurn = useGameStore(state => state.passTurn);
+
+  // Set isClient to true after component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Get the current player's ID
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
@@ -52,7 +59,7 @@ export default function PlayerInfo() {
           </div>
         ) : (
           <div className="flex flex-col space-y-1">
-            {turnOrder.map((playerId, index) => {
+            {isClient && turnOrder.map((playerId, index) => {
               const player = playersById[playerId];
               const isCurrentPlayer = index === currentPlayerTurnIndex;
 
@@ -70,7 +77,7 @@ export default function PlayerInfo() {
           </div>
         )}
 
-        {draftingComplete && (
+        {isClient && draftingComplete && (
           <div className="mt-2 p-2 bg-green-100 text-green-800 rounded">
             Drafting complete! All players have passed.
           </div>

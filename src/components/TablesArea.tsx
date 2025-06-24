@@ -3,9 +3,12 @@
 import { useGameStore } from '../store/store';
 import { Table, Game, Player } from '../types/types';
 import DroppableTable from './DroppableTable';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function TablesArea() {
+  // Use useState to manage client-side state
+  const [isClient, setIsClient] = useState(false);
+
   const tables = useGameStore(state => state.tables);
   const availableGames = useGameStore(state => state.availableGames);
   const allGames = useGameStore(state => state.allGames);
@@ -20,6 +23,11 @@ export default function TablesArea() {
   const viewPreviousRound = useGameStore(state => state.viewPreviousRound);
   const viewNextRound = useGameStore(state => state.viewNextRound);
   const returnToCurrentRound = useGameStore(state => state.returnToCurrentRound);
+
+  // Set isClient to true after component mounts (client-side only)
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // State for reset confirmation dialogue
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
@@ -93,7 +101,7 @@ export default function TablesArea() {
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
       {/* Reset Confirmation Modal */}
-      {showResetConfirmation && (
+      {isClient && showResetConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Reset Round</h3>
@@ -118,47 +126,48 @@ export default function TablesArea() {
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Tables</h2>
-        <div className="flex items-center">
-          <div className="flex items-center mr-4">
-            <button
-              onClick={viewPreviousRound}
-              disabled={!hasPreviousRound}
-              className={`px-2 py-1 rounded ${
-                hasPreviousRound
-                  ? "text-blue-500 hover:text-blue-700"
-                  : "text-gray-300 cursor-not-allowed"
-              }`}
-              aria-label="Previous Round"
-            >
-              ←
-            </button>
-            <span className="mx-2">
-              {`Round ${viewingRoundIndex + 1} of ${rounds.length}`}
-              {isViewingHistory && " (History)"}
-              {!isViewingHistory && roundComplete && " (Set)"}
-            </span>
-            <button
-              onClick={viewNextRound}
-              disabled={!hasNextRound}
-              className={`px-2 py-1 rounded ${
-                hasNextRound
-                  ? "text-blue-500 hover:text-blue-700"
-                  : "text-gray-300 cursor-not-allowed"
-              }`}
-              aria-label="Next Round"
-            >
-              →
-            </button>
-            {isViewingHistory && (
+        {isClient && (
+          <div className="flex items-center">
+            <div className="flex items-center mr-4">
               <button
-                onClick={returnToCurrentRound}
-                className="ml-2 px-2 py-1 text-sm rounded bg-blue-500 hover:bg-blue-600 text-white"
+                onClick={viewPreviousRound}
+                disabled={!hasPreviousRound}
+                className={`px-2 py-1 rounded ${
+                  hasPreviousRound
+                    ? "text-blue-500 hover:text-blue-700"
+                    : "text-gray-300 cursor-not-allowed"
+                }`}
+                aria-label="Previous Round"
               >
-                Return to Current
+                ←
               </button>
-            )}
-          </div>
-          {!isViewingHistory && (
+              <span className="mx-2">
+                {`Round ${viewingRoundIndex + 1} of ${rounds.length}`}
+                {isViewingHistory && " (History)"}
+                {!isViewingHistory && roundComplete && " (Set)"}
+              </span>
+              <button
+                onClick={viewNextRound}
+                disabled={!hasNextRound}
+                className={`px-2 py-1 rounded ${
+                  hasNextRound
+                    ? "text-blue-500 hover:text-blue-700"
+                    : "text-gray-300 cursor-not-allowed"
+                }`}
+                aria-label="Next Round"
+              >
+                →
+              </button>
+              {isViewingHistory && (
+                <button
+                  onClick={returnToCurrentRound}
+                  className="ml-2 px-2 py-1 text-sm rounded bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  Return to Current
+                </button>
+              )}
+            </div>
+            {!isViewingHistory && (
             <div className="flex space-x-2">
               <button
                 onClick={handleResetRound}
@@ -183,11 +192,12 @@ export default function TablesArea() {
               </button>
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
-        {isViewingHistory 
+        {isClient && isViewingHistory 
           ? viewingRound.tableStates.map((tableState) => {
               const game = findGameById(tableState.gameId);
 
@@ -214,7 +224,7 @@ export default function TablesArea() {
                 />
               );
             })
-          : tables.map((table: Table) => {
+          : isClient && tables.map((table: Table) => {
               const game = findGameById(table.gameId);
 
               // Get the seated players for this table

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { SessionState, Player, Game, Table } from '@/types/types';
+import { loadState, saveState } from './persistence';
 
 // Sample data for initial state based on player-picks.csv
 const sampleGames: Game[] = [
@@ -68,22 +69,33 @@ const createInitialRound = (tables: Table[]): Round => {
   };
 };
 
-// Initial state
-const initialState: SessionState = {
-  players: samplePlayers,
-  // Initialize availableGames with all games that are in players' picks
-  availableGames: sampleGames.filter(game => getAllPlayerPicks(samplePlayers).includes(game.id)),
-  // Store all games for lookup purposes
-  allGames: sampleGames,
-  tables: sampleTables,
-  rounds: [createInitialRound(sampleTables)],
-  currentRoundIndex: 0,
-  viewingRoundIndex: 0,
-  isViewingHistory: false,
-  turnOrder: samplePlayers.map(player => player.id),
-  currentPlayerTurnIndex: 0,
-  draftingComplete: false,
+// Load state from localStorage or use sample data
+const loadInitialState = (): SessionState => {
+  const savedState = loadState();
+
+  if (savedState) {
+    return savedState;
+  }
+
+  // Use sample data if no saved state exists
+  return {
+    players: samplePlayers,
+    // Initialize availableGames with all games that are in players' picks
+    availableGames: sampleGames.filter(game => getAllPlayerPicks(samplePlayers).includes(game.id)),
+    // Store all games for lookup purposes
+    allGames: sampleGames,
+    tables: sampleTables,
+    rounds: [createInitialRound(sampleTables)],
+    currentRoundIndex: 0,
+    viewingRoundIndex: 0,
+    isViewingHistory: false,
+    turnOrder: samplePlayers.map(player => player.id),
+    currentPlayerTurnIndex: 0,
+    draftingComplete: false,
+  };
 };
+
+const initialState = loadInitialState();
 
 // Define the store
 interface GameStore extends SessionState {
@@ -684,3 +696,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }));
   },
 }));
+
+// Subscribe to state changes and save to localStorage
+useGameStore.subscribe((state) => {
+  saveState(state);
+});
