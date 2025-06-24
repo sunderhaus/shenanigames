@@ -330,8 +330,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       // Check if player has already assigned any of their picks to a table
       const hasAssignedPicks = state.tables.some(t => 
         t.gameId !== null && 
-        player.picks.includes(t.gameId) && 
-        t.seatedPlayerIds.includes(player.id)
+        player?.picks.includes(t.gameId) && 
+        t.seatedPlayerIds.includes(player?.id)
       );
 
       // Check if player is already seated at another table
@@ -340,7 +340,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       );
 
       // Check if the game is in the player's picks
-      const isInPlayerPicks = player.picks.includes(gameId);
+      const isInPlayerPicks = player?.picks.includes(gameId);
 
       // Check if the game was used in a previous round
       const isGameUsedInPreviousRound = state.rounds.slice(0, state.currentRoundIndex).some(round => 
