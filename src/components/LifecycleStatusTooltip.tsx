@@ -193,16 +193,32 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
 
   const statusInfo = getStatusInfo();
   const content = getContent();
+  
+  // Check if we should show the action button in header
+  const shouldShowActionInHeader = () => {
+    const currentRound = rounds[currentRoundIndex];
+    return (
+      (stage === SessionStage.SETUP && canStartFirstRound()) ||
+      (currentRound?.completed && canCreateNextRound())
+    );
+  };
+
+  // Handle status button click - always show popover
+  const handleStatusClick = () => {
+    setIsVisible(!isVisible);
+  };
 
   return (
     <div className="relative" ref={tooltipRef}>
       {/* Status Indicator Button */}
       <button
-        onClick={() => setIsVisible(!isVisible)}
-        className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium transition-colors ${statusInfo.color} hover:bg-opacity-20 hover:${statusInfo.bgColor}`}
+        onClick={handleStatusClick}
+        className={`inline-flex items-center space-x-2 rounded-full font-medium transition-colors ${statusInfo.color} hover:bg-opacity-20 hover:${statusInfo.bgColor} ${shouldShowActionInHeader() && !isVisible ? 'status-pulse' : ''} ${
+          isMobile ? 'px-2 py-1 text-xs space-x-1' : 'px-4 py-2 text-sm'
+        }`}
         aria-label="View session status"
       >
-        <span>{statusInfo.icon}</span>
+        <span className={isMobile ? 'text-xs' : 'text-base'}>{statusInfo.icon}</span>
         <span>Status</span>
       </button>
 
@@ -216,9 +232,9 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
         <div className={`
           ${isMobile 
             ? 'fixed top-20 left-4 right-4 z-50 shadow-xl bg-white bg-opacity-95 backdrop-blur-sm' 
-            : 'absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-80 z-30 shadow-lg'
+            : 'absolute top-full right-0 mt-2 w-96 z-30 shadow-lg'
           }
-          ${!isMobile ? statusInfo.bgColor : ''} border ${statusInfo.borderColor} rounded-lg p-4
+          ${!isMobile ? statusInfo.bgColor : ''} border ${statusInfo.borderColor} rounded-lg p-6
         `}>
           {/* Mobile Close Button */}
           {isMobile && (
@@ -251,7 +267,7 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
 
           {/* Desktop Tooltip Arrow */}
           {!isMobile && (
-            <div className="absolute -top-1 left-1/2 transform -translate-x-1/2">
+            <div className="absolute -top-1 right-6">
               <div className={`w-2 h-2 ${statusInfo.bgColor} border-t border-l ${statusInfo.borderColor} transform rotate-45`}></div>
             </div>
           )}

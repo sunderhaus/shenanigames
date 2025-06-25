@@ -248,17 +248,6 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                     <path d="M3 3v5h5"></path>
                   </svg>
                 </button>
-                <button
-                  onClick={handleNextRound}
-                  disabled={!roundComplete}
-                  className={`px-3 py-1 rounded text-sm ${
-                    roundComplete
-                      ? "bg-blue-500 hover:bg-blue-600 text-white"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  Next
-                </button>
               </div>
             )}
             </div>

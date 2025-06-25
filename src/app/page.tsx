@@ -77,12 +77,10 @@ export default function Home() {
               </div>
               <div className="flex-1 text-center">
                 <h1 className="text-3xl font-bold">Shenanigames</h1>
-                <div className="flex items-center justify-center space-x-2">
-                  <p className="text-gray-600">Ellijay Edition</p>
-                  <LifecycleStatusTooltip isMobile={isMobile} />
-                </div>
               </div>
-              <div className="w-16"></div>
+              <div className="w-16 flex justify-end">
+                <LifecycleStatusTooltip isMobile={isMobile} />
+              </div>
             </div>
           </header>
 

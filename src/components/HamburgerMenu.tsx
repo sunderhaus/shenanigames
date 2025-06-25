@@ -88,31 +88,10 @@ export default function HamburgerMenu() {
 
           {/* Menu Content */}
           <div className="space-y-6">
-            {/* Session Management */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-gray-700">Session Management</h3>
-              <div>
-                <SessionSelector />
-              </div>
-            </div>
-
             {/* Navigation */}
             <div>
               <h3 className="text-lg font-semibold mb-3 text-gray-700">Navigation</h3>
               <div className="space-y-2">
-                <Link
-                  href="/library"
-                  className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <span>Game Library</span>
-                  </div>
-                </Link>
-                
                 <Link
                   href="/"
                   className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
@@ -123,9 +102,29 @@ export default function HamburgerMenu() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h2a2 2 0 012 2v0H8v0z" />
                     </svg>
-                    <span>Draft Session</span>
+                    <span>Tables</span>
                   </div>
                 </Link>
+                <Link
+                    href="/library"
+                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                    onClick={() => setIsOpen(false)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span>Game Library</span>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            {/* Session Management */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-gray-700">Session Management</h3>
+              <div>
+                <SessionSelector />
               </div>
             </div>
 
