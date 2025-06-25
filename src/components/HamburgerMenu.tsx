@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import SessionSelector from './SessionSelector';
-import SessionStageManager from './SessionStageManager';
 
 export default function HamburgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -92,9 +91,8 @@ export default function HamburgerMenu() {
             {/* Session Management */}
             <div>
               <h3 className="text-lg font-semibold mb-3 text-gray-700">Session Management</h3>
-              <div className="space-y-4">
+              <div>
                 <SessionSelector />
-                <SessionStageManager />
               </div>
             </div>
 

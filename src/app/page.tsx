@@ -6,6 +6,7 @@ import DragAndDropProvider from '../components/DragAndDropProvider';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import HamburgerMenu from '../components/HamburgerMenu';
 import PickRequirements from '../components/PickRequirements';
+import LifecycleStatusTooltip from '../components/LifecycleStatusTooltip';
 import { useState, useEffect } from 'react';
 import { useSessionGameStore } from '../store/session-store';
 import { useSessionManager } from '../store/session-manager';
@@ -76,7 +77,10 @@ export default function Home() {
               </div>
               <div className="flex-1 text-center">
                 <h1 className="text-3xl font-bold">Shenanigames</h1>
-                <p className="text-gray-600">Ellijay Edition</p>
+                <div className="flex items-center justify-center space-x-2">
+                  <p className="text-gray-600">Ellijay Edition</p>
+                  <LifecycleStatusTooltip isMobile={isMobile} />
+                </div>
               </div>
               <div className="w-16"></div>
             </div>
