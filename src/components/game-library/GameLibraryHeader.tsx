@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import HamburgerMenu from '../HamburgerMenu';
 
 interface GameLibraryHeaderProps {
   totalGames: number;
@@ -25,14 +26,17 @@ export default function GameLibraryHeader({
 }: GameLibraryHeaderProps) {
   return (
     <div className="mb-6">
-      {/* Navigation breadcrumb */}
-      <nav className="mb-4 text-sm text-gray-600">
-        <Link href="/" className="hover:text-blue-600">
-          Shenanigames
-        </Link>
-        <span className="mx-2">›</span>
-        <span className="text-gray-900">Game Library</span>
-      </nav>
+      {/* Header with hamburger menu */}
+      <div className="mb-4 flex items-center">
+        <div className="w-16 flex justify-start">
+          <HamburgerMenu />
+        </div>
+        <div className="flex-1 text-center">
+          <h1 className="text-2xl font-bold">Shenanigames</h1>
+          <p className="text-sm text-gray-600">Game Library</p>
+        </div>
+        <div className="w-16"></div>
+      </div>
 
       {/* Main header */}
       <div className="bg-white rounded-lg shadow-md p-6">

@@ -4,9 +4,8 @@ import PlayerInfo from '../components/PlayerInfo';
 import TablesArea from '../components/TablesArea';
 import DragAndDropProvider from '../components/DragAndDropProvider';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
-import SessionSelector from '../components/SessionSelector';
+import HamburgerMenu from '../components/HamburgerMenu';
 import PickRequirements from '../components/PickRequirements';
-import SessionStageManager from '../components/SessionStageManager';
 import { useState, useEffect } from 'react';
 import { useSessionGameStore } from '../store/session-store';
 import { useSessionManager } from '../store/session-manager';
@@ -71,23 +70,20 @@ export default function Home() {
       <main className={`min-h-screen p-4 ${isMobile && allTablesHaveGames ? 'pb-56' : 'pb-52'} bg-gray-100`}>
         <div className="container mx-auto">
           <header className="mb-8 sticky top-0 bg-gray-100 z-30 pt-2 pb-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <SessionSelector />
+            <div className="flex items-center mb-4">
+              <div className="w-16 flex justify-start">
+                <HamburgerMenu />
               </div>
               <div className="flex-1 text-center">
                 <h1 className="text-3xl font-bold">Shenanigames</h1>
                 <p className="text-gray-600">Ellijay Edition</p>
               </div>
-              <div className="flex-1"></div>
+              <div className="w-16"></div>
             </div>
           </header>
 
           {/* Pick Requirements Warning */}
           <PickRequirements />
-          
-          {/* Session Stage Management */}
-          <SessionStageManager />
 
           <DragAndDropProvider>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

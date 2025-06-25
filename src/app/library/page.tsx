@@ -9,6 +9,7 @@ import GameLibraryGrid from '@/components/game-library/GameLibraryGrid';
 import GameLibraryStats from '@/components/game-library/GameLibraryStats';
 import AddGameModal from '@/components/game-library/AddGameModal';
 import ImportCSVModal from '@/components/game-library/ImportCSVModal';
+import HamburgerMenu from '@/components/HamburgerMenu';
 
 export default function GameLibraryPage() {
   const [isClient, setIsClient] = useState(false);
