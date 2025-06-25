@@ -347,13 +347,21 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       // Check if the game is in the player's picks
       const isInPlayerPicks = player?.picks.includes(gameId);
 
+      // During SETUP, prevent placing games until all players have exactly 2 picks
+      const canPlaceDuringSetup = state.stage !== SessionStage.SETUP || 
+        state.players.every(p => p.picks && p.picks.length === 2);
+
       // Validate the action - if table already has a game, don't proceed
-      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isPlayerSeatedAtAnotherTable) {
+      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isPlayerSeatedAtAnotherTable || !canPlaceDuringSetup) {
         return state; // Invalid action, return unchanged state
       }
 
       // If we reach here, the place operation is valid
       placeSucceeded = true;
+
+      // Check if this is the first game being placed and we're in SETUP stage
+      const isFirstGamePlacement = state.stage === SessionStage.SETUP && 
+        state.tables.every(table => table.gameId === null);
 
       // Update the state
       const updatedTables = state.tables.map(t => 
@@ -455,6 +463,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         players: updatedPlayers,
         availableGames: updatedAvailableGames,
         rounds: updatedRounds,
+        // Transition from SETUP to FIRST_ROUND when first game is placed
+        stage: isFirstGamePlacement ? SessionStage.FIRST_ROUND : state.stage,
         // Don't update currentPlayerTurnIndex here, we'll use advanceTurn instead
         turnOrder: state.turnOrder, // Don't rotate turn order here, only at the end of a round
       };
