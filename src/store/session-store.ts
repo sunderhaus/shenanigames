@@ -46,6 +46,11 @@ interface SessionGameStore extends SessionState {
   // Session management actions
   loadCurrentSession: () => void;
   hasActiveSession: () => boolean;
+  
+  // Player management actions
+  addPlayer: (name: string, icon?: string) => string | null;
+  removePlayer: (playerId: string) => boolean;
+  updatePlayer: (playerId: string, updates: { name?: string; icon?: string }) => boolean;
 }
 
 // Get the current session state or return a default empty state
@@ -763,6 +768,178 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       saveCurrentSessionState(newState);
       return newState;
     });
+  },
+
+  // Add a new player to the session
+  addPlayer: (name: string, icon?: string) => {
+    if (!name.trim()) {
+      console.error('Player name cannot be empty');
+      return null;
+    }
+
+    let newPlayerId: string | null = null;
+
+    set(state => {
+      // Check if a player with this name already exists
+      if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase().trim())) {
+        console.error('A player with this name already exists');
+        return state;
+      }
+
+      // Generate a unique ID for the new player
+      newPlayerId = crypto.randomUUID();
+
+      // Available icons to choose from if none provided
+      const availableIcons = ['🐯', '🐼', '🦁', '🦊', '🐸', '🐱', '🐶', '🐺', '🦝', '🐰', '🐹', '🐭', '🐷', '🐮', '🐵'];
+      const usedIcons = state.players.map(p => p.icon);
+      const unusedIcons = availableIcons.filter(icon => !usedIcons.includes(icon));
+      
+      const playerIcon = icon || (unusedIcons.length > 0 ? unusedIcons[0] : availableIcons[Math.floor(Math.random() * availableIcons.length)]);
+
+      // Create the new player
+      const newPlayer = {
+        id: newPlayerId,
+        name: name.trim(),
+        icon: playerIcon,
+        selectionsMade: 0,
+        picks: [], // Start with empty picks - can be assigned later
+        actionTakenInCurrentRound: false
+      };
+
+      // Add the new player to the players array
+      const updatedPlayers = [...state.players, newPlayer];
+
+      // Add the new player to the end of the turn order
+      const updatedTurnOrder = [...state.turnOrder, newPlayerId];
+
+      const newState = {
+        ...state,
+        players: updatedPlayers,
+        turnOrder: updatedTurnOrder
+      };
+
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+
+    return newPlayerId;
+  },
+
+  // Remove a player from the session
+  removePlayer: (playerId: string) => {
+    let removeSucceeded = false;
+
+    set(state => {
+      // Check if player exists
+      const playerIndex = state.players.findIndex(p => p.id === playerId);
+      if (playerIndex === -1) {
+        console.error('Player not found');
+        return state;
+      }
+
+      // Check if player is currently seated at any table
+      const isPlayerSeated = state.tables.some(table => table.seatedPlayerIds.includes(playerId));
+      if (isPlayerSeated) {
+        console.error('Cannot remove player who is currently seated at a table');
+        return state;
+      }
+
+      // Don't allow removing the last player
+      if (state.players.length <= 1) {
+        console.error('Cannot remove the last player');
+        return state;
+      }
+
+      removeSucceeded = true;
+
+      // Remove the player from the players array
+      const updatedPlayers = state.players.filter(p => p.id !== playerId);
+
+      // Remove the player from the turn order
+      const updatedTurnOrder = state.turnOrder.filter(id => id !== playerId);
+
+      // Adjust current player turn index if necessary
+      const currentPlayerTurnIndex = state.currentPlayerTurnIndex;
+      const removedPlayerTurnIndex = state.turnOrder.findIndex(id => id === playerId);
+      
+      let newCurrentPlayerTurnIndex = currentPlayerTurnIndex;
+      
+      if (removedPlayerTurnIndex <= currentPlayerTurnIndex && currentPlayerTurnIndex > 0) {
+        // If we removed a player before or at the current player's position, decrement the index
+        newCurrentPlayerTurnIndex = currentPlayerTurnIndex - 1;
+      } else if (currentPlayerTurnIndex >= updatedTurnOrder.length) {
+        // If the current index is now out of bounds, wrap to the beginning
+        newCurrentPlayerTurnIndex = 0;
+      }
+
+      const newState = {
+        ...state,
+        players: updatedPlayers,
+        turnOrder: updatedTurnOrder,
+        currentPlayerTurnIndex: newCurrentPlayerTurnIndex
+      };
+
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+
+    return removeSucceeded;
+  },
+
+  // Update player information
+  updatePlayer: (playerId: string, updates: { name?: string; icon?: string }) => {
+    let updateSucceeded = false;
+
+    set(state => {
+      // Check if player exists
+      const playerIndex = state.players.findIndex(p => p.id === playerId);
+      if (playerIndex === -1) {
+        console.error('Player not found');
+        return state;
+      }
+
+      // If updating name, check for duplicates
+      if (updates.name) {
+        const trimmedName = updates.name.trim();
+        if (!trimmedName) {
+          console.error('Player name cannot be empty');
+          return state;
+        }
+
+        // Check if another player already has this name
+        if (state.players.some(p => p.id !== playerId && p.name.toLowerCase() === trimmedName.toLowerCase())) {
+          console.error('A player with this name already exists');
+          return state;
+        }
+      }
+
+      updateSucceeded = true;
+
+      // Update the player
+      const updatedPlayers = state.players.map(player => {
+        if (player.id === playerId) {
+          return {
+            ...player,
+            ...(updates.name && { name: updates.name.trim() }),
+            ...(updates.icon && { icon: updates.icon })
+          };
+        }
+        return player;
+      });
+
+      const newState = {
+        ...state,
+        players: updatedPlayers
+      };
+
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+
+    return updateSucceeded;
   },
 }));
 
