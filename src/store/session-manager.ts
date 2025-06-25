@@ -70,8 +70,8 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
       const player = players.find(p => p.name === playerName);
       if (player && Array.isArray(gameIndices)) {
         player.picks = gameIndices
-          .map(index => games[index]?.id)
-          .filter(Boolean);
+          .map(index => typeof index === 'number' ? games[index]?.id : undefined)
+          .filter(Boolean) as string[];
       }
     });
   }

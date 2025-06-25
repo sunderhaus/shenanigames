@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useSessionManager } from '@/store/session-manager';
 import { useSessionGameStore } from '@/store/session-store';
 import { SessionMetadata } from '@/types/session-types';
@@ -193,15 +194,24 @@ const SessionSelector: React.FC = () => {
           </div>
 
           <div className="p-3 border-t border-gray-200">
-            <button
-              onClick={() => {
-                refreshSessionList();
-                setIsOpen(false);
-              }}
-              className="text-xs text-gray-500 hover:text-gray-700"
-            >
-              Refresh Sessions
-            </button>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => {
+                  refreshSessionList();
+                  setIsOpen(false);
+                }}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Refresh Sessions
+              </button>
+              <Link
+                href="/library"
+                onClick={() => setIsOpen(false)}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                📚 Game Library
+              </Link>
+            </div>
           </div>
         </div>
       )}
