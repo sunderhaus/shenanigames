@@ -2,7 +2,7 @@ import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Player } from '../types/types';
 import { DraggableType, DraggableItem } from './DragAndDropProvider';
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 
 interface DraggablePlayerProps {
   player: Player;
@@ -19,7 +19,7 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
   onPassTurn,
   allPlayersHaveActed = false
 }) => {
-  const draftingComplete = useGameStore(state => state.draftingComplete);
+  const draftingComplete = useSessionGameStore(state => state.draftingComplete);
 
   // Determine if the player is draggable
   // A player is draggable if:

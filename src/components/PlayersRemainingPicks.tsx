@@ -1,6 +1,6 @@
 'use client';
 
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 import { Game } from '../types/types';
 import DraggableGame from './DraggableGame';
 import { useEffect, useState } from 'react';
@@ -14,11 +14,11 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
   const [isClient, setIsClient] = useState(false);
 
   // Get state from the store
-  const availableGames = useGameStore(state => state.availableGames);
-  const players = useGameStore(state => state.players);
-  const turnOrder = useGameStore(state => state.turnOrder);
-  const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
-  const tables = useGameStore(state => state.tables);
+  const availableGames = useSessionGameStore(state => state.availableGames);
+  const players = useSessionGameStore(state => state.players);
+  const turnOrder = useSessionGameStore(state => state.turnOrder);
+  const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
+  const tables = useSessionGameStore(state => state.tables);
 
   // Set isClient to true after component mounts (client-side only)
   useEffect(() => {

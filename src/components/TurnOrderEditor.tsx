@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 import { Player } from '../types/types';
 import { DraggableType, DraggableItem } from './DragAndDropProvider';
 import { useDraggable, useDroppable, DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';

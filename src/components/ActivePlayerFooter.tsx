@@ -1,6 +1,6 @@
 'use client';
 
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 import { useState, useEffect } from 'react';
 import DraggablePlayer from './DraggablePlayer';
 import PlayersRemainingPicks from './PlayersRemainingPicks';
@@ -10,12 +10,12 @@ export default function ActivePlayerFooter() {
   const [isClient, setIsClient] = useState(false);
 
   // Get state from the store
-  const players = useGameStore(state => state.players);
-  const turnOrder = useGameStore(state => state.turnOrder);
-  const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
-  const draftingComplete = useGameStore(state => state.draftingComplete);
-  const passTurn = useGameStore(state => state.passTurn);
-  const tables = useGameStore(state => state.tables);
+  const players = useSessionGameStore(state => state.players);
+  const turnOrder = useSessionGameStore(state => state.turnOrder);
+  const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
+  const draftingComplete = useSessionGameStore(state => state.draftingComplete);
+  const passTurn = useSessionGameStore(state => state.passTurn);
+  const tables = useSessionGameStore(state => state.tables);
 
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);

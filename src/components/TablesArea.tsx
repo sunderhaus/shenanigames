@@ -1,6 +1,6 @@
 'use client';
 
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 import { Table, Game, Player } from '../types/types';
 import DroppableTable from './DroppableTable';
 import { useState, useEffect, useRef, TouchEvent } from 'react';
@@ -18,20 +18,20 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const swipeContainerRef = useRef<HTMLDivElement>(null);
 
-  const tables = useGameStore(state => state.tables);
-  const availableGames = useGameStore(state => state.availableGames);
-  const allGames = useGameStore(state => state.allGames);
-  const players = useGameStore(state => state.players);
-  const rounds = useGameStore(state => state.rounds);
-  const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
-  const viewingRoundIndex = useGameStore(state => state.viewingRoundIndex);
-  const isViewingHistory = useGameStore(state => state.isViewingHistory);
-  const isRoundComplete = useGameStore(state => state.isRoundComplete);
-  const createNewRound = useGameStore(state => state.createNewRound);
-  const resetRound = useGameStore(state => state.resetRound);
-  const viewPreviousRound = useGameStore(state => state.viewPreviousRound);
-  const viewNextRound = useGameStore(state => state.viewNextRound);
-  const returnToCurrentRound = useGameStore(state => state.returnToCurrentRound);
+  const tables = useSessionGameStore(state => state.tables);
+  const availableGames = useSessionGameStore(state => state.availableGames);
+  const allGames = useSessionGameStore(state => state.allGames);
+  const players = useSessionGameStore(state => state.players);
+  const rounds = useSessionGameStore(state => state.rounds);
+  const currentRoundIndex = useSessionGameStore(state => state.currentRoundIndex);
+  const viewingRoundIndex = useSessionGameStore(state => state.viewingRoundIndex);
+  const isViewingHistory = useSessionGameStore(state => state.isViewingHistory);
+  const isRoundComplete = useSessionGameStore(state => state.isRoundComplete);
+  const createNewRound = useSessionGameStore(state => state.createNewRound);
+  const resetRound = useSessionGameStore(state => state.resetRound);
+  const viewPreviousRound = useSessionGameStore(state => state.viewPreviousRound);
+  const viewNextRound = useSessionGameStore(state => state.viewNextRound);
+  const returnToCurrentRound = useSessionGameStore(state => state.returnToCurrentRound);
 
   // Set isClient to true after component mounts (client-side only)
   useEffect(() => {

@@ -1,14 +1,14 @@
 'use client';
 
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 import { Game } from '../types/types';
 import DraggableGame from './DraggableGame';
 
 export default function AvailableGamesList() {
-  const availableGames = useGameStore(state => state.availableGames);
-  const players = useGameStore(state => state.players);
-  const turnOrder = useGameStore(state => state.turnOrder);
-  const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
+  const availableGames = useSessionGameStore(state => state.availableGames);
+  const players = useSessionGameStore(state => state.players);
+  const turnOrder = useSessionGameStore(state => state.turnOrder);
+  const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
 
   // Get the current player
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];

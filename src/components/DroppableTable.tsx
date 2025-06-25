@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, TouchEvent } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Table, Game, Player } from '../types/types';
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 import { useAnimation } from './AnimationProvider';
 
 interface DroppableTableProps {
@@ -12,11 +12,11 @@ interface DroppableTableProps {
 }
 
 const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlayers, isReadOnly = false }) => {
-  const turnOrder = useGameStore(state => state.turnOrder);
-  const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
-  const draftingComplete = useGameStore(state => state.draftingComplete);
-  const players = useGameStore(state => state.players);
-  const joinGame = useGameStore(state => state.joinGame);
+  const turnOrder = useSessionGameStore(state => state.turnOrder);
+  const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
+  const draftingComplete = useSessionGameStore(state => state.draftingComplete);
+  const players = useSessionGameStore(state => state.players);
+  const joinGame = useSessionGameStore(state => state.joinGame);
   const { animatePlayerToTable } = useAnimation();
 
   // State to track clicks for double-click detection

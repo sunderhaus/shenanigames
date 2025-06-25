@@ -2,18 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Game } from '../types/types';
 import { DraggableType, DraggableItem } from './DragAndDropProvider';
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 
 interface DraggableGameProps {
   game: Game;
 }
 
 const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
-  const turnOrder = useGameStore(state => state.turnOrder);
-  const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
-  const draftingComplete = useGameStore(state => state.draftingComplete);
-  const players = useGameStore(state => state.players);
-  const placeGame = useGameStore(state => state.placeGame);
+  const turnOrder = useSessionGameStore(state => state.turnOrder);
+  const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
+  const draftingComplete = useSessionGameStore(state => state.draftingComplete);
+  const players = useSessionGameStore(state => state.players);
+  const placeGame = useSessionGameStore(state => state.placeGame);
 
   // State to track clicks for double-click detection
   const [lastClickTime, setLastClickTime] = useState<number | null>(null);
@@ -25,9 +25,9 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
   const currentPlayer = players.find(p => p.id === currentPlayerId);
 
   // Get tables to check if player has already assigned picks
-  const tables = useGameStore(state => state.tables);
-  const rounds = useGameStore(state => state.rounds);
-  const currentRoundIndex = useGameStore(state => state.currentRoundIndex);
+  const tables = useSessionGameStore(state => state.tables);
+  const rounds = useSessionGameStore(state => state.rounds);
+  const currentRoundIndex = useSessionGameStore(state => state.currentRoundIndex);
 
   // Handle click on the game card
   const handleGameClick = () => {

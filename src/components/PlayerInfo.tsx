@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 import { Player } from '../types/types';
 import DraggablePlayer from './DraggablePlayer';
 import TurnOrderEditor, { TurnOrderForm } from './TurnOrderEditor';
@@ -10,11 +10,11 @@ export default function PlayerInfo() {
   const [isEditingTurnOrder, setIsEditingTurnOrder] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  const players = useGameStore(state => state.players);
-  const turnOrder = useGameStore(state => state.turnOrder);
-  const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
-  const draftingComplete = useGameStore(state => state.draftingComplete);
-  const passTurn = useGameStore(state => state.passTurn);
+  const players = useSessionGameStore(state => state.players);
+  const turnOrder = useSessionGameStore(state => state.turnOrder);
+  const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
+  const draftingComplete = useSessionGameStore(state => state.draftingComplete);
+  const passTurn = useSessionGameStore(state => state.passTurn);
 
   // Set isClient to true after component mounts (client-side only)
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function PlayerInfo() {
             <TurnOrderForm 
               players={players}
               turnOrder={turnOrder}
-              updateTurnOrder={useGameStore.getState().updateTurnOrder}
+              updateTurnOrder={useSessionGameStore.getState().updateTurnOrder}
               currentPlayerTurnIndex={currentPlayerTurnIndex}
               setIsEditing={setIsEditingTurnOrder}
             />

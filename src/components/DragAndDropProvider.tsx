@@ -1,6 +1,6 @@
 import React from 'react';
 import { DndContext, DragEndEvent, DragStartEvent, DragOverEvent, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
-import { useGameStore } from '../store/store';
+import { useSessionGameStore } from '../store/session-store';
 
 // Define the types of draggable items
 export enum DraggableType {
@@ -20,11 +20,11 @@ interface DragAndDropProviderProps {
 }
 
 export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ children }) => {
-  const placeGame = useGameStore(state => state.placeGame);
-  const joinGame = useGameStore(state => state.joinGame);
-  const turnOrder = useGameStore(state => state.turnOrder);
-  const currentPlayerTurnIndex = useGameStore(state => state.currentPlayerTurnIndex);
-  const draftingComplete = useGameStore(state => state.draftingComplete);
+  const placeGame = useSessionGameStore(state => state.placeGame);
+  const joinGame = useSessionGameStore(state => state.joinGame);
+  const turnOrder = useSessionGameStore(state => state.turnOrder);
+  const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
+  const draftingComplete = useSessionGameStore(state => state.draftingComplete);
 
   // Get the current player's ID
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
