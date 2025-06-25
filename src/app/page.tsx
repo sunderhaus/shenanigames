@@ -77,6 +77,7 @@ export default function Home() {
               </div>
               <div className="flex-1 text-center">
                 <h1 className="text-3xl font-bold">Shenanigames</h1>
+                <p className="text-gray-600">Ellijay Edition</p>
               </div>
               <div className="w-16 flex justify-end">
                 <LifecycleStatusTooltip isMobile={isMobile} />
@@ -88,15 +89,15 @@ export default function Home() {
           <PickRequirements />
 
           <DragAndDropProvider>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Main content - Tables */}
-              <div className={`${isMobile ? `fixed inset-0 pt-20 ${allTablesHaveGames ? 'pb-56' : 'pb-52'} px-4 mt-0` : ''}`}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main content - Tables (2/3rds width) */}
+              <div className={`${isMobile ? `fixed inset-0 pt-20 ${allTablesHaveGames ? 'pb-56' : 'pb-52'} px-4 mt-0` : 'lg:col-span-2'}`}>
                 <TablesArea isMobile={isMobile} />
               </div>
 
-              {/* Right sidebar - Players with Remaining Picks (hidden on mobile) */}
+              {/* Right sidebar - Players with Remaining Picks (1/3rd width, hidden on mobile) */}
               {!isMobile && (
-                <div>
+                <div className="lg:col-span-1">
                   <PlayerInfo />
                 </div>
               )}

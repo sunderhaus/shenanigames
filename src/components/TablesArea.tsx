@@ -267,7 +267,7 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
         >
           {isClient && tables.length > 0 && (
             <>
-              <div className="flex-grow flex flex-col justify-center items-center relative overflow-hidden">
+              <div className="flex-grow flex flex-col justify-center items-center relative" style={{ padding: '8px 4px' }}>
                 {/* Current table */}
                 {isClient && !isViewingHistory && tables[currentTableIndex] && (() => {
                   const table = tables[currentTableIndex];

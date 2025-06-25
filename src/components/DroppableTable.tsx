@@ -220,28 +220,28 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         <div className="absolute inset-0 flex items-center justify-center bg-blue-100 bg-opacity-40 rounded">
         </div>
       )}
-      <h3 className="font-medium text-center mb-2">{game ? game.title : table.id}</h3>
+      <h3 className={`font-bold text-center ${game ? 'mb-3 text-lg' : 'mb-2 text-xl'}`}>{game ? game.title : table.id}</h3>
 
       {game ? (
-        <div className="text-center">
+        <div className="text-center flex-1 flex flex-col justify-between">
           {game.image && (
-            <div className="mb-2 w-full game-image-container">
+            <div className="mb-4 w-full game-image-container">
               <img 
                 src={game.image} 
                 alt={game.title} 
                 className="game-image w-full h-auto"
-                style={{ maxHeight: '120px' }}
+                style={{ maxHeight: '160px' }}
               />
             </div>
           )}
 
-          <div className="mb-2">
-            <span className="text-sm text-gray-500">
+          <div className="mb-3">
+            <span className="text-base font-medium text-gray-600">
               {table.seatedPlayerIds.length}/{game.maxPlayers} Players
             </span>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-1">
+          <div className="flex flex-wrap justify-center gap-2">
             {seatedPlayers.map(player => (
               <div 
                 key={player.id} 

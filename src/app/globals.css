@@ -114,6 +114,8 @@ main {
 
 .table-card.has-game {
   border: 2px solid #4a5568;
+  padding: 1rem; /* Keep full padding for visual presence */
+  justify-content: space-between; /* Distribute content evenly */
 }
 
 /* Player tile styles */
@@ -352,6 +354,8 @@ main {
   .table-card {
     padding: 0.75rem; /* Reduced padding */
     width: 95%; /* Slightly narrower to prevent clipping */
+    aspect-ratio: unset; /* Remove square constraint on mobile */
+    height: 100%; /* Use full available height */
   }
 
   /* Swipe indicators */
