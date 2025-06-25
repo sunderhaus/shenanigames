@@ -130,6 +130,17 @@ export default function GameLibraryHeader({
             </div>
           </div>
         </div>
+
+        {/* Navigation breadcrumb */}
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <nav className="text-sm text-gray-500">
+            <Link href="/" className="hover:text-gray-700">Tables</Link>
+            <span className="mx-2">•</span>
+            <span className="text-gray-900 font-medium">Game Library</span>
+            <span className="mx-2">•</span>
+            <Link href="/collections" className="hover:text-gray-700">Collections</Link>
+          </nav>
+        </div>
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import PlayerInfo from '../components/PlayerInfo';
 import TablesArea from '../components/TablesArea';
 import TablesHeader from '../components/TablesHeader';
+import RoundControls from '../components/RoundControls';
 import DragAndDropProvider from '../components/DragAndDropProvider';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import HamburgerMenu from '../components/HamburgerMenu';
@@ -103,23 +105,50 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        // Desktop Layout: Original structure
+        // Desktop Layout: Consistent header structure
         <main className="min-h-screen p-4 bg-gray-100">
-          <div className="container mx-auto">
-            <header className="mb-8 sticky top-0 bg-gray-100 z-30 pt-2 pb-4">
-              <div className="flex items-center mb-4">
+          <div className="container mx-auto max-w-7xl">
+            {/* Header with consistent styling */}
+            <div className="mb-6">
+              {/* Header with hamburger menu */}
+              <div className="mb-4 flex items-center">
                 <div className="w-16 flex justify-start">
                   <HamburgerMenu />
                 </div>
                 <div className="flex-1 text-center">
-                  <h1 className="text-3xl font-bold">Shenanigames</h1>
-                  <p className="text-gray-600">Ellijay Edition</p>
+                  <h1 className="text-2xl font-bold">Shenanigames</h1>
+                  <p className="text-sm text-gray-600">Tables</p>
                 </div>
-                <div className="w-16 flex justify-end">
-                  <LifecycleStatusTooltip isMobile={isMobile} />
+                <div className="w-16"></div>
+              </div>
+
+              {/* Main header card */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  {/* Title and current session info */}
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Tables</h1>
+                    <p className="text-gray-600">
+                      Game drafting and table management
+                    </p>
+                  </div>
+
+                  {/* Round navigation controls */}
+                  <RoundControls />
+                </div>
+
+                {/* Navigation breadcrumb */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <nav className="text-sm text-gray-500">
+                    <span className="text-gray-900 font-medium">Tables</span>
+                    <span className="mx-2">•</span>
+                    <Link href="/library" className="hover:text-gray-700">Game Library</Link>
+                    <span className="mx-2">•</span>
+                    <Link href="/collections" className="hover:text-gray-700">Collections</Link>
+                  </nav>
                 </div>
               </div>
-            </header>
+            </div>
 
             {/* Pick Requirements Warning */}
             <PickRequirements />
