@@ -2,11 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import SessionSelector from './SessionSelector';
+import { SessionManagementModal } from './SessionManagementModal';
+import { useSessionManager } from '@/store/session-manager';
 
 export default function HamburgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { sessionList, currentSessionId } = useSessionManager();
+  
+  const currentSession = sessionList.find(s => s.id === currentSessionId);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -64,11 +69,11 @@ export default function HamburgerMenu() {
 
       {/* Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setIsOpen(false)} />
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[100]" onClick={() => setIsOpen(false)} />
       )}
 
       {/* Menu Panel */}
-      <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
+      <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-[110] ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="p-6">
@@ -135,8 +140,23 @@ export default function HamburgerMenu() {
             {/* Session Management */}
             <div>
               <h3 className="text-lg font-semibold mb-3 text-gray-700">Session Management</h3>
-              <div>
-                <SessionSelector />
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="mb-3">
+                  <div className="text-sm text-gray-600">Current Session:</div>
+                  <div className="font-medium text-gray-800">{currentSession?.name || 'No session'}</div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Last modified: {currentSession ? new Date(currentSession.lastModified).toLocaleDateString() : 'N/A'}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsSessionModalOpen(true);
+                    setIsOpen(false);
+                  }}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Manage Sessions
+                </button>
               </div>
             </div>
 
@@ -151,6 +171,12 @@ export default function HamburgerMenu() {
           </div>
         </div>
       </div>
+      
+      {/* Session Management Modal */}
+      <SessionManagementModal 
+        isOpen={isSessionModalOpen}
+        onClose={() => setIsSessionModalOpen(false)}
+      />
     </div>
   );
 }
