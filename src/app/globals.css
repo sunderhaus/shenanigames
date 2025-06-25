@@ -306,6 +306,17 @@ main {
   position: relative;
 }
 
+/* Prevent drag operations on read-only tables but allow other interactions */
+.read-only-table .game-card,
+.read-only-table .player-token {
+  pointer-events: none;
+}
+
+/* Ensure edit button remains clickable in read-only mode */
+.read-only-table button {
+  pointer-events: auto !important;
+}
+
 .read-only-table::after {
   content: 'History';
   position: absolute;

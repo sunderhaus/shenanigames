@@ -31,10 +31,16 @@ export default function GameSessionEditor({
   // Initialize form with current session data
   useEffect(() => {
     if (currentSession?.gameStartedAt) {
-      setGameStartedAt(formatDateTimeForInput(currentSession.gameStartedAt));
+      const startDate = currentSession.gameStartedAt instanceof Date 
+        ? currentSession.gameStartedAt 
+        : new Date(currentSession.gameStartedAt);
+      setGameStartedAt(formatDateTimeForInput(startDate));
     }
     if (currentSession?.gameEndedAt) {
-      setGameEndedAt(formatDateTimeForInput(currentSession.gameEndedAt));
+      const endDate = currentSession.gameEndedAt instanceof Date 
+        ? currentSession.gameEndedAt 
+        : new Date(currentSession.gameEndedAt);
+      setGameEndedAt(formatDateTimeForInput(endDate));
     }
   }, [currentSession]);
 
@@ -66,13 +72,25 @@ export default function GameSessionEditor({
 
     // Update start time
     const newStartTime = parseDateTimeInput(gameStartedAt);
-    if (newStartTime?.getTime() !== currentSession?.gameStartedAt?.getTime()) {
+    const currentStartTime = currentSession?.gameStartedAt 
+      ? (currentSession.gameStartedAt instanceof Date 
+          ? currentSession.gameStartedAt 
+          : new Date(currentSession.gameStartedAt))
+      : null;
+    
+    if (newStartTime?.getTime() !== currentStartTime?.getTime()) {
       sessionUpdate.gameStartedAt = newStartTime;
     }
 
     // Update end time
     const newEndTime = parseDateTimeInput(gameEndedAt);
-    if (newEndTime?.getTime() !== currentSession?.gameEndedAt?.getTime()) {
+    const currentEndTime = currentSession?.gameEndedAt 
+      ? (currentSession.gameEndedAt instanceof Date 
+          ? currentSession.gameEndedAt 
+          : new Date(currentSession.gameEndedAt))
+      : null;
+    
+    if (newEndTime?.getTime() !== currentEndTime?.getTime()) {
       sessionUpdate.gameEndedAt = newEndTime;
     }
 
@@ -174,7 +192,12 @@ export default function GameSessionEditor({
               </label>
               <input
                 type="text"
-                value={new Date(currentSession.gamePickedAt).toLocaleString()}
+                value={(() => {
+                  const pickDate = currentSession.gamePickedAt instanceof Date 
+                    ? currentSession.gamePickedAt 
+                    : new Date(currentSession.gamePickedAt);
+                  return pickDate.toLocaleString();
+                })()}
                 readOnly
                 className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
               />

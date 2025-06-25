@@ -209,7 +209,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         transform: recentlyClicked || isLongPressing ? 'scale(1.015)' : 'scale(1)', /* Reduced scale factor to prevent viewport clipping */
         boxShadow: recentlyClicked ? '0 0 8px rgba(59, 130, 246, 0.5)' : isLongPressing ? '0 0 12px rgba(59, 130, 246, 0.7)' : '',
         opacity: isReadOnly ? 0.85 : 1,
-        pointerEvents: isReadOnly ? 'none' : 'auto',
+        pointerEvents: 'auto', // Always allow pointer events so edit button works
         border: isReadOnly ? '1px dashed #ccc' : '',
         position: 'relative'
       }}
@@ -307,23 +307,48 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
                 );
               })()}
               
-              {table.gameSession.gamePickedAt && (
-                <div className="text-center text-gray-600">
-                  <div>Picked: {new Date(table.gameSession.gamePickedAt).toLocaleDateString()}</div>
-                  <div>{new Date(table.gameSession.gamePickedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                </div>
-              )}
+              {table.gameSession.gamePickedAt && (() => {
+                const pickDate = table.gameSession.gamePickedAt instanceof Date 
+                  ? table.gameSession.gamePickedAt 
+                  : new Date(table.gameSession.gamePickedAt);
+                return (
+                  <div className="text-center text-gray-600">
+                    <div>Picked: {pickDate.toLocaleDateString()}</div>
+                    <div>{pickDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  </div>
+                );
+              })()}
               
-              {(table.gameSession.gameStartedAt || table.gameSession.gameEndedAt) && (
-                <div className="text-center text-gray-600">
-                  {table.gameSession.gameStartedAt && (
-                    <div>Started: {new Date(table.gameSession.gameStartedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  )}
-                  {table.gameSession.gameEndedAt && (
-                    <div>Ended: {new Date(table.gameSession.gameEndedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  )}
-                </div>
-              )}
+              {(table.gameSession.gameStartedAt && table.gameSession.gameEndedAt) && (() => {
+                const startDate = table.gameSession.gameStartedAt instanceof Date 
+                  ? table.gameSession.gameStartedAt 
+                  : new Date(table.gameSession.gameStartedAt);
+                const endDate = table.gameSession.gameEndedAt instanceof Date 
+                  ? table.gameSession.gameEndedAt 
+                  : new Date(table.gameSession.gameEndedAt);
+                
+                // Calculate duration in milliseconds
+                const durationMs = endDate.getTime() - startDate.getTime();
+                
+                // Convert to hours and minutes
+                const hours = Math.floor(durationMs / (1000 * 60 * 60));
+                const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                // Format duration string
+                let durationText = '';
+                if (hours > 0) {
+                  durationText += `${hours}h `;
+                }
+                if (minutes > 0 || hours === 0) {
+                  durationText += `${minutes}m`;
+                }
+                
+                return (
+                  <div className="text-center text-gray-600">
+                    <div>Duration: {durationText}</div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -333,15 +358,16 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         </div>
       )}
       
-      {/* Edit Button - only show when there's a game */}
+      {/* Edit Button - show when there's a game (both current and historical) */}
       {game && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             setShowSessionEditor(true);
           }}
-          className="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 bg-white bg-opacity-80 hover:bg-opacity-100 rounded transition-all duration-200"
-          title="Edit game session details"
+          className={`absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 bg-white bg-opacity-80 hover:bg-opacity-100 rounded transition-all duration-200 ${isReadOnly ? 'z-10' : ''}`}
+          title={isReadOnly ? "Edit historical game session details" : "Edit game session details"}
+          style={{ pointerEvents: 'auto' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
