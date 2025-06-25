@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSessionManager } from '../../store/session-manager';
-import { GameSession, Player, Game } from '../../types/types';
+import { GameSession, Player, Game, Round, SessionState } from '../../types/types';
 import HamburgerMenu from '../../components/HamburgerMenu';
 import Link from 'next/link';
 
@@ -43,10 +43,10 @@ export default function Results() {
 
     const sessions: GameSessionWithContext[] = [];
     
-    selectedSession.state.rounds.forEach((round, roundIndex) => {
-      round.tableStates.forEach(tableState => {
+    selectedSession.state.rounds.forEach((round: Round, roundIndex: number) => {
+      round.tableStates.forEach((tableState: any) => {
         if (tableState.gameSession && tableState.gameId) {
-          const game = selectedSession.state.allGames.find(g => g.id === tableState.gameId);
+          const game = selectedSession.state.allGames.find((g: Game) => g.id === tableState.gameId);
           sessions.push({
             ...tableState.gameSession,
             tableId: tableState.id,
@@ -118,7 +118,7 @@ export default function Results() {
 
     const mostWinsPlayerNames = playersWithMostWins
       .map(({ playerId }) => {
-        const player = selectedSession.state.players.find(p => p.id === playerId);
+        const player = selectedSession.state.players.find((p: Player) => p.id === playerId);
         return player ? `${player.icon} ${player.name}` : 'Unknown';
       })
       .join(', ');
@@ -153,7 +153,7 @@ export default function Results() {
 
   // Get player name helper
   const getPlayerName = (playerId: string): string => {
-    const player = selectedSession?.state.players.find(p => p.id === playerId);
+    const player = selectedSession?.state.players.find((p: Player) => p.id === playerId);
     return player ? `${player.icon} ${player.name}` : 'Unknown Player';
   };
 
