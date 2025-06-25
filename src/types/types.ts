@@ -33,6 +33,17 @@ export interface Table {
   gameId: string | null;
   seatedPlayerIds: string[];
   placedByPlayerId?: string; // ID of the player who placed the game
+  gameSession?: GameSession; // Game session tracking data
+}
+
+/**
+ * Game session details for tracking gameplay
+ */
+export interface GameSession {
+  gamePickedAt?: Date; // When the game was picked for the table
+  winnerId?: string; // ID of the winning player
+  gameStartedAt?: Date; // When the game started
+  gameEndedAt?: Date; // When the game ended
 }
 
 /**
@@ -43,6 +54,7 @@ export interface TableState {
   gameId: string | null;
   seatedPlayerIds: string[];
   placedByPlayerId?: string; // ID of the player who placed the game
+  gameSession?: GameSession; // Game session tracking data
 }
 
 /**

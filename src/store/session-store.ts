@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { SessionState, Game, SessionStage } from '@/types/types';
+import { SessionState, Game, SessionStage, GameSession } from '@/types/types';
 import { useSessionManager } from './session-manager';
 
 // This store provides the same interface as the old store but works with sessions
@@ -42,6 +42,9 @@ interface SessionGameStore extends SessionState {
 
   // Action to return to the current active round
   returnToCurrentRound: () => void;
+
+  // Action to update game session details
+  updateGameSession: (tableId: string, roundIndex: number, sessionUpdate: Partial<GameSession>) => void;
 
   // Session management actions
   loadCurrentSession: () => void;
@@ -142,7 +145,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         id: table.id,
         gameId: null,
         seatedPlayerIds: [],
-        placedByPlayerId: undefined
+        placedByPlayerId: undefined,
+        gameSession: undefined
       }));
 
       // Reset all players' actionTakenInCurrentRound to false and restore games to their picks
@@ -237,7 +241,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           id: table.id,
           gameId: null,
           seatedPlayerIds: [],
-          placedByPlayerId: undefined
+          placedByPlayerId: undefined,
+          gameSession: undefined
         })),
         completed: false
       };
@@ -272,7 +277,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           ...table,
           gameId: null,
           seatedPlayerIds: [],
-          placedByPlayerId: undefined
+          placedByPlayerId: undefined,
+          gameSession: undefined
         })),
         // Reset actionTakenInCurrentRound for all players
         players: state.players.map(player => ({
@@ -352,7 +358,15 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       // Update the state
       const updatedTables = state.tables.map(t => 
         t.id === tableId 
-          ? { ...t, gameId: gameId, seatedPlayerIds: [...t.seatedPlayerIds, playerId], placedByPlayerId: playerId } 
+          ? { 
+              ...t, 
+              gameId: gameId, 
+              seatedPlayerIds: [...t.seatedPlayerIds, playerId], 
+              placedByPlayerId: playerId,
+              gameSession: {
+                gamePickedAt: new Date()
+              }
+            } 
           : t
       );
 
@@ -411,7 +425,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           id: table.id,
           gameId: table.gameId,
           seatedPlayerIds: [...table.seatedPlayerIds],
-          placedByPlayerId: table.placedByPlayerId
+          placedByPlayerId: table.placedByPlayerId,
+          gameSession: table.gameSession
         }))
       };
 
@@ -518,7 +533,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           id: table.id,
           gameId: table.gameId,
           seatedPlayerIds: [...table.seatedPlayerIds],
-          placedByPlayerId: table.placedByPlayerId
+          placedByPlayerId: table.placedByPlayerId,
+          gameSession: table.gameSession
         }))
       };
 
@@ -1096,7 +1112,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           id: table.id,
           gameId: null,
           seatedPlayerIds: [],
-          placedByPlayerId: undefined
+          placedByPlayerId: undefined,
+          gameSession: undefined
         })),
         completed: false
       };
@@ -1144,6 +1161,63 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         ...state,
         stage: SessionStage.COMPLETE,
         draftingComplete: true
+      };
+
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+  },
+
+  // Update game session details for a specific table and round
+  updateGameSession: (tableId: string, roundIndex: number, sessionUpdate: Partial<GameSession>) => {
+    set(state => {
+      // Validate round index
+      if (roundIndex < 0 || roundIndex >= state.rounds.length) {
+        console.error('Invalid round index');
+        return state;
+      }
+
+      // Update the round's table states
+      const updatedRounds = [...state.rounds];
+      const targetRound = { ...updatedRounds[roundIndex] };
+      
+      targetRound.tableStates = targetRound.tableStates.map(tableState => {
+        if (tableState.id === tableId) {
+          return {
+            ...tableState,
+            gameSession: {
+              ...tableState.gameSession,
+              ...sessionUpdate
+            }
+          };
+        }
+        return tableState;
+      });
+
+      updatedRounds[roundIndex] = targetRound;
+
+      // If updating the current round, also update the current tables
+      let updatedTables = state.tables;
+      if (roundIndex === state.currentRoundIndex) {
+        updatedTables = state.tables.map(table => {
+          if (table.id === tableId) {
+            return {
+              ...table,
+              gameSession: {
+                ...table.gameSession,
+                ...sessionUpdate
+              }
+            };
+          }
+          return table;
+        });
+      }
+
+      const newState = {
+        ...state,
+        rounds: updatedRounds,
+        tables: updatedTables
       };
 
       // Save to session manager

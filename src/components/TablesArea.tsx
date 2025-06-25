@@ -221,7 +221,8 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                     id: tableState.id,
                     gameId: tableState.gameId,
                     seatedPlayerIds: tableState.seatedPlayerIds,
-                    placedByPlayerId: tableState.placedByPlayerId
+                    placedByPlayerId: tableState.placedByPlayerId,
+                    gameSession: tableState.gameSession
                   };
 
                   return (
@@ -299,7 +300,8 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                   id: tableState.id,
                   gameId: tableState.gameId,
                   seatedPlayerIds: tableState.seatedPlayerIds,
-                  placedByPlayerId: tableState.placedByPlayerId
+                  placedByPlayerId: tableState.placedByPlayerId,
+                  gameSession: tableState.gameSession
                 };
 
                 return (

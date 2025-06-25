@@ -3,6 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { Table, Game, Player } from '../types/types';
 import { useSessionGameStore } from '../store/session-store';
 import { useAnimation } from './AnimationProvider';
+import GameSessionEditor from './GameSessionEditor';
 
 interface DroppableTableProps {
   table: Table;
@@ -17,7 +18,11 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
   const players = useSessionGameStore(state => state.players);
   const joinGame = useSessionGameStore(state => state.joinGame);
+  const viewingRoundIndex = useSessionGameStore(state => state.viewingRoundIndex);
   const { animatePlayerToTable } = useAnimation();
+  
+  // State for game session editor
+  const [showSessionEditor, setShowSessionEditor] = useState(false);
 
   // State to track clicks for double-click detection
   const [lastClickTime, setLastClickTime] = useState<number | null>(null);
@@ -248,7 +253,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
             {seatedPlayers.map(player => (
               <div 
                 key={player.id} 
-                className={`player-token text-xs sm:text-sm ${player.id === table.placedByPlayerId ? 'game-picker font-bold' : ''}`}
+                className={`player-token text-xs sm:text-sm ${player.id === table.placedByPlayerId ? 'game-picker font-bold' : ''} ${table.gameSession?.winnerId === player.id ? 'winner' : ''}`}
                 style={{
                   minWidth: '1.5rem',
                   height: '1.5rem',
@@ -259,16 +264,101 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
                 {player.id === table.placedByPlayerId && (
                   <span className="mr-1 text-yellow-400">★</span>
                 )}
+                {table.gameSession?.winnerId === player.id && (
+                  <span className="mr-1 text-green-500">🏆</span>
+                )}
                 <span className="mr-1">{player.icon}</span>
                 <span className="truncate max-w-16 sm:max-w-none">{player.name}</span>
               </div>
             ))}
           </div>
+          
+          {/* Session Status Indicators */}
+          {table.gameSession && (
+            <div className="flex justify-center gap-2 text-xs text-gray-500 mt-1">
+              {table.gameSession.gameStartedAt && (
+                <span title={`Started: ${new Date(table.gameSession.gameStartedAt).toLocaleString()}`}>
+                  ▶️
+                </span>
+              )}
+              {table.gameSession.gameEndedAt && (
+                <span title={`Ended: ${new Date(table.gameSession.gameEndedAt).toLocaleString()}`}>
+                  ⏹️
+                </span>
+              )}
+              {table.gameSession.winnerId && (
+                <span title="Winner recorded">
+                  🏆
+                </span>
+              )}
+            </div>
+          )}
+          
+          {/* Historical Game Summary - only show in read-only mode */}
+          {isReadOnly && table.gameSession && (
+            <div className="mt-3 pt-2 border-t border-gray-200 text-xs space-y-1">
+              {table.gameSession.winnerId && (() => {
+                const winner = seatedPlayers.find(p => p.id === table.gameSession?.winnerId);
+                return winner && (
+                  <div className="flex items-center justify-center gap-1 text-green-600 font-medium">
+                    <span>🏆</span>
+                    <span>{winner.icon} {winner.name}</span>
+                  </div>
+                );
+              })()}
+              
+              {table.gameSession.gamePickedAt && (
+                <div className="text-center text-gray-600">
+                  <div>Picked: {new Date(table.gameSession.gamePickedAt).toLocaleDateString()}</div>
+                  <div>{new Date(table.gameSession.gamePickedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+              )}
+              
+              {(table.gameSession.gameStartedAt || table.gameSession.gameEndedAt) && (
+                <div className="text-center text-gray-600">
+                  {table.gameSession.gameStartedAt && (
+                    <div>Started: {new Date(table.gameSession.gameStartedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  )}
+                  {table.gameSession.gameEndedAt && (
+                    <div>Ended: {new Date(table.gameSession.gameEndedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center text-gray-500">
           Drop a game here
         </div>
+      )}
+      
+      {/* Edit Button - only show when there's a game */}
+      {game && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowSessionEditor(true);
+          }}
+          className="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 bg-white bg-opacity-80 hover:bg-opacity-100 rounded transition-all duration-200"
+          title="Edit game session details"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
+      )}
+      
+      {/* Game Session Editor Modal */}
+      {showSessionEditor && game && (
+        <GameSessionEditor
+          tableId={table.id}
+          roundIndex={viewingRoundIndex}
+          currentSession={table.gameSession}
+          seatedPlayers={seatedPlayers}
+          gameTitle={game.title}
+          onClose={() => setShowSessionEditor(false)}
+        />
       )}
     </div>
   );
