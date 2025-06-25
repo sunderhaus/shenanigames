@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { SessionState, Player, Game, Table, Round } from '@/types/types';
-import { loadState, saveState } from './persistence';
+import { loadState, saveState, bootstrap } from './persistence';
 
 // Sample data for initial state based on player-picks.csv
 const sampleGames: Game[] = [
@@ -73,6 +73,9 @@ const createInitialRound = (tables: Table[]): Round => {
 
 // Load state from localStorage or use sample data
 const loadInitialState = (): SessionState => {
+  // Run bootstrap to handle version management and localStorage clearing
+  bootstrap();
+  
   const savedState = loadState();
 
   if (savedState) {
