@@ -7,6 +7,7 @@ import DragAndDropProvider from '../components/DragAndDropProvider';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import SessionSelector from '../components/SessionSelector';
 import PickRequirements from '../components/PickRequirements';
+import SessionStageManager from '../components/SessionStageManager';
 import { useState, useEffect } from 'react';
 import { useSessionGameStore } from '../store/session-store';
 import { useSessionManager } from '../store/session-manager';
@@ -85,6 +86,9 @@ export default function Home() {
 
           {/* Pick Requirements Warning */}
           <PickRequirements />
+          
+          {/* Session Stage Management */}
+          <SessionStageManager />
 
           <DragAndDropProvider>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

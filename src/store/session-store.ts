@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { SessionState, Game } from '@/types/types';
+import { SessionState, Game, SessionStage } from '@/types/types';
 import { useSessionManager } from './session-manager';
 
 // This store provides the same interface as the old store but works with sessions
 interface SessionGameStore extends SessionState {
   // Action to place a game on a table
-  placeGame: (gameId: string, tableId: string, playerId: string) => void;
+  placeGame: (gameId: string, tableId: string, playerId: string, pickIndex?: number) => void;
 
   // Action to join a game at a table
   joinGame: (tableId: string, playerId: string) => void;
@@ -52,6 +52,12 @@ interface SessionGameStore extends SessionState {
   removePlayer: (playerId: string) => boolean;
   updatePlayer: (playerId: string, updates: { name?: string; icon?: string }) => boolean;
   updatePlayerPicks: (playerId: string, picks: string[]) => boolean;
+
+  // Stage management actions
+  canStartFirstRound: () => boolean;
+  startFirstRound: () => void;
+  canCreateNextRound: () => boolean;
+  completeSession: () => void;
 }
 
 // Get the current session state or return a default empty state
@@ -75,7 +81,8 @@ const getCurrentSessionState = (): SessionState => {
     isViewingHistory: false,
     turnOrder: [],
     currentPlayerTurnIndex: 0,
-    draftingComplete: false
+    draftingComplete: false,
+    stage: SessionStage.SETUP
   };
 };
 
@@ -210,6 +217,12 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
   // Helper to create a new round
   createNewRound: () => {
     set(state => {
+      // Check if we can create a new round
+      if (!get().canCreateNextRound()) {
+        console.error('Cannot create new round: requirements not met');
+        return state;
+      }
+
       // Mark the current round as completed
       const updatedRounds = [...state.rounds];
       updatedRounds[state.currentRoundIndex] = {
@@ -232,13 +245,28 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       // Calculate the new current round index
       const newCurrentRoundIndex = state.currentRoundIndex + 1;
 
+      // Determine the new stage
+      let newStage = state.stage;
+      if (state.stage === SessionStage.FIRST_ROUND) {
+        newStage = SessionStage.SUBSEQUENT_ROUNDS;
+      }
+      // If no players have picks remaining after this round, complete the session
+      const anyPlayerHasPicks = state.players.some(player => 
+        player.picks && player.picks.length > 0
+      );
+      if (!anyPlayerHasPicks) {
+        newStage = SessionStage.COMPLETE;
+      }
+
       // Add the new round and increment the current round index
       const newState = {
         ...state,
+        stage: newStage,
         rounds: [...updatedRounds, newRound],
         currentRoundIndex: newCurrentRoundIndex,
         viewingRoundIndex: newCurrentRoundIndex, // Update viewingRoundIndex to match currentRoundIndex
         isViewingHistory: false, // Exit history mode when creating a new round
+        draftingComplete: newStage === SessionStage.COMPLETE,
         // Reset tables for the new round
         tables: state.tables.map(table => ({
           ...table,
@@ -288,7 +316,7 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
   },
 
   // Place a game on a table
-  placeGame: (gameId: string, tableId: string, playerId: string) => {
+  placeGame: (gameId: string, tableId: string, playerId: string, pickIndex?: number) => {
     let placeSucceeded = false;
     
     set((state) => {
@@ -313,13 +341,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       // Check if the game is in the player's picks
       const isInPlayerPicks = player?.picks.includes(gameId);
 
-      // Check if the game was used in a previous round
-      const isGameUsedInPreviousRound = state.rounds.slice(0, state.currentRoundIndex).some(round => 
-        round.tableStates.some(tableState => tableState.gameId === gameId)
-      );
-
       // Validate the action - if table already has a game, don't proceed
-      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isGameUsedInPreviousRound || isPlayerSeatedAtAnotherTable) {
+      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isPlayerSeatedAtAnotherTable) {
         return state; // Invalid action, return unchanged state
       }
 
@@ -333,11 +356,30 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           : t
       );
 
-      const updatedPlayers = state.players.map(p => 
-        p.id === playerId 
-          ? { ...p, selectionsMade: p.selectionsMade + 1, actionTakenInCurrentRound: true } 
-          : p
-      );
+      const updatedPlayers = state.players.map(p => {
+        if (p.id === playerId) {
+          // Remove the specific pick instance if pickIndex is provided
+          let updatedPicks = [...p.picks];
+          if (pickIndex !== undefined && pickIndex >= 0 && pickIndex < p.picks.length) {
+            // Remove the pick at the specific index
+            updatedPicks.splice(pickIndex, 1);
+          } else {
+            // Fallback: remove the first occurrence of the game
+            const gameIndex = p.picks.indexOf(gameId);
+            if (gameIndex !== -1) {
+              updatedPicks.splice(gameIndex, 1);
+            }
+          }
+          
+          return { 
+            ...p, 
+            picks: updatedPicks,
+            selectionsMade: p.selectionsMade + 1, 
+            actionTakenInCurrentRound: true 
+          };
+        }
+        return p;
+      });
 
       // Check if the game is still in any player's picks that haven't been placed yet
       const isGameStillInPicks = state.players.some(p => {
@@ -1018,6 +1060,96 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     });
 
     return updateSucceeded;
+  },
+
+  // Check if all requirements are met to start the first round
+  canStartFirstRound: () => {
+    const state = get();
+    
+    // Must be in SETUP stage
+    if (state.stage !== SessionStage.SETUP) return false;
+    
+    // Must have at least 2 players
+    if (state.players.length < 2) return false;
+    
+    // All players must have exactly 2 picks
+    const allPlayersHavePicks = state.players.every(player => 
+      player.picks && player.picks.length === 2
+    );
+    
+    return allPlayersHavePicks;
+  },
+
+  // Start the first round
+  startFirstRound: () => {
+    set(state => {
+      // Validate we can start the first round
+      if (!get().canStartFirstRound()) {
+        console.error('Cannot start first round: requirements not met');
+        return state;
+      }
+
+      // Create the initial round
+      const initialRound = {
+        id: crypto.randomUUID(),
+        tableStates: state.tables.map(table => ({
+          id: table.id,
+          gameId: null,
+          seatedPlayerIds: [],
+          placedByPlayerId: undefined
+        })),
+        completed: false
+      };
+
+      const newState = {
+        ...state,
+        stage: SessionStage.FIRST_ROUND,
+        rounds: [initialRound],
+        currentRoundIndex: 0,
+        viewingRoundIndex: 0,
+        isViewingHistory: false,
+        currentPlayerTurnIndex: 0,
+        draftingComplete: false
+      };
+
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+  },
+
+  // Check if we can create the next round
+  canCreateNextRound: () => {
+    const state = get();
+    
+    // Must not be in SETUP stage
+    if (state.stage === SessionStage.SETUP) return false;
+    
+    // Current round must be completed
+    const currentRound = state.rounds[state.currentRoundIndex];
+    if (!currentRound || !currentRound.completed) return false;
+    
+    // Check if any player still has picks remaining
+    const anyPlayerHasPicks = state.players.some(player => 
+      player.picks && player.picks.length > 0
+    );
+    
+    return anyPlayerHasPicks;
+  },
+
+  // Complete the session when no more rounds can be created
+  completeSession: () => {
+    set(state => {
+      const newState = {
+        ...state,
+        stage: SessionStage.COMPLETE,
+        draftingComplete: true
+      };
+
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
   },
 }));
 

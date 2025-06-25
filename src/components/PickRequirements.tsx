@@ -2,10 +2,17 @@
 
 import { useSessionGameStore } from '@/store/session-store';
 import { useGameLibrary } from '@/store/game-library-store';
+import { SessionStage } from '@/types/types';
 
 export default function PickRequirements() {
   const players = useSessionGameStore(state => state.players);
+  const stage = useSessionGameStore(state => state.stage);
   const { getGameById } = useGameLibrary();
+
+  // Only show pick requirements during SETUP stage
+  if (stage !== SessionStage.SETUP) {
+    return null;
+  }
 
   // Check if all players have exactly 2 picks
   const allPlayersHavePicks = players.every(player => player.picks.length === 2);

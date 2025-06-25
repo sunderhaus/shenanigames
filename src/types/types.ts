@@ -55,6 +55,16 @@ export interface Round {
 }
 
 /**
+ * Session lifecycle stages
+ */
+export enum SessionStage {
+  SETUP = 'setup',           // Players being added and picks being selected
+  FIRST_ROUND = 'first_round', // First round of drafting
+  SUBSEQUENT_ROUNDS = 'subsequent_rounds', // Additional rounds
+  COMPLETE = 'complete'       // All picks exhausted, session complete
+}
+
+/**
  * SessionState representing the main state object for the application
  */
 export interface SessionState {
@@ -69,4 +79,5 @@ export interface SessionState {
   turnOrder: string[];
   currentPlayerTurnIndex: number;
   draftingComplete: boolean;
+  stage: SessionStage;        // Current stage of the session lifecycle
 }

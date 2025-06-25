@@ -7,7 +7,7 @@ import {
   CreateSessionOptions,
   SessionTemplate 
 } from '@/types/session-types';
-import { SessionState, Player, Game, Table, Round } from '@/types/types';
+import { SessionState, Player, Game, Table, Round, SessionStage } from '@/types/types';
 import { 
   saveSessionManager, 
   loadSessionManager, 
@@ -114,7 +114,8 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
     isViewingHistory: false,
     turnOrder: players.map(player => player.id),
     currentPlayerTurnIndex: 0,
-    draftingComplete: false
+    draftingComplete: false,
+    stage: SessionStage.SETUP
   };
 };
 
@@ -237,6 +238,7 @@ export const useSessionManager = create<SessionManagerStore>((set, get) => ({
         viewingRoundIndex: 0,
         isViewingHistory: false,
         draftingComplete: false,
+        stage: SessionStage.SETUP, // Reset to setup stage
         // Reset player states
         players: sourceSession.state.players.map(player => ({
           ...player,

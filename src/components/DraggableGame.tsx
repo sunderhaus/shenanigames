@@ -6,9 +6,10 @@ import { useSessionGameStore } from '../store/session-store';
 
 interface DraggableGameProps {
   game: Game;
+  pickIndex?: number;
 }
 
-const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
+const DraggableGame: React.FC<DraggableGameProps> = ({ game, pickIndex }) => {
   const turnOrder = useSessionGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
@@ -42,7 +43,7 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
 
         if (availableTable) {
           // Place the game on the available table
-          placeGame(game.id, availableTable.id, currentPlayerId);
+          placeGame(game.id, availableTable.id, currentPlayerId, pickIndex);
         }
       }
       // Reset the last click time after a double-click
@@ -79,10 +80,6 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
     table.seatedPlayerIds.includes(currentPlayer.id)
   );
 
-  // Check if the game was used in a previous round
-  const isGameUsedInPreviousRound = rounds.slice(0, currentRoundIndex).some(round => 
-    round.tableStates.some(tableState => tableState.gameId === game.id)
-  );
 
   // Determine if the game is draggable
   // A game is draggable if:
@@ -90,18 +87,18 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
   // 2. Drafting is not complete
   // 3. The current player hasn't already assigned their picks to a table
   // 4. The game is in the player's picks
-  // 5. The game wasn't used in a previous round
   const isInPlayerPicks = currentPlayer && currentPlayer.picks.includes(game.id);
-  const isDraggable = !draftingComplete && currentPlayer && !hasAssignedPicks && isInPlayerPicks && !isGameUsedInPreviousRound;
+  const isDraggable = !draftingComplete && currentPlayer && !hasAssignedPicks && isInPlayerPicks;
 
-  // Set up draggable
+  // Set up draggable with unique ID that includes pick index
+  const uniqueId = pickIndex !== undefined ? `${game.id}-pick-${pickIndex}` : game.id;
   const draggableItem: DraggableItem = {
-    id: game.id,
+    id: uniqueId,
     type: DraggableType.GAME
   };
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: game.id,
+    id: uniqueId,
     data: draggableItem,
     disabled: !isDraggable
   });
@@ -121,8 +118,6 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game }) => {
       return "You have already assigned your picks";
     } else if (!isInPlayerPicks) {
       return "This game is not in your picks";
-    } else if (isGameUsedInPreviousRound) {
-      return "This game was used in a previous round";
     } else {
       return "Not your turn";
     }

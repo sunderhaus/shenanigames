@@ -1,6 +1,7 @@
 import React from 'react';
 import { DndContext, DragEndEvent, DragStartEvent, DragOverEvent, useSensor, useSensors, PointerSensor, TouchSensor } from '@dnd-kit/core';
 import { useSessionGameStore } from '../store/session-store';
+import { SessionStage } from '../types/types';
 
 // Define the types of draggable items
 export enum DraggableType {
@@ -61,9 +62,11 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
     console.log('Drag over:', event);
   };
 
-  // Check if all players have completed their picks
-  const allPlayersHavePicks = () => {
-    return players.every(player => player.picks && player.picks.length === 2);
+  // Check if the session is ready for game actions
+  const canPerformGameActions = () => {
+    const state = useSessionGameStore.getState();
+    // Game actions are allowed in FIRST_ROUND, SUBSEQUENT_ROUNDS stages
+    return state.stage === SessionStage.FIRST_ROUND || state.stage === SessionStage.SUBSEQUENT_ROUNDS;
   };
 
   // Handle drag end event
@@ -72,9 +75,9 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
 
     if (!over) return; // Dropped outside a droppable area
 
-    // Check if all players have completed their picks before allowing any game actions
-    if (!allPlayersHavePicks()) {
-      console.log('Cannot perform game actions until all players have made 2 picks');
+    // Check if the session stage allows game actions
+    if (!canPerformGameActions()) {
+      console.log('Cannot perform game actions in current session stage');
       return;
     }
 
@@ -87,7 +90,17 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
     // Handle different types of draggable items
     if (draggableItem.type === DraggableType.GAME) {
       // A game was dropped on a table
-      placeGame(draggableItem.id, tableId, currentPlayerId);
+      // Extract the actual game ID and pick index from the unique draggable ID
+      let gameId = draggableItem.id;
+      let pickIndex: number | undefined = undefined;
+      
+      if (draggableItem.id.includes('-pick-')) {
+        const parts = draggableItem.id.split('-pick-');
+        gameId = parts[0];
+        pickIndex = parseInt(parts[1], 10);
+      }
+      
+      placeGame(gameId, tableId, currentPlayerId, pickIndex);
     } else if (draggableItem.type === DraggableType.PLAYER) {
       // A player was dropped on a table
       // Check if the dropped player is the current player

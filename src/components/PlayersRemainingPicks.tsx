@@ -82,7 +82,7 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
                 : ''
               }
             >
-              <DraggableGame game={game} />
+              <DraggableGame game={game} pickIndex={index} />
             </div>
           ))}
         </div>

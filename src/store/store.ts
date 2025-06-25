@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { SessionState, Player, Game, Table, Round } from '@/types/types';
+import { SessionState, Player, Game, Table, Round, SessionStage } from '@/types/types';
 import { loadState, saveState, bootstrap } from './persistence';
 
 // Sample data for initial state based on player-picks.csv
@@ -87,7 +87,6 @@ const loadInitialState = (): SessionState => {
     players: samplePlayers,
     // Initialize availableGames with all games that are in players' picks
     availableGames: sampleGames.filter(game => getAllPlayerPicks(samplePlayers).includes(game.id)),
-    // Store all games for lookup purposes
     allGames: sampleGames,
     tables: sampleTables,
     rounds: [createInitialRound(sampleTables)],
@@ -97,6 +96,7 @@ const loadInitialState = (): SessionState => {
     turnOrder: samplePlayers.map(player => player.id),
     currentPlayerTurnIndex: 0,
     draftingComplete: false,
+    stage: SessionStage.SETUP
   };
 };
 
