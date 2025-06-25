@@ -128,6 +128,8 @@ export default function CollectionsHeader({
             <Link href="/library" className="hover:text-gray-700">Game Library</Link>
             <span className="mx-2">•</span>
             <span className="text-gray-900 font-medium">Collections</span>
+            <span className="mx-2">•</span>
+            <Link href="/results" className="hover:text-gray-700">Results</Link>
           </nav>
         </div>
       </div>

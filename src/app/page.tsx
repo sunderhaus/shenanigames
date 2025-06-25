@@ -145,6 +145,8 @@ export default function Home() {
                     <Link href="/library" className="hover:text-gray-700">Game Library</Link>
                     <span className="mx-2">•</span>
                     <Link href="/collections" className="hover:text-gray-700">Collections</Link>
+                    <span className="mx-2">•</span>
+                    <Link href="/results" className="hover:text-gray-700">Results</Link>
                   </nav>
                 </div>
               </div>

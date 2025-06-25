@@ -139,6 +139,8 @@ export default function GameLibraryHeader({
             <span className="text-gray-900 font-medium">Game Library</span>
             <span className="mx-2">•</span>
             <Link href="/collections" className="hover:text-gray-700">Collections</Link>
+            <span className="mx-2">•</span>
+            <Link href="/results" className="hover:text-gray-700">Results</Link>
           </nav>
         </div>
       </div>
