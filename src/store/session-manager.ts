@@ -17,7 +17,6 @@ import {
   getAllSessionMetadata,
   bootstrapSessions 
 } from './session-persistence';
-import { loadState } from './persistence'; // For migration
 
 // Helper function to create metadata from session state
 const createMetadataFromState = (id: string, name: string, state: SessionState, description?: string): SessionMetadata => {
@@ -153,34 +152,6 @@ const loadInitialSessionManager = (): SessionManagerState => {
     };
   }
 
-  // Check for legacy state to migrate
-  const legacyState = loadState();
-  if (legacyState) {
-    console.log('Migrating legacy state to session-based system...');
-    
-    // Create a session from the legacy state
-    const sessionId = uuidv4();
-    const metadata = createMetadataFromState(
-      sessionId, 
-      'Migrated Session', 
-      legacyState,
-      'Automatically migrated from previous version'
-    );
-    
-    const session: Session = {
-      metadata,
-      state: legacyState
-    };
-    
-    // Save the migrated session
-    saveSession(session);
-    
-    return {
-      sessions: {},
-      currentSessionId: sessionId,
-      sessionList: [metadata]
-    };
-  }
 
   // No existing data, start fresh
   return {

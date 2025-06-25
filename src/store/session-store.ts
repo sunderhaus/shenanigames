@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { SessionState, Game, SessionStage, GameSession } from '@/types/types';
 import { useSessionManager } from './session-manager';
+import { useGameLibrary } from '@/store/game-library-store';
 
 // This store provides the same interface as the old store but works with sessions
 interface SessionGameStore extends SessionState {
@@ -61,6 +62,14 @@ interface SessionGameStore extends SessionState {
   startFirstRound: () => void;
   canCreateNextRound: () => boolean;
   completeSession: () => void;
+  
+  // Table management actions
+  addTable: () => string; // Returns new table ID
+  removeTable: (tableId: string) => boolean;
+  
+  // Ad-hoc game session actions
+  placeLibraryGame: (gameId: string, tableId: string) => void;
+  removeGameFromTable: (tableId: string) => void;
 }
 
 // Get the current session state or return a default empty state
@@ -1230,6 +1239,258 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         tables: updatedTables
       };
 
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+  },
+
+  // Add a new table to the session
+  addTable: () => {
+    let newTableId = '';
+    
+    set(state => {
+      // Generate a unique ID for the new table
+      newTableId = `table-${crypto.randomUUID()}`;
+      
+      // Create the new table
+      const newTable = {
+        id: newTableId,
+        gameId: null,
+        seatedPlayerIds: [],
+        placedByPlayerId: undefined,
+        gameSession: undefined
+      };
+      
+      // Add the new table to the tables array
+      const updatedTables = [...state.tables, newTable];
+      
+      // Update current round to include the new table
+      const updatedRounds = [...state.rounds];
+      if (updatedRounds[state.currentRoundIndex]) {
+        updatedRounds[state.currentRoundIndex] = {
+          ...updatedRounds[state.currentRoundIndex],
+          tableStates: [...updatedRounds[state.currentRoundIndex].tableStates, {
+            id: newTableId,
+            gameId: null,
+            seatedPlayerIds: [],
+            placedByPlayerId: undefined,
+            gameSession: undefined
+          }]
+        };
+      }
+      
+      const newState = {
+        ...state,
+        tables: updatedTables,
+        rounds: updatedRounds
+      };
+      
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+    
+    return newTableId;
+  },
+
+  // Remove a table from the session
+  removeTable: (tableId: string) => {
+    let removeSucceeded = false;
+    
+    set(state => {
+      // Check if table exists
+      const tableIndex = state.tables.findIndex(t => t.id === tableId);
+      if (tableIndex === -1) {
+        console.error('Table not found');
+        return state;
+      }
+      
+      // Check if table has players seated
+      const table = state.tables[tableIndex];
+      if (table.seatedPlayerIds.length > 0) {
+        console.error('Cannot remove table with seated players');
+        return state;
+      }
+      
+      // Don't allow removing the last table
+      if (state.tables.length <= 1) {
+        console.error('Cannot remove the last table');
+        return state;
+      }
+      
+      removeSucceeded = true;
+      
+      // If table has a game, restore it to available games
+      let updatedAvailableGames = [...state.availableGames];
+      if (table.gameId) {
+        const game = state.allGames.find(g => g.id === table.gameId);
+        if (game && !updatedAvailableGames.some(g => g.id === game.id)) {
+          updatedAvailableGames.push(game);
+        }
+        
+        // If the game was placed by a player from their picks, restore it to their picks
+        if (table.placedByPlayerId) {
+          state.players.forEach(player => {
+            if (player.id === table.placedByPlayerId && !player.picks.includes(table.gameId!)) {
+              player.picks.push(table.gameId!);
+            }
+          });
+        }
+      }
+      
+      // Remove the table from the tables array
+      const updatedTables = state.tables.filter(t => t.id !== tableId);
+      
+      // Update current round to remove the table
+      const updatedRounds = [...state.rounds];
+      if (updatedRounds[state.currentRoundIndex]) {
+        updatedRounds[state.currentRoundIndex] = {
+          ...updatedRounds[state.currentRoundIndex],
+          tableStates: updatedRounds[state.currentRoundIndex].tableStates.filter(ts => ts.id !== tableId)
+        };
+      }
+      
+      const newState = {
+        ...state,
+        tables: updatedTables,
+        rounds: updatedRounds,
+        availableGames: updatedAvailableGames
+      };
+      
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+    
+    return removeSucceeded;
+  },
+
+  // Place a game from the library directly on a table (bypasses pick system)
+  placeLibraryGame: (gameId: string, tableId: string) => {
+    set(state => {
+      // Find the table
+      const table = state.tables.find(t => t.id === tableId);
+      if (!table) {
+        console.error('Table not found');
+        return state;
+      }
+      
+      // Check if table already has a game
+      if (table.gameId !== null) {
+        console.error('Table already has a game');
+        return state;
+      }
+      
+      // Get the game from the library
+      const libraryStore = useGameLibrary.getState();
+      const libraryGame = libraryStore.getGameById(gameId);
+      
+      if (!libraryGame || !libraryGame.isActive) {
+        console.error('Game not found in library or not active');
+        return state;
+      }
+      
+      // Convert LibraryGame to Game format
+      const game = {
+        id: libraryGame.id,
+        title: libraryGame.title,
+        maxPlayers: libraryGame.maxPlayers,
+        link: libraryGame.link,
+        image: libraryGame.image
+      };
+      
+      // Update the table with the game
+      const updatedTables = state.tables.map(t => 
+        t.id === tableId 
+          ? { 
+              ...t, 
+              gameId: gameId,
+              gameSession: {
+                gamePickedAt: new Date()
+              }
+            } 
+          : t
+      );
+      
+      // Add the game to allGames if it's not already there
+      let updatedAllGames = [...state.allGames];
+      if (!updatedAllGames.some(g => g.id === gameId)) {
+        updatedAllGames.push(game);
+      }
+      
+      // Update the current round's table states
+      const updatedRounds = [...state.rounds];
+      if (updatedRounds[state.currentRoundIndex]) {
+        updatedRounds[state.currentRoundIndex] = {
+          ...updatedRounds[state.currentRoundIndex],
+          tableStates: updatedTables.map(table => ({
+            id: table.id,
+            gameId: table.gameId,
+            seatedPlayerIds: [...table.seatedPlayerIds],
+            placedByPlayerId: table.placedByPlayerId,
+            gameSession: table.gameSession
+          }))
+        };
+      }
+      
+      const newState = {
+        ...state,
+        tables: updatedTables,
+        allGames: updatedAllGames,
+        rounds: updatedRounds
+      };
+      
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+  },
+
+  // Remove a game from a table (for ad-hoc sessions)
+  removeGameFromTable: (tableId: string) => {
+    set(state => {
+      // Find the table
+      const table = state.tables.find(t => t.id === tableId);
+      if (!table || !table.gameId) {
+        console.error('Table not found or has no game');
+        return state;
+      }
+      
+      // Clear all players from the table
+      const updatedTables = state.tables.map(t => 
+        t.id === tableId 
+          ? { 
+              ...t, 
+              gameId: null,
+              seatedPlayerIds: [],
+              placedByPlayerId: undefined,
+              gameSession: undefined
+            } 
+          : t
+      );
+      
+      // Update the current round's table states
+      const updatedRounds = [...state.rounds];
+      if (updatedRounds[state.currentRoundIndex]) {
+        updatedRounds[state.currentRoundIndex] = {
+          ...updatedRounds[state.currentRoundIndex],
+          tableStates: updatedTables.map(table => ({
+            id: table.id,
+            gameId: table.gameId,
+            seatedPlayerIds: [...table.seatedPlayerIds],
+            placedByPlayerId: table.placedByPlayerId,
+            gameSession: table.gameSession
+          }))
+        };
+      }
+      
+      const newState = {
+        ...state,
+        tables: updatedTables,
+        rounds: updatedRounds
+      };
+      
       // Save to session manager
       saveCurrentSessionState(newState);
       return newState;
