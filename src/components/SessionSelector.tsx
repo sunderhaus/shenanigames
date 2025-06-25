@@ -52,10 +52,10 @@ const handleCreateSession = () => {
         description: 'Full game set with players and picks from the original Ellijay edition',
         players: [
           { name: 'Jonny', icon: '🐯' },
-          { name: 'Jourdan', icon: '🐼' },
           { name: 'Chris', icon: '🦁' },
-          { name: 'Matthew', icon: '🦊' },
+          { name: 'Jourdan', icon: '🐼' },
           { name: 'Felipe', icon: '🐻' },
+          { name: 'Matthew', icon: '🦊' },
           { name: 'Paul', icon: '🦉' },
           { name: 'Cam', icon: '🐺' }
         ],
@@ -79,10 +79,10 @@ const handleCreateSession = () => {
         // Player picks based on original store.ts lines 28-35
         playerPicks: {
           'Jonny': [3, 10],    // Kemet, Cyclades Legendary
-          'Jourdan': [0, 7],   // Bloodstones, Realm of Reckoning
           'Chris': [5, 12],    // Last Light, Dune War for Arakis
-          'Matthew': [1, 8],   // SETI, Stupor Mundi
+          'Jourdan': [0, 7],   // Bloodstones, Realm of Reckoning
           'Felipe': [4, 11],   // The Magnificent, Great Western Trail
+          'Matthew': [1, 8],   // SETI, Stupor Mundi
           'Paul': [6, 13],     // Oath, The White Castle
           'Cam': [2, 9]        // Dune, Brass: Birmingham
         }
