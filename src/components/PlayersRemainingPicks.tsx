@@ -69,7 +69,7 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
       {isFooter && allTablesHaveGames ? (
         null
       ) : filteredGames.length === 0 ? (
-        <p className="text-gray-500">No games available</p>
+        <p className="text-gray-500 text-center">All picks exhausted.</p>
       ) : (
         <div className={isFooter ? 'flex overflow-x-auto pb-2 space-x-2' : 'space-y-2'}>
           {filteredGames.map((game: Game, index) => (

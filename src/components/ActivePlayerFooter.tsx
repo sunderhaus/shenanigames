@@ -3,6 +3,7 @@
 import { useSessionGameStore } from '../store/session-store';
 import { useState, useEffect } from 'react';
 import DraggablePlayer from './DraggablePlayer';
+import PlayersRemainingPicks from './PlayersRemainingPicks';
 
 export default function ActivePlayerFooter() {
   // Use useState to manage client-side state
@@ -39,6 +40,11 @@ export default function ActivePlayerFooter() {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md z-20">
       <div className="container mx-auto">
+        {/* Remaining Picks */}
+        <div className="p-3 border-b border-gray-200">
+          <PlayersRemainingPicks isFooter={true} />
+        </div>
+        
         {/* Active Player */}
         <div className="p-3">
           <div className="flex justify-between items-center">
