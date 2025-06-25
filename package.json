@@ -17,6 +17,7 @@
     "@types/react-dom": "^18.2.0",
     "@types/uuid": "^9.0.0",
     "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "file-saver": "^2.0.5",
     "lucide-react": "^0.523.0",
     "next": "^14.0.0",
