@@ -637,11 +637,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return state;
       }
 
-      // Calculate the new current player turn index
-      // Find the current player ID
-      const currentPlayerId = state.turnOrder[state.currentPlayerTurnIndex];
-      // Find its index in the new turn order
-      const newCurrentPlayerIndex = newTurnOrder.findIndex(id => id === currentPlayerId);
+      // Keep the same index position, but the player at that position may change
+      // Ensure the index is still valid for the new turn order length
+      let newCurrentPlayerIndex = Math.min(state.currentPlayerTurnIndex, newTurnOrder.length - 1);
+      
+      // Check if the player at the current index has already taken an action
+      const playerAtCurrentIndex = state.players.find(p => p.id === newTurnOrder[newCurrentPlayerIndex]);
+      
+      // If the player at the current index has already acted, find the next available player
+      if (playerAtCurrentIndex && playerAtCurrentIndex.actionTakenInCurrentRound) {
+        const startingIndex = newCurrentPlayerIndex;
+        
+        // Search for the next player who hasn't taken an action
+        do {
+          newCurrentPlayerIndex = (newCurrentPlayerIndex + 1) % newTurnOrder.length;
+          const nextPlayerId = newTurnOrder[newCurrentPlayerIndex];
+          const nextPlayer = state.players.find(p => p.id === nextPlayerId);
+          
+          // If this player hasn't taken an action, we found our next player
+          if (nextPlayer && !nextPlayer.actionTakenInCurrentRound) {
+            break;
+          }
+          
+          // If we've gone full circle back to the starting index, all players have acted
+          if (newCurrentPlayerIndex === startingIndex) {
+            // All players have taken actions, keep the current index
+            break;
+          }
+        } while (true);
+      }
 
       return {
         ...state,
