@@ -25,6 +25,7 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
   const turnOrder = useSessionGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
+  const players = useSessionGameStore(state => state.players);
 
   // Get the current player's ID
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
@@ -60,11 +61,22 @@ export const DragAndDropProvider: React.FC<DragAndDropProviderProps> = ({ childr
     console.log('Drag over:', event);
   };
 
+  // Check if all players have completed their picks
+  const allPlayersHavePicks = () => {
+    return players.every(player => player.picks && player.picks.length === 2);
+  };
+
   // Handle drag end event
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over) return; // Dropped outside a droppable area
+
+    // Check if all players have completed their picks before allowing any game actions
+    if (!allPlayersHavePicks()) {
+      console.log('Cannot perform game actions until all players have made 2 picks');
+      return;
+    }
 
     // Extract the draggable item data
     const draggableItem = active.data.current as DraggableItem;

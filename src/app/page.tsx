@@ -6,6 +6,7 @@ import TablesArea from '../components/TablesArea';
 import DragAndDropProvider from '../components/DragAndDropProvider';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import SessionSelector from '../components/SessionSelector';
+import PickRequirements from '../components/PickRequirements';
 import { useState, useEffect } from 'react';
 import { useSessionGameStore } from '../store/session-store';
 import { useSessionManager } from '../store/session-manager';
@@ -81,6 +82,9 @@ export default function Home() {
               <div className="flex-1"></div>
             </div>
           </header>
+
+          {/* Pick Requirements Warning */}
+          <PickRequirements />
 
           <DragAndDropProvider>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

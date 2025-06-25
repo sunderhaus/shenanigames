@@ -32,9 +32,12 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
   const currentPlayer = isClient ? players.find(p => p.id === currentPlayerId) : null;
 
-  // Filter games to only show those in the current player's picks
+  // Create games array based on player picks, including duplicates
   const filteredGames = isClient && currentPlayer 
-    ? availableGames.filter(game => currentPlayer.picks.includes(game.id))
+    ? currentPlayer.picks.map(pickId => {
+        const game = availableGames.find(g => g.id === pickId);
+        return game;
+      }).filter(Boolean) as Game[]
     : [];
 
   return (
@@ -71,7 +74,7 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
         <div className={isFooter ? 'flex overflow-x-auto pb-2 space-x-2' : 'space-y-2'}>
           {filteredGames.map((game: Game, index) => (
             <div 
-              key={game.id} 
+              key={`${game.id}-${index}`} 
               className={isFooter 
                 ? filteredGames.length <= 2 
                   ? 'flex-1 min-w-0' // Equal width for 1-2 games

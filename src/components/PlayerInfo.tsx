@@ -5,6 +5,8 @@ import { useSessionGameStore } from '../store/session-store';
 import { Player } from '../types/types';
 import DraggablePlayer from './DraggablePlayer';
 import TurnOrderEditor, { TurnOrderForm } from './TurnOrderEditor';
+import PickSelectionModal from './PickSelectionModal';
+import { useGameLibrary } from '@/store/game-library-store';
 
 export default function PlayerInfo() {
   const [isEditingTurnOrder, setIsEditingTurnOrder] = useState(false);
@@ -17,6 +19,7 @@ export default function PlayerInfo() {
   const [newPlayerIcon, setNewPlayerIcon] = useState('');
   const [showPlayerActions, setShowPlayerActions] = useState<string | null>(null);
   const [showIconPicker, setShowIconPicker] = useState<'new' | 'edit' | null>(null);
+  const [pickSelectionPlayer, setPickSelectionPlayer] = useState<Player | null>(null);
 
   const players = useSessionGameStore(state => state.players);
   const turnOrder = useSessionGameStore(state => state.turnOrder);
@@ -231,7 +234,16 @@ export default function PlayerInfo() {
                   </div>
                   
                   {showPlayerActions === player.id && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border rounded shadow-lg z-20 min-w-24">
+                    <div className="absolute right-0 top-full mt-1 bg-white border rounded shadow-lg z-20 min-w-32">
+                      <button
+                        onClick={() => {
+                          setPickSelectionPlayer(player);
+                          setShowPlayerActions(null);
+                        }}
+                        className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
+                      >
+                        Select Picks ({player.picks.length}/2)
+                      </button>
                       <button
                         onClick={() => startEditingPlayer(player)}
                         className="block w-full px-3 py-2 text-left text-sm hover:bg-gray-100"
@@ -362,6 +374,14 @@ export default function PlayerInfo() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Pick Selection Modal */}
+      {pickSelectionPlayer && (
+        <PickSelectionModal
+          player={pickSelectionPlayer}
+          onClose={() => setPickSelectionPlayer(null)}
+        />
       )}
     </div>
   );

@@ -51,6 +51,7 @@ interface SessionGameStore extends SessionState {
   addPlayer: (name: string, icon?: string) => string | null;
   removePlayer: (playerId: string) => boolean;
   updatePlayer: (playerId: string, updates: { name?: string; icon?: string }) => boolean;
+  updatePlayerPicks: (playerId: string, picks: string[]) => boolean;
 }
 
 // Get the current session state or return a default empty state
@@ -932,6 +933,83 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       const newState = {
         ...state,
         players: updatedPlayers
+      };
+
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+
+    return updateSucceeded;
+  },
+
+  // Update player picks from library games
+  updatePlayerPicks: (playerId: string, picks: string[]) => {
+    let updateSucceeded = false;
+
+    set(state => {
+      // Check if player exists
+      const playerIndex = state.players.findIndex(p => p.id === playerId);
+      if (playerIndex === -1) {
+        console.error('Player not found');
+        return state;
+      }
+
+      // Validate picks (should be exactly 2 game IDs)
+      if (picks.length !== 2) {
+        console.error('Player must have exactly 2 picks');
+        return state;
+      }
+
+      updateSucceeded = true;
+
+      // Update the player's picks
+      const updatedPlayers = state.players.map(player => {
+        if (player.id === playerId) {
+          return {
+            ...player,
+            picks: [...picks]
+          };
+        }
+        return player;
+      });
+
+      // Update available games to include games that are in any player's picks
+      // We need to get the actual game objects from the library
+      const { useGameLibrary } = require('@/store/game-library-store');
+      const libraryStore = useGameLibrary.getState();
+      
+      // Get all unique game IDs from all players' picks
+      const allPickIds = new Set<string>();
+      updatedPlayers.forEach(player => {
+        player.picks.forEach(gameId => allPickIds.add(gameId));
+      });
+      
+      // Convert game IDs to actual game objects from the library
+      const availableGamesFromLibrary: Game[] = [];
+      const allGamesFromLibrary: Game[] = [];
+      
+      allPickIds.forEach(gameId => {
+        const libraryGame = libraryStore.getGameById(gameId);
+        if (libraryGame && libraryGame.isActive) {
+          // Convert LibraryGame to Game format
+          const game: Game = {
+            id: libraryGame.id,
+            title: libraryGame.title,
+            maxPlayers: libraryGame.maxPlayers,
+            link: libraryGame.link,
+            image: libraryGame.image
+          };
+          availableGamesFromLibrary.push(game);
+          allGamesFromLibrary.push(game);
+        }
+      });
+
+      const newState = {
+        ...state,
+        players: updatedPlayers,
+        availableGames: availableGamesFromLibrary,
+        allGames: allGamesFromLibrary
       };
 
       // Save to session manager
