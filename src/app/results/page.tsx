@@ -108,13 +108,20 @@ export default function Results() {
       }
     });
 
-    // Find player with most wins
-    const mostWinsEntry = Object.entries(winnerCounts).reduce(
-      (max, [playerId, count]) => count > max.count ? { playerId, count } : max,
-      { playerId: '', count: 0 }
-    );
+    // Find all players tied for most wins
+    const winCounts = Object.values(winnerCounts);
+    const maxWins = winCounts.length > 0 ? Math.max(...winCounts) : 0;
+    const playersWithMostWins = maxWins > 0 ? Object.entries(winnerCounts)
+      .filter(([_, wins]) => wins === maxWins)
+      .map(([playerId, wins]) => ({ playerId, wins }))
+      : [];
 
-    const mostWinsPlayer = selectedSession.state.players.find(p => p.id === mostWinsEntry.playerId);
+    const mostWinsPlayerNames = playersWithMostWins
+      .map(({ playerId }) => {
+        const player = selectedSession.state.players.find(p => p.id === playerId);
+        return player ? `${player.icon} ${player.name}` : 'Unknown';
+      })
+      .join(', ');
 
     const averageDurationMs = gamesWithDuration > 0 ? totalDurationMs / gamesWithDuration : 0;
 
@@ -122,8 +129,8 @@ export default function Results() {
       totalGames: allGameSessions.length,
       gamesWithDuration,
       mostWins: {
-        ...mostWinsEntry,
-        playerName: mostWinsPlayer?.name || 'N/A'
+        count: maxWins,
+        playerNames: mostWinsPlayerNames || 'N/A'
       },
       longestDuration: longestDurationMs,
       averageDuration: averageDurationMs,
@@ -236,7 +243,7 @@ export default function Results() {
                   <div className="text-gray-600">Total Games</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">{statistics.mostWins.playerName}</div>
+                  <div className="text-3xl font-bold text-green-600">{statistics.mostWins.playerNames}</div>
                   <div className="text-gray-600">Most Wins ({statistics.mostWins.count})</div>
                 </div>
                 <div className="text-center">

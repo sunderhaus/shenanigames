@@ -41,8 +41,16 @@ export default function Results() {
 
     const averageDurationMs = totalGames > 0 ? totalDurationMs / totalGames : 0;
 
+    // Find all players tied for most wins
+    const winCounts = Object.values(winnerCounts);
+    const maxWins = winCounts.length > 0 ? Math.max(...winCounts) : 0;
+    const playersWithMostWins = maxWins > 0 ? Object.entries(winnerCounts)
+      .filter(([_, wins]) => wins === maxWins)
+      .map(([playerId, wins]) => ({ playerId, wins }))
+      : [];
+
     return {
-      mostWins: Object.entries(winnerCounts).reduce((a, b) => (a[1] > b[1] ? a : b), ['', 0]),
+      mostWins: playersWithMostWins,
       longestDuration: longestDurationMs,
       averageDuration: averageDurationMs,
     };
@@ -71,7 +79,11 @@ export default function Results() {
       {/* Summary Section */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold mb-2">Summary</h2>
-        <p><strong>Most Wins:</strong> {players.find(p => p.id === mostWins[0])?.name || 'N/A'} ({mostWins[1]})</p>
+        <p><strong>Most Wins:</strong> {mostWins.length > 0 ? 
+          mostWins.map(({ playerId }) => 
+            players.find(p => p.id === playerId)?.name || 'Unknown'
+          ).join(', ') + ` (${mostWins[0].wins})` 
+          : 'N/A'}</p>
         <p><strong>Longest Game:</strong> {Math.floor(longestDuration / (1000 * 60))} minutes</p>
         <p><strong>Average Duration:</strong> {Math.floor(averageDuration / (1000 * 60))} minutes</p>
       </div>
