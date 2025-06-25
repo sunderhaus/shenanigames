@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useSessionGameStore } from '../store/session-store';
-import { Player } from '../types/types';
+import { Player, Game, SessionStage } from '../types/types';
 import DraggablePlayer from './DraggablePlayer';
 import TurnOrderEditor, { TurnOrderForm } from './TurnOrderEditor';
 import PickSelectionModal from './PickSelectionModal';
+import DraggableGame from './DraggableGame';
 import { useGameLibrary } from '@/store/game-library-store';
 
 export default function PlayerInfo() {
@@ -25,6 +26,9 @@ export default function PlayerInfo() {
   const turnOrder = useSessionGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
+  const availableGames = useSessionGameStore(state => state.availableGames);
+  const tables = useSessionGameStore(state => state.tables);
+  const stage = useSessionGameStore(state => state.stage);
   const passTurn = useSessionGameStore(state => state.passTurn);
   const addPlayer = useSessionGameStore(state => state.addPlayer);
   const removePlayer = useSessionGameStore(state => state.removePlayer);
@@ -142,6 +146,39 @@ export default function PlayerInfo() {
     }
     setShowIconPicker(null);
   };
+
+  // Remaining picks functionality
+  const currentPlayer = isClient ? players.find(p => p.id === currentPlayerId) : null;
+  const isSetupStage = stage === SessionStage.SETUP;
+  const allTablesHaveGames = tables.every(table => table.gameId !== null);
+
+  // Check if library selection should be shown
+  const shouldShowLibrarySelection = () => {
+    if (!isClient) return false;
+    
+    // Get all players who are not seated at any table
+    const unseatedPlayers = players.filter(player => 
+      !tables.some(table => table.seatedPlayerIds.includes(player.id))
+    );
+    
+    // If no unseated players, don't show library selection
+    if (unseatedPlayers.length === 0) return false;
+    
+    // Check if ALL unseated players have exhausted their picks
+    const allUnseatedPlayersExhausted = unseatedPlayers.every(player => 
+      player.picks.length === 0
+    );
+    
+    return allUnseatedPlayersExhausted;
+  };
+
+  // Create games array based on player picks, including duplicates
+  const filteredGames = isClient && currentPlayer 
+    ? currentPlayer.picks.map(pickId => {
+        const game = availableGames.find(g => g.id === pickId);
+        return game;
+      }).filter(Boolean) as Game[]
+    : [];
 
   return (
     <div className="bg-white p-3 rounded-lg shadow-md">
@@ -312,6 +349,69 @@ export default function PlayerInfo() {
         {isClient && draftingComplete && (
           <div className="mt-2 p-2 bg-green-100 text-green-800 rounded">
             Drafting complete! All players have passed.
+          </div>
+        )}
+      </div>
+
+      {/* Remaining Picks Section */}
+      <div className="mt-6 pt-6 border-t border-gray-200">
+        <h3 className="text-lg font-semibold mb-4">
+          {isClient && currentPlayer ? (
+            isSetupStage 
+              ? `${currentPlayer.name}'s Picked Games`
+              : `${currentPlayer.name}'s Remaining Picks`
+          ) : (
+            isSetupStage 
+              ? "Player's Picked Games"
+              : "Player's Remaining Picks"
+          )}
+        </h3>
+
+        {isClient && allTablesHaveGames && (
+          <div className="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium">
+                  This rounds picks have been selected. Continue to the next round to see a player's remaining picks.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Show current player's remaining picks for all stages */}
+        {filteredGames.length === 0 ? (
+          isSetupStage ? (
+            // During SETUP stage, show pick selection button when no picks
+            currentPlayer && (
+              <button
+                onClick={() => setPickSelectionPlayer(currentPlayer)}
+                className="w-full p-4 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+              >
+                <div className="flex flex-col items-center space-y-2">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="font-medium">Select Games for {currentPlayer.name}</span>
+                  <span className="text-sm opacity-75">Choose 2 games to continue</span>
+                </div>
+              </button>
+            )
+          ) : (
+            <p className="text-gray-500">No games available</p>
+          )
+        ) : (
+          <div className="space-y-2">
+            {filteredGames.map((game: Game, index) => (
+              <div key={`${game.id}-${index}`}>
+                <DraggableGame game={game} pickIndex={index} disabled={allTablesHaveGames} />
+              </div>
+            ))}
           </div>
         )}
       </div>

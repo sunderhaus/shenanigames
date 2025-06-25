@@ -193,6 +193,19 @@ main {
   opacity: 0.6;
 }
 
+.game-card.disabled {
+  opacity: 0.4;
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.game-card.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .dragging {
   opacity: 0.8;
   z-index: 1000;

@@ -7,9 +7,10 @@ import { useSessionGameStore } from '../store/session-store';
 interface DraggableGameProps {
   game: Game;
   pickIndex?: number;
+  disabled?: boolean;
 }
 
-const DraggableGame: React.FC<DraggableGameProps> = ({ game, pickIndex }) => {
+const DraggableGame: React.FC<DraggableGameProps> = ({ game, pickIndex, disabled = false }) => {
   const turnOrder = useSessionGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
@@ -87,8 +88,9 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game, pickIndex }) => {
   // 2. Drafting is not complete
   // 3. The current player hasn't already assigned their picks to a table
   // 4. The game is in the player's picks
+  // 5. It's not explicitly disabled
   const isInPlayerPicks = currentPlayer && currentPlayer.picks.includes(game.id);
-  const isDraggable = !draftingComplete && currentPlayer && !hasAssignedPicks && isInPlayerPicks;
+  const isDraggable = !disabled && !draftingComplete && currentPlayer && !hasAssignedPicks && isInPlayerPicks;
 
   // Set up draggable with unique ID that includes pick index
   const uniqueId = pickIndex !== undefined ? `${game.id}-pick-${pickIndex}` : game.id;
@@ -110,7 +112,9 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game, pickIndex }) => {
 
   // Determine the tooltip text based on the game state
   const getTooltipText = () => {
-    if (isDraggable) {
+    if (disabled) {
+      return "Round completed - games cannot be changed";
+    } else if (isDraggable) {
       return "Double-click to place on an available table";
     } else if (draftingComplete) {
       return "Drafting is complete";
@@ -144,7 +148,7 @@ const DraggableGame: React.FC<DraggableGameProps> = ({ game, pickIndex }) => {
       {...listeners}
       onClick={handleGameClick}
       title={getTooltipText()}
-      className={`game-card ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''} ${getRecentlyClickedClass()}`}
+      className={`game-card ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''} ${disabled ? 'disabled' : ''} ${getRecentlyClickedClass()}`}
     >
       <div className="flex items-center">
         {game.image && (

@@ -100,7 +100,7 @@ export default function SessionStageManager() {
               Round {currentRoundIndex + 1} in Progress
             </h3>
             <p className="text-sm text-blue-800">
-              Players are selecting games and seating. The round will complete when all tables have games and all players are seated.
+              Players are selecting games and seating. Play will begin once all players are seated at tables with games.
             </p>
           </div>
         );
