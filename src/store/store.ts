@@ -320,6 +320,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   // Place a game on a table
   placeGame: (gameId: string, tableId: string, playerId: string) => {
+    let placeSucceeded = false;
+    
     set((state) => {
       // Find the game and table
       // Look in allGames first, which contains all games
@@ -347,10 +349,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
         round.tableStates.some(tableState => tableState.gameId === gameId)
       );
 
-      // Validate the action
+      // Validate the action - if table already has a game, don't proceed
       if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isGameUsedInPreviousRound || isPlayerSeatedAtAnotherTable) {
         return state; // Invalid action, return unchanged state
       }
+
+      // If we reach here, the place operation is valid
+      placeSucceeded = true;
 
       // Update the state
       const updatedTables = state.tables.map(t => 
@@ -429,8 +434,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       };
     });
 
-    // After updating the state, use advanceTurn to consistently advance to the next player
-    useGameStore.getState().advanceTurn();
+    // Only call advanceTurn if the place operation succeeded
+    if (placeSucceeded) {
+      useGameStore.getState().advanceTurn();
+    }
 
     // Check if the round is complete and we need to create a new round
     const state = useGameStore.getState();
@@ -442,6 +449,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   // Join a game at a table
   joinGame: (tableId: string, playerId: string) => {
+    let joinSucceeded = false;
+    
     set((state) => {
       // Find the table and player
       const table = state.tables.find(t => t.id === tableId);
@@ -452,7 +461,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         t.id !== tableId && t.seatedPlayerIds.includes(playerId)
       );
 
-      // Validate the action
+      // Validate the action - if table is empty (no game), don't proceed
       if (!table || !player || table.gameId === null || 
           table.seatedPlayerIds.includes(playerId) ||
           isPlayerSeatedAtAnotherTable) {
@@ -469,6 +478,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (table.seatedPlayerIds.length >= maxPlayers) {
         return state; // Table is full, return unchanged state
       }
+
+      // If we reach here, the join operation is valid
+      joinSucceeded = true;
 
       // Update the state
       const updatedTables = state.tables.map(t => 
@@ -523,9 +535,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       };
     });
 
-    // Ensure that AdvanceTurn is only called if the table is not empty
-    const table = useGameStore.getState().tables.find(t => t.id === tableId);
-    if (table && table.seatedPlayerIds.length > 0) {
+    // Only call advanceTurn if the join operation succeeded
+    if (joinSucceeded) {
       useGameStore.getState().advanceTurn();
     }
 
