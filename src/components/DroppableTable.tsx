@@ -220,38 +220,47 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         <div className="absolute inset-0 flex items-center justify-center bg-blue-100 bg-opacity-40 rounded">
         </div>
       )}
-      <h3 className={`font-bold text-center ${game ? 'mb-3 text-lg' : 'mb-2 text-xl'}`}>{game ? game.title : table.id}</h3>
+      <h3 className={`font-bold text-center ${game ? 'mb-2 text-base sm:text-lg sm:mb-3' : 'mb-2 text-lg sm:text-xl'}`}>{game ? game.title : table.id}</h3>
 
       {game ? (
-        <div className="text-center flex-1 flex flex-col justify-between">
+        <div className="text-center flex-1 flex flex-col justify-start min-h-0 space-y-2">
           {game.image && (
-            <div className="mb-4 w-full game-image-container">
+            <div className="w-full game-image-container flex-shrink-0">
               <img 
                 src={game.image} 
                 alt={game.title} 
                 className="game-image w-full h-auto"
-                style={{ maxHeight: '160px' }}
+                style={{ 
+                  maxHeight: 'min(80px, 15vh)', 
+                  height: 'auto'
+                }}
               />
             </div>
           )}
 
-          <div className="mb-3">
-            <span className="text-base font-medium text-gray-600">
+          <div className="flex-shrink-0">
+            <span className="text-sm sm:text-base font-medium text-gray-600">
               {table.seatedPlayerIds.length}/{game.maxPlayers} Players
             </span>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-1 sm:gap-2 flex-shrink-0">
             {seatedPlayers.map(player => (
               <div 
                 key={player.id} 
-                className={`player-token ${player.id === table.placedByPlayerId ? 'game-picker font-bold' : ''}`}
+                className={`player-token text-xs sm:text-sm ${player.id === table.placedByPlayerId ? 'game-picker font-bold' : ''}`}
+                style={{
+                  minWidth: '1.5rem',
+                  height: '1.5rem',
+                  fontSize: '0.75rem',
+                  padding: '0.125rem 0.375rem'
+                }}
               >
                 {player.id === table.placedByPlayerId && (
                   <span className="mr-1 text-yellow-400">★</span>
                 )}
                 <span className="mr-1">{player.icon}</span>
-                {player.name}
+                <span className="truncate max-w-16 sm:max-w-none">{player.name}</span>
               </div>
             ))}
           </div>

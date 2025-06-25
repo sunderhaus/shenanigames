@@ -166,109 +166,26 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md relative h-full flex flex-col">
-      {/* Reset Confirmation Modal */}
-      {isClient && showResetConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Reset Round</h3>
-            <p className="mb-6">Are you sure you want to reset this round? All placements will be cleared.</p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={cancelReset}
-                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmReset}
-                className="px-4 py-2 rounded bg-red-500 hover:bg-red-600 text-white"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Fixed Header */}
-      <div className="sticky top-0 bg-white z-10 pb-2 border-b border-gray-200 mb-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">Tables</h2>
-          {isClient && (
-            <div className="flex items-center flex-wrap">
-              <div className="flex items-center mr-2 mb-2 sm:mb-0">
-                <button
-                  onClick={viewPreviousRound}
-                  disabled={!hasPreviousRound}
-                  className={`px-2 py-1 rounded ${
-                    hasPreviousRound
-                      ? "text-blue-500 hover:text-blue-700"
-                      : "text-gray-300 cursor-not-allowed"
-                  }`}
-                  aria-label="Previous Round"
-                >
-                  ←
-                </button>
-                <span className="mx-2 whitespace-nowrap">
-                  {`Round ${viewingRoundIndex + 1}/${rounds.length}`}
-                  {isViewingHistory && " (History)"}
-                  {!isViewingHistory && roundComplete && " (Set)"}
-                </span>
-                <button
-                  onClick={viewNextRound}
-                  disabled={!hasNextRound}
-                  className={`px-2 py-1 rounded ${
-                    hasNextRound
-                      ? "text-blue-500 hover:text-blue-700"
-                      : "text-gray-300 cursor-not-allowed"
-                  }`}
-                  aria-label="Next Round"
-                >
-                  →
-                </button>
-                {isViewingHistory && (
-                  <button
-                    onClick={returnToCurrentRound}
-                    className="ml-2 px-2 py-1 text-sm rounded bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    Return
-                  </button>
-                )}
-              </div>
-              {!isViewingHistory && (
-              <div className="flex space-x-2">
-                <button
-                  onClick={handleResetRound}
-                  className="px-3 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white flex items-center justify-center"
-                  aria-label="Reset Round"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                    <path d="M3 3v5h5"></path>
-                  </svg>
-                </button>
-              </div>
-            )}
-            </div>
-          )}
-        </div>
-      </div>
+    <div className={`${isMobile ? 'h-full flex flex-col' : 'bg-white p-4 rounded-lg shadow-md relative h-full flex flex-col'}`}>
 
       {/* Main content area - conditionally render mobile or desktop view */}
       {isMobile ? (
         // Mobile view - single table with swipe navigation
         <div 
           ref={swipeContainerRef}
-          className="flex-grow flex flex-col"
+          className="h-full flex flex-col"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           {isClient && tables.length > 0 && (
             <>
-              <div className="flex-grow flex flex-col justify-center items-center relative" style={{ padding: '8px 4px' }}>
-                {/* Current table */}
+              <div className="flex-1 flex flex-col justify-center items-center relative px-6 py-6">
+                {/* Table content container */}
+                <div className="flex-1 flex items-center justify-center w-full max-w-md">
+                  <div className="w-full h-full p-4 bg-white rounded-lg shadow-md">
+                    <div className="h-full flex justify-center items-center">
+                  {/* Current table */}
                 {isClient && !isViewingHistory && tables[currentTableIndex] && (() => {
                   const table = tables[currentTableIndex];
                   const game = findGameById(table.gameId);
@@ -322,6 +239,9 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                     </div>
                   );
                 })()}
+                    </div>
+                  </div>
+                </div>
 
                 {/* Swipe indicators */}
                 {currentTableIndex > 0 && (
@@ -348,7 +268,7 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
               </div>
 
               {/* Table navigation dots */}
-              <div className="table-nav-dots">
+              <div className="table-nav-dots mb-4">
                 {(isViewingHistory ? viewingRound.tableStates : tables).map((_, index) => (
                   <button
                     key={index}
@@ -359,10 +279,6 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                 ))}
               </div>
 
-              {/* Table counter */}
-              <div className="text-center text-sm text-gray-500 mb-2">
-                Table {currentTableIndex + 1} of {isViewingHistory ? viewingRound.tableStates.length : tables.length}
-              </div>
             </>
           )}
         </div>

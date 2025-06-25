@@ -2,6 +2,7 @@
 
 import PlayerInfo from '../components/PlayerInfo';
 import TablesArea from '../components/TablesArea';
+import TablesHeader from '../components/TablesHeader';
 import DragAndDropProvider from '../components/DragAndDropProvider';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import HamburgerMenu from '../components/HamburgerMenu';
@@ -68,51 +69,82 @@ export default function Home() {
 
   return (
     <AnimationProvider>
-      <main className={`min-h-screen p-4 ${isMobile && allTablesHaveGames ? 'pb-56' : 'pb-52'} bg-gray-100`}>
-        <div className="container mx-auto">
-          <header className="mb-8 sticky top-0 bg-gray-100 z-30 pt-2 pb-4">
-            <div className="flex items-center mb-4">
-              <div className="w-16 flex justify-start">
+      {isMobile ? (
+        // Mobile Layout: Header-Body-Footer structure
+        <div className="flex flex-col h-screen bg-gray-100">
+          {/* Fixed Headers */}
+          <header className="fixed top-0 left-0 right-0 bg-gray-100 z-30 px-4 py-2 border-b border-gray-200">
+            <div className="flex items-center mb-2">
+              <div className="w-12 flex justify-start">
                 <HamburgerMenu />
               </div>
               <div className="flex-1 text-center">
-                <h1 className="text-3xl font-bold">Shenanigames</h1>
-                <p className="text-gray-600">Ellijay Edition</p>
+                <h1 className="text-2xl font-bold">Shenanigames</h1>
+                <p className="text-gray-600 text-sm">Ellijay Edition</p>
               </div>
-              <div className="w-16 flex justify-end">
+              <div className="w-12 flex justify-end">
                 <LifecycleStatusTooltip isMobile={isMobile} />
               </div>
             </div>
+            <PickRequirements />
+            <TablesHeader />
           </header>
 
-          {/* Pick Requirements Warning */}
-          <PickRequirements />
+          {/* Body with calculated height to fill space between header and footer */}
+          <main className="pt-32 pb-32 overflow-hidden" style={{ height: 'calc(100vh - 16rem)' }}>
+            <DragAndDropProvider>
+              <TablesArea isMobile={isMobile} />
+            </DragAndDropProvider>
+          </main>
 
-          <DragAndDropProvider>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Main content - Tables (2/3rds width) */}
-              <div className={`${isMobile ? `fixed inset-0 pt-20 ${allTablesHaveGames ? 'pb-56' : 'pb-52'} px-4 mt-0` : 'lg:col-span-2'}`}>
-                <TablesArea isMobile={isMobile} />
+          {/* Fixed Footer */}
+          <div className="fixed bottom-0 left-0 right-0">
+            <ActivePlayerFooter />
+          </div>
+        </div>
+      ) : (
+        // Desktop Layout: Original structure
+        <main className="min-h-screen p-4 bg-gray-100">
+          <div className="container mx-auto">
+            <header className="mb-8 sticky top-0 bg-gray-100 z-30 pt-2 pb-4">
+              <div className="flex items-center mb-4">
+                <div className="w-16 flex justify-start">
+                  <HamburgerMenu />
+                </div>
+                <div className="flex-1 text-center">
+                  <h1 className="text-3xl font-bold">Shenanigames</h1>
+                  <p className="text-gray-600">Ellijay Edition</p>
+                </div>
+                <div className="w-16 flex justify-end">
+                  <LifecycleStatusTooltip isMobile={isMobile} />
+                </div>
               </div>
+            </header>
 
-              {/* Right sidebar - Players with Remaining Picks (1/3rd width, hidden on mobile) */}
-              {!isMobile && (
+            {/* Pick Requirements Warning */}
+            <PickRequirements />
+
+            <DragAndDropProvider>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main content - Tables (2/3rds width) */}
+                <div className="lg:col-span-2">
+                  <TablesArea isMobile={isMobile} />
+                </div>
+
+                {/* Right sidebar - Players with Remaining Picks (1/3rd width) */}
                 <div className="lg:col-span-1">
                   <PlayerInfo />
                 </div>
-              )}
-            </div>
-          </DragAndDropProvider>
+              </div>
+            </DragAndDropProvider>
 
-          {/* Fixed footer for mobile */}
-          {isMobile && <ActivePlayerFooter />}
-
-          <footer className="mt-8 text-center text-gray-500 text-sm pb-16">
-            <p>Drag and drop games to tables or players to tables with games to make selections.</p>
-            <p className="mt-2">© 2025 Shenanigames, LLC</p>
-          </footer>
-        </div>
-      </main>
+            <footer className="mt-8 text-center text-gray-500 text-sm pb-16">
+              <p>Drag and drop games to tables or players to tables with games to make selections.</p>
+              <p className="mt-2">© 2025 Shenanigames, LLC</p>
+            </footer>
+          </div>
+        </main>
+      )}
     </AnimationProvider>
   );
 }
