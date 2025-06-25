@@ -523,8 +523,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
       };
     });
 
-    // After updating the state, use advanceTurn to consistently advance to the next player
-    useGameStore.getState().advanceTurn();
+    // Ensure that AdvanceTurn is only called if the table is not empty
+    const table = useGameStore.getState().tables.find(t => t.id === tableId);
+    if (table && table.seatedPlayerIds.length > 0) {
+      useGameStore.getState().advanceTurn();
+    }
 
     // Check if the round is complete and we need to create a new round
     const state = useGameStore.getState();
