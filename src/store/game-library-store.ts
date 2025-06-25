@@ -99,6 +99,106 @@ const loadInitialGameLibrary = (): GameLibraryState => {
       playingTime: '60-120 minutes'
     }),
     createLibraryGame({
+      title: 'The Magnificent',
+      maxPlayers: 4,
+      minPlayers: 1,
+      link: 'https://boardgamegeek.com/boardgame/283863/the-magnificent',
+      image: 'https://cf.geekdo-images.com/6pci74DWc7U7XuwkfpEu2Q__imagepagezoom/img/mMhV7GS5YfNRDjQ2reRjsIm6_vY=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic4871117.jpg',
+      category: 'Strategy',
+      complexity: 3,
+      playingTime: '60-90 minutes'
+    }),
+    createLibraryGame({
+      title: 'Last Light',
+      maxPlayers: 8,
+      minPlayers: 2,
+      link: 'https://boardgamegeek.com/boardgame/315727/last-light',
+      image: 'https://cf.geekdo-images.com/zw7xI7gJD6r7zNDR-AbVAQ__imagepagezoom/img/uOxcanSS4PXD8y6rHNO3UxT8eVg=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic6338617.jpg',
+      category: 'Strategy',
+      complexity: 4,
+      playingTime: '90-120 minutes'
+    }),
+    createLibraryGame({
+      title: 'Oath',
+      maxPlayers: 6,
+      minPlayers: 1,
+      link: 'https://boardgamegeek.com/boardgame/291572/oath',
+      image: 'https://cf.geekdo-images.com/gTxav_KKQK1rDg-XuCjCSA__imagepagezoom/img/vZVvtufTceUYyWfvHwOBTRGmXdw=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic5164812.jpg',
+      category: 'Adventure',
+      complexity: 4,
+      playingTime: '90-150 minutes'
+    }),
+    createLibraryGame({
+      title: 'Realm of Reckoning',
+      maxPlayers: 5,
+      minPlayers: 2,
+      link: 'https://boardgamegeek.com/boardgame/446893/realm-of-reckoning',
+      image: 'https://cf.geekdo-images.com/xElMYLyj1pqtCIOhRNzA9w__imagepagezoom/img/JdGJ4hQ1GsNMuYl0AeOh0rRfqJ8=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic8899476.png',
+      category: 'Fantasy',
+      complexity: 3,
+      playingTime: '60-120 minutes'
+    }),
+    createLibraryGame({
+      title: 'Stupor Mundi',
+      maxPlayers: 4,
+      minPlayers: 2,
+      link: 'https://boardgamegeek.com/boardgame/392492/stupor-mundi',
+      image: 'https://cf.geekdo-images.com/SJvK-Hq72xOiJ_JsmB1dGA__imagepagezoom/img/lsPEsMAQx4KcaLrYnwwNArS44VM=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7585104.jpg',
+      category: 'Medieval',
+      complexity: 3,
+      playingTime: '60-90 minutes'
+    }),
+    createLibraryGame({
+      title: 'Brass: Birmingham',
+      maxPlayers: 4,
+      minPlayers: 2,
+      link: 'https://boardgamegeek.com/boardgame/224517/brass-birmingham',
+      image: 'https://cf.geekdo-images.com/x3zxjr-Vw5iU4yDPg70Jgw__imagepagezoom/img/7a0LOL48K-7JNIOSGtcsNsIxkN0=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic3490053.jpg',
+      category: 'Economy',
+      complexity: 4,
+      playingTime: '60-120 minutes'
+    }),
+    createLibraryGame({
+      title: 'Cyclades Legendary',
+      maxPlayers: 6,
+      minPlayers: 3,
+      link: 'https://boardgamegeek.com/boardgame/380619/cyclades-legendary-edition',
+      image: 'https://cf.geekdo-images.com/g4bC44H7rdrl0KLW7LGV5A__imagepagezoom/img/f0XWPOgK2ZVU_s3dQvc3uZv03Zo=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7566828.png',
+      category: 'Strategy',
+      complexity: 4,
+      playingTime: '60-120 minutes'
+    }),
+    createLibraryGame({
+      title: 'Great Western Trail',
+      maxPlayers: 4,
+      minPlayers: 2,
+      link: 'https://boardgamegeek.com/boardgame/193738/great-western-trail',
+      image: 'https://cf.geekdo-images.com/u1l0gH7sb_vnvDvoO_QHqA__imagepagezoom/img/cJyIiNTccBaE7UjYIsP2c-nkssE=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic4887376.jpg',
+      category: 'Western',
+      complexity: 4,
+      playingTime: '90-150 minutes'
+    }),
+    createLibraryGame({
+      title: 'Dune War for Arakis',
+      maxPlayers: 4,
+      minPlayers: 2,
+      link: 'https://boardgamegeek.com/boardgame/367150/dune-war-for-arrakis',
+      image: 'https://cf.geekdo-images.com/b_Uo-x3szhupSWeQdw5bdg__imagepage/img/87_6KXsy1UFOg4HDpiC62JWH68M=/fit-in/900x600/filters:no_upscale():strip_icc()/pic7088918.jpg',
+      category: 'Sci-Fi',
+      complexity: 4,
+      playingTime: '120-180 minutes'
+    }),
+    createLibraryGame({
+      title: 'The White Castle',
+      maxPlayers: 4,
+      minPlayers: 2,
+      link: 'https://boardgamegeek.com/boardgame/371942/the-white-castle',
+      image: 'https://cf.geekdo-images.com/qXT1U-nFh9PE8ujfdmI7dA__imagepagezoom/img/al4q0nFn_fArrNM_cXvz6jIbe8U=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic7754663.jpg',
+      category: 'Strategy',
+      complexity: 2,
+      playingTime: '30-60 minutes'
+    }),
+    createLibraryGame({
       title: 'Dune',
       maxPlayers: 6,
       minPlayers: 2,
@@ -169,6 +269,7 @@ interface GameLibraryStore extends GameLibraryState {
   // Utility functions
   refreshLibrary: () => void;
   clearLibrary: () => void;
+  forceReinitialize: () => void;
   
   // Get games for session use
   getActiveGames: () => LibraryGame[];
@@ -640,6 +741,18 @@ export const useGameLibrary = create<GameLibraryStore>((set, get) => ({
   clearLibrary: () => {
     clearGameLibrary();
     set(createEmptyGameLibrary());
+  },
+
+  // Force reinitialize with default games
+  forceReinitialize: () => {
+    clearGameLibrary();
+    const newState = loadInitialGameLibrary();
+    set(state => ({
+      ...newState,
+      currentFilter: {},
+      currentSort: { by: 'title', order: 'asc' },
+      filteredGames: newState.gameList
+    }));
   },
 
   // Get active games for session use

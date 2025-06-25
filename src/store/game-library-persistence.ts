@@ -3,7 +3,7 @@ import { LibraryGame, GameLibraryState, GameLibraryExport } from '@/types/game-l
 // Storage keys
 const GAME_LIBRARY_KEY = 'shenanigames-game-library';
 const GAME_LIBRARY_VERSION_KEY = 'shenanigames-game-library-version';
-const CURRENT_VERSION = '1.0.0';
+const CURRENT_VERSION = '1.1.0';
 
 // Check if we're running in the browser environment
 const isBrowser = typeof window !== 'undefined';
@@ -206,9 +206,11 @@ export const bootstrapGameLibrary = (): void => {
     if (storedVersion !== CURRENT_VERSION) {
       console.log(`Game Library version changed from ${storedVersion || 'none'} to ${CURRENT_VERSION}.`);
       
-      // For now, we'll just update the version. Future migrations can be added here.
+      // Clear existing library to force reinitialize with new default games
+      clearGameLibrary();
+      
       localStorage.setItem(GAME_LIBRARY_VERSION_KEY, CURRENT_VERSION);
-      console.log('Game Library bootstrapped successfully.');
+      console.log('Game Library cleared and will be reinitialized with new default games.');
     }
   } catch (error) {
     console.error('Error during game library bootstrap:', error);

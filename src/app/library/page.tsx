@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { saveAs } from 'file-saver';
 import { useGameLibrary } from '@/store/game-library-store';
 import { GameFilter, GameSort } from '@/types/game-library-types';
 import GameLibraryHeader from '@/components/game-library/GameLibraryHeader';
@@ -26,7 +27,9 @@ export default function GameLibraryPage() {
     currentSort,
     setFilter,
     setSort,
-    clearFilters
+    clearFilters,
+    exportToCSV,
+    exportToJSON
   } = useGameLibrary();
 
   // Set isClient to true after component mounts
@@ -48,6 +51,20 @@ export default function GameLibraryPage() {
 
   const displayedGames = Object.keys(currentFilter).length > 0 ? filteredGames : gameList;
 
+  const handleExportCSV = () => {
+    const csvData = exportToCSV();
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8' });
+    saveAs(blob, 'game-library.csv');
+  };
+
+  const handleExportJSON = () => {
+    const jsonData = exportToJSON();
+    if (jsonData) {
+      const blob = new Blob([jsonData], { type: 'application/json;charset=utf-8' });
+      saveAs(blob, 'game-library.json');
+    }
+  };
+
   if (!isClient) {
     return (
       <div className="min-h-screen p-4 bg-gray-100 flex items-center justify-center">
@@ -66,6 +83,8 @@ export default function GameLibraryPage() {
           showingFiltered={Object.keys(currentFilter).length > 0}
           onAddGame={() => setShowAddGame(true)}
           onImportCSV={() => setShowImportCSV(true)}
+          onExportCSV={handleExportCSV}
+          onExportJSON={handleExportJSON}
           onShowStats={() => setShowStats(true)}
           viewMode={viewMode}
           onViewModeChange={setViewMode}

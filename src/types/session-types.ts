@@ -53,7 +53,7 @@ export interface SessionTemplate {
     image?: string;
   }>;
   tableCount: number;
-  playerPicks?: Record<string, string[]>; // playerId -> gameIds
+  playerPicks?: Record<string, number[]>; // playerName -> gameIndices
 }
 
 /**
