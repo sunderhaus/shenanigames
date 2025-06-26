@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { saveAs } from 'file-saver';
 import { useSessionManager } from '../../store/session-manager';
 import { useGameCollections } from '../../store/game-collection-store';
 import { GameSession, Player, Game, Round, SessionState } from '../../types/types';
@@ -229,6 +230,132 @@ export default function Results() {
     return formatDuration(duration);
   };
 
+  // Export functions
+  const exportToCSV = () => {
+    if (selectedSessions.length === 0 || allGameSessions.length === 0) return;
+
+    const headers = [
+      'Session Name',
+      'Game Name', 
+      'Round',
+      'Picked By',
+      'Winner',
+      'Duration (minutes)',
+      'Picked At',
+      'Started At',
+      'Ended At',
+      'Players',
+      'Session Type'
+    ];
+
+    const rows = allGameSessions.map(session => {
+      const pickedAt = session.gamePickedAt 
+        ? (session.gamePickedAt instanceof Date ? session.gamePickedAt : new Date(session.gamePickedAt))
+        : null;
+      const startedAt = session.gameStartedAt 
+        ? (session.gameStartedAt instanceof Date ? session.gameStartedAt : new Date(session.gameStartedAt))
+        : null;
+      const endedAt = session.gameEndedAt 
+        ? (session.gameEndedAt instanceof Date ? session.gameEndedAt : new Date(session.gameEndedAt))
+        : null;
+      
+      const durationMinutes = startedAt && endedAt 
+        ? Math.round((endedAt.getTime() - startedAt.getTime()) / (1000 * 60))
+        : '';
+
+      const players = session.seatedPlayerIds.map(playerId => {
+        const playerName = getPlayerName(playerId);
+        // Remove emoji and clean the name for CSV
+        return playerName.replace(/[^\w\s]/gi, '').trim();
+      }).join('; ');
+
+      return [
+        `"${session.sessionName || 'Unknown Session'}"`,
+        `"${session.gameName}"`,
+        session.sessionType?.toUpperCase() === 'FREEFORM' ? 'N/A' : (session.roundIndex + 1).toString(),
+        `"${session.placedByPlayerId ? getPlayerName(session.placedByPlayerId).replace(/[^\w\s]/gi, '').trim() : 'Unknown'}"`,
+        `"${session.winnerId ? getPlayerName(session.winnerId).replace(/[^\w\s]/gi, '').trim() : 'No winner'}"`,
+        durationMinutes.toString(),
+        pickedAt ? `"${pickedAt.toISOString()}"` : '""',
+        startedAt ? `"${startedAt.toISOString()}"` : '""',
+        endedAt ? `"${endedAt.toISOString()}"` : '""',
+        `"${players}"`,
+        `"${session.sessionType || 'Unknown'}"`
+      ];
+    });
+
+    const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+    const fileName = selectedSessions.length === 1 
+      ? `${selectedSessions[0].metadata.name}-results.csv`
+      : `aggregated-results-${selectedSessions.length}-sessions.csv`;
+    saveAs(blob, fileName);
+  };
+
+  const exportToJSON = () => {
+    if (selectedSessions.length === 0) return;
+
+    const exportData = {
+      exportInfo: {
+        exportedAt: new Date().toISOString(),
+        sessionsCount: selectedSessions.length,
+        gamesCount: allGameSessions.length,
+        sessionNames: selectedSessions.map(s => s.metadata.name)
+      },
+      statistics,
+      sessions: selectedSessions.map(session => ({
+        metadata: session.metadata,
+        playerCount: session.state.players.length,
+        roundCount: session.state.rounds.length
+      })),
+      gameDetails: allGameSessions.map(session => ({
+        sessionName: session.sessionName,
+        sessionType: session.sessionType,
+        gameName: session.gameName,
+        roundIndex: session.roundIndex,
+        tableId: session.tableId,
+        gameId: session.gameId,
+        pickedBy: session.placedByPlayerId ? {
+          id: session.placedByPlayerId,
+          name: getPlayerName(session.placedByPlayerId)
+        } : null,
+        winner: session.winnerId ? {
+          id: session.winnerId,
+          name: getPlayerName(session.winnerId)
+        } : null,
+        players: session.seatedPlayerIds.map(playerId => ({
+          id: playerId,
+          name: getPlayerName(playerId)
+        })),
+        timing: {
+          pickedAt: session.gamePickedAt,
+          startedAt: session.gameStartedAt,
+          endedAt: session.gameEndedAt,
+          durationMs: session.gameStartedAt && session.gameEndedAt 
+            ? new Date(session.gameEndedAt).getTime() - new Date(session.gameStartedAt).getTime()
+            : null
+        }
+      })),
+      winCounts: Object.entries(statistics.winnerCounts).map(([playerId, wins]) => ({
+        player: {
+          id: playerId,
+          name: getPlayerName(playerId)
+        },
+        wins,
+        gamesPlayed: allGameSessions.filter(session => 
+          session.seatedPlayerIds.includes(playerId)
+        ).length
+      }))
+    };
+
+    const jsonContent = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8' });
+    const fileName = selectedSessions.length === 1 
+      ? `${selectedSessions[0].metadata.name}-results.json`
+      : `aggregated-results-${selectedSessions.length}-sessions.json`;
+    saveAs(blob, fileName);
+  };
+
   return (
     <div className="min-h-screen p-4 bg-gray-100">
       <div className="container mx-auto max-w-7xl">
@@ -258,6 +385,26 @@ export default function Results() {
                   }
                 </p>
               </div>
+              
+              {/* Export buttons */}
+              {selectedSessions.length > 0 && allGameSessions.length > 0 && (
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={exportToCSV}
+                    className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    title="Export results data to CSV format"
+                  >
+                    📤 Export CSV
+                  </button>
+                  <button
+                    onClick={exportToJSON}
+                    className="px-4 py-2 text-sm font-medium text-purple-700 bg-purple-100 border border-purple-300 rounded-md hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    title="Export complete results data to JSON format"
+                  >
+                    📦 Export JSON
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Navigation breadcrumb */}
