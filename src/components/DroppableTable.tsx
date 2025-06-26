@@ -196,9 +196,9 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         return "Click anywhere to edit players or session details";
       }
     } else if (isValidPlayerTarget) {
-      return sessionType === SessionType.FREEFORM 
-        ? "Double-click to join this table" 
-        : "Double-click or long press to join this table";
+      return sessionType === SessionType.PICKS 
+        ? "Double-click or long press to join this table"
+        : "Double-click to join this table";
     } else if (table.gameId === null) {
       return "Double tap a game or drop a game here";
     } else if (table.seatedPlayerIds.includes(currentPlayerId)) {
