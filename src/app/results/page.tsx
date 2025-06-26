@@ -23,6 +23,12 @@ export default function Results() {
   const { playerList } = useGameCollections();
   const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
   const [selectedSessions, setSelectedSessions] = useState<{ metadata: any; state: any }[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Set hydration state
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Update selected sessions when current session changes and no sessions are selected
   useEffect(() => {
@@ -268,224 +274,235 @@ export default function Results() {
             </div>
           </div>
         </div>
-        {/* Session Picker */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <label className="block text-lg font-medium">Select Sessions:</label>
-            <div className="flex gap-2">
-              <button
-                onClick={selectAllSessions}
-                className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-              >
-                Select All
-              </button>
-              <button
-                onClick={clearAllSelections}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-              >
-                Clear All
-              </button>
+        {/* Don't render session content until hydrated to prevent server/client mismatch */}
+        {!isHydrated ? (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="text-center py-8">
+              <div className="text-gray-500">Loading sessions...</div>
             </div>
           </div>
-          
-          <div className="text-sm text-gray-600 mb-3">
-            {selectedSessionIds.length === 0 
-              ? 'No sessions selected' 
-              : `${selectedSessionIds.length} session${selectedSessionIds.length === 1 ? '' : 's'} selected`
-            }
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
-            {sessionList.map(session => (
-              <div
-                key={session.id}
-                className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                  selectedSessionIds.includes(session.id)
-                    ? 'bg-blue-50 border-blue-300 text-blue-900'
-                    : 'bg-white border-gray-200 hover:bg-gray-50'
-                }`}
-                onClick={() => toggleSessionSelection(session.id)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{session.name}</h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {new Date(session.lastModified).toLocaleDateString()}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM'
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM' ? '🎲' : '🎯'}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {session.playerCount} players
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 ml-2">
-                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                      selectedSessionIds.includes(session.id)
-                        ? 'bg-blue-500 border-blue-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {selectedSessionIds.includes(session.id) && (
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {selectedSessions.length > 0 && (
+        ) : (
           <>
-            {/* Summary Statistics */}
+            {/* Session Picker */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <h2 className="text-2xl font-bold mb-4">Summary Statistics</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">{statistics.totalGames}</div>
-                  <div className="text-gray-600">Total Games</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600">{statistics.mostWins.playerNames}</div>
-                  <div className="text-gray-600">Most Wins ({statistics.mostWins.count})</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-600">{formatDuration(statistics.longestDuration)}</div>
-                  <div className="text-gray-600">Longest Game</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-600">{formatDuration(statistics.averageDuration)}</div>
-                  <div className="text-gray-600">Average Duration</div>
+              <div className="flex items-center justify-between mb-4">
+                <label className="block text-lg font-medium">Select Sessions:</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={selectAllSessions}
+                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={clearAllSelections}
+                    className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                  >
+                    Clear All
+                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* Win Counts Table */}
-            {Object.keys(statistics.winnerCounts).length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-2xl font-bold mb-4">Win Counts by Player</h2>
-                <div className="overflow-x-auto">
-                  <table className="w-full table-auto">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-semibold">Player</th>
-                        <th className="text-left py-3 px-4 font-semibold">Wins</th>
-                        <th className="text-left py-3 px-4 font-semibold">Win Rate</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(statistics.winnerCounts)
-                        .sort(([,a], [,b]) => b - a)
-                        .map(([playerId, wins]) => {
-                          const gamesPlayed = allGameSessions.filter(session => 
-                            session.seatedPlayerIds.includes(playerId)
-                          ).length;
-                          const winRate = gamesPlayed > 0 ? ((wins / gamesPlayed) * 100).toFixed(1) : '0.0';
-                          
-                          return (
-                            <tr key={playerId} className="border-b border-gray-100 hover:bg-gray-50">
-                              <td className="py-3 px-4">{getPlayerName(playerId)}</td>
-                              <td className="py-3 px-4">{wins}</td>
-                              <td className="py-3 px-4">{winRate}%</td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
+              
+              <div className="text-sm text-gray-600 mb-3">
+                {selectedSessionIds.length === 0 
+                  ? 'No sessions selected' 
+                  : `${selectedSessionIds.length} session${selectedSessionIds.length === 1 ? '' : 's'} selected`
+                }
               </div>
-            )}
-
-            {/* Detailed Game Sessions */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold mb-4">Detailed Game Sessions</h2>
-              {allGameSessions.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No game sessions found in this session.</p>
-              ) : (
-                <div className="space-y-4">
-                  {allGameSessions.map((session, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            {session.gameName}
-                            {/* Only show round info for PICKS sessions */}
-                            {session.sessionType && 
-                             session.sessionType.toUpperCase() !== 'FREEFORM' && (
-                              <span className="text-sm text-gray-500 ml-2">(Round {session.roundIndex + 1})</span>
-                            )}
-                            {selectedSessions.length > 1 && session.sessionName && (
-                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded ml-2">
-                                {session.sessionName}
-                              </span>
-                            )}
-                          </h3>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                            <div>
-                              <span className="font-medium text-gray-700">Picked by:</span>
-                              <div className="text-gray-600">
-                                {session.placedByPlayerId 
-                                  ? getPlayerName(session.placedByPlayerId)
-                                  : 'Unknown'
-                                }
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-gray-700">Winner:</span>
-                              <div className="text-gray-600">
-                                {session.winnerId 
-                                  ? `🏆 ${getPlayerName(session.winnerId)}`
-                                  : 'No winner recorded'
-                                }
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-gray-700">Duration:</span>
-                              <div className="text-gray-600">{getSessionDuration(session)}</div>
-                            </div>
-                            
-                            <div>
-                              <span className="font-medium text-gray-700">Picked at:</span>
-                              <div className="text-gray-600">
-                                {session.gamePickedAt 
-                                  ? (() => {
-                                      const pickDate = session.gamePickedAt instanceof Date 
-                                        ? session.gamePickedAt 
-                                        : new Date(session.gamePickedAt);
-                                      return pickDate.toLocaleDateString() + ' ' + 
-                                             pickDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                    })()
-                                  : 'Unknown'
-                                }
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-3">
-                            <span className="font-medium text-gray-700">Players:</span>
-                            <div className="text-gray-600 mt-1">
-                              {session.seatedPlayerIds.map(playerId => getPlayerName(playerId)).join(', ')}
-                            </div>
-                          </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                {sessionList.map(session => (
+                  <div
+                    key={session.id}
+                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedSessionIds.includes(session.id)
+                        ? 'bg-blue-50 border-blue-300 text-blue-900'
+                        : 'bg-white border-gray-200 hover:bg-gray-50'
+                    }`}
+                    onClick={() => toggleSessionSelection(session.id)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium truncate">{session.name}</h3>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(session.lastModified).toLocaleDateString()}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM'
+                              ? 'bg-purple-100 text-purple-700'
+                              : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM' ? '🎲' : '🎯'}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {session.playerCount} players
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 ml-2">
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                          selectedSessionIds.includes(session.id)
+                            ? 'bg-blue-500 border-blue-500'
+                            : 'border-gray-300'
+                        }`}>
+                          {selectedSessionIds.includes(session.id) && (
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
+        
+            {selectedSessions.length > 0 && (
+              <>
+                {/* Summary Statistics */}
+                <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                  <h2 className="text-2xl font-bold mb-4">Summary Statistics</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600">{statistics.totalGames}</div>
+                      <div className="text-gray-600">Total Games</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600">{statistics.mostWins.playerNames}</div>
+                      <div className="text-gray-600">Most Wins ({statistics.mostWins.count})</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-purple-600">{formatDuration(statistics.longestDuration)}</div>
+                      <div className="text-gray-600">Longest Game</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-orange-600">{formatDuration(statistics.averageDuration)}</div>
+                      <div className="text-gray-600">Average Duration</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Win Counts Table */}
+                {Object.keys(statistics.winnerCounts).length > 0 && (
+                  <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <h2 className="text-2xl font-bold mb-4">Win Counts by Player</h2>
+                    <div className="overflow-x-auto">
+                      <table className="w-full table-auto">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-3 px-4 font-semibold">Player</th>
+                            <th className="text-left py-3 px-4 font-semibold">Wins</th>
+                            <th className="text-left py-3 px-4 font-semibold">Win Rate</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(statistics.winnerCounts)
+                            .sort(([,a], [,b]) => b - a)
+                            .map(([playerId, wins]) => {
+                              const gamesPlayed = allGameSessions.filter(session => 
+                                session.seatedPlayerIds.includes(playerId)
+                              ).length;
+                              const winRate = gamesPlayed > 0 ? ((wins / gamesPlayed) * 100).toFixed(1) : '0.0';
+                              
+                              return (
+                                <tr key={playerId} className="border-b border-gray-100 hover:bg-gray-50">
+                                  <td className="py-3 px-4">{getPlayerName(playerId)}</td>
+                                  <td className="py-3 px-4">{wins}</td>
+                                  <td className="py-3 px-4">{winRate}%</td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Detailed Game Sessions */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h2 className="text-2xl font-bold mb-4">Detailed Game Sessions</h2>
+                  {allGameSessions.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No game sessions found in this session.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {allGameSessions.map((session, index) => (
+                        <div key={index} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                {session.gameName}
+                                {/* Only show round info for PICKS sessions */}
+                                {session.sessionType && 
+                                 session.sessionType.toUpperCase() !== 'FREEFORM' && (
+                                  <span className="text-sm text-gray-500 ml-2">(Round {session.roundIndex + 1})</span>
+                                )}
+                                {selectedSessions.length > 1 && session.sessionName && (
+                                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded ml-2">
+                                    {session.sessionName}
+                                  </span>
+                                )}
+                              </h3>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <span className="font-medium text-gray-700">Picked by:</span>
+                                  <div className="text-gray-600">
+                                    {session.placedByPlayerId 
+                                      ? getPlayerName(session.placedByPlayerId)
+                                      : 'Unknown'
+                                    }
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <span className="font-medium text-gray-700">Winner:</span>
+                                  <div className="text-gray-600">
+                                    {session.winnerId 
+                                      ? `🏆 ${getPlayerName(session.winnerId)}`
+                                      : 'No winner recorded'
+                                    }
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <span className="font-medium text-gray-700">Duration:</span>
+                                  <div className="text-gray-600">{getSessionDuration(session)}</div>
+                                </div>
+                                
+                                <div>
+                                  <span className="font-medium text-gray-700">Picked at:</span>
+                                  <div className="text-gray-600">
+                                    {session.gamePickedAt 
+                                      ? (() => {
+                                          const pickDate = session.gamePickedAt instanceof Date 
+                                            ? session.gamePickedAt 
+                                            : new Date(session.gamePickedAt);
+                                          return pickDate.toLocaleDateString() + ' ' + 
+                                                 pickDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                        })()
+                                      : 'Unknown'
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-3">
+                                <span className="font-medium text-gray-700">Players:</span>
+                                <div className="text-gray-600 mt-1">
+                                  {session.seatedPlayerIds.map(playerId => getPlayerName(playerId)).join(', ')}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
