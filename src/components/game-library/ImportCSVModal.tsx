@@ -37,6 +37,114 @@ export default function ImportCSVModal({ onClose }: ImportCSVModalProps) {
 
   const { importFromCSV } = useGameLibrary();
 
+  // Auto-mapping function to match headers to fields
+  const autoMapHeaders = (headers: string[]): GameCSVMapping => {
+    const mapping: GameCSVMapping = {
+      title: '',
+      maxPlayers: '',
+      minPlayers: '',
+      link: '',
+      image: '',
+      description: '',
+      category: '',
+      designer: '',
+      publisher: '',
+      yearPublished: '',
+      complexity: '',
+      playingTime: '',
+      tags: ''
+    };
+
+    // Define mapping patterns - order matters (more specific first)
+    const patterns = {
+      title: [
+        'game name', 'game title', 'name', 'title', 'gamename', 'gametitle', 
+        'game_name', 'game_title', 'boardgame', 'board game'
+      ],
+      maxPlayers: [
+        'max players', 'maximum players', 'maxplayers', 'max_players', 
+        'player count max', 'players max', 'max player count', 'max. players',
+        'players', 'player count', '#players', 'num players'
+      ],
+      minPlayers: [
+        'min players', 'minimum players', 'minplayers', 'min_players',
+        'player count min', 'players min', 'min player count', 'min. players'
+      ],
+      category: [
+        'category', 'categories', 'genre', 'genres', 'type', 'game type',
+        'mechanic', 'mechanics', 'theme', 'themes'
+      ],
+      designer: [
+        'designer', 'designers', 'game designer', 'author', 'authors',
+        'creator', 'creators', 'designed by', 'design', 'artist'
+      ],
+      publisher: [
+        'publisher', 'publishers', 'published by', 'company', 'publisher name',
+        'publishing company', 'pub', 'brand'
+      ],
+      yearPublished: [
+        'year published', 'year', 'published', 'release year', 'publication year',
+        'yearpublished', 'year_published', 'date published', 'release date',
+        'pub year', 'copyright'
+      ],
+      complexity: [
+        'complexity', 'difficulty', 'weight', 'complexity rating',
+        'difficulty rating', 'game weight', 'bgg weight'
+      ],
+      playingTime: [
+        'playing time', 'time', 'playtime', 'duration', 'game length',
+        'playingtime', 'playing_time', 'play time', 'game time',
+        'minutes', 'length', 'game duration'
+      ],
+      description: [
+        'description', 'desc', 'summary', 'overview', 'about',
+        'game description', 'synopsis', 'details', 'notes'
+      ],
+      tags: [
+        'tags', 'tag', 'keywords', 'labels', 'mechanics', 'themes',
+        'categories', 'genre', 'classification'
+      ],
+      link: [
+        'link', 'url', 'website', 'web site', 'bgg link', 'boardgamegeek',
+        'game link', 'boardgamegeek link', 'bgg url', 'external link'
+      ],
+      image: [
+        'image', 'img', 'picture', 'pic', 'photo', 'thumbnail', 'thumb',
+        'image url', 'img url', 'picture url', 'cover', 'box art'
+      ]
+    };
+
+    // For each header, find the best matching field
+    headers.forEach((header, index) => {
+      const normalizedHeader = header.toLowerCase().trim();
+      
+      // Find the best match
+      for (const [field, keywords] of Object.entries(patterns)) {
+        // Skip if this field is already mapped
+        if (mapping[field as keyof GameCSVMapping]) {
+          continue;
+        }
+        
+        // Check if this header matches any keyword for this field
+        let foundMatch = false;
+        for (const keyword of keywords) {
+          if (normalizedHeader === keyword || normalizedHeader.includes(keyword)) {
+            mapping[field as keyof GameCSVMapping] = index.toString();
+            foundMatch = true;
+            break; // Break out of keyword loop
+          }
+        }
+        
+        // If we found a match for this field, stop checking other fields for this header
+        if (foundMatch) {
+          break;
+        }
+      }
+    });
+
+    return mapping;
+  };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -50,6 +158,13 @@ export default function ImportCSVModal({ onClose }: ImportCSVModalProps) {
           // Parse first line as potential headers
           const firstLine = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
           setHeaders(firstLine);
+          
+          // Auto-map the headers
+          const autoMapping = autoMapHeaders(firstLine);
+          setImportOptions(prev => ({
+            ...prev,
+            mapping: autoMapping
+          }));
         }
         setStep('mapping');
       };
@@ -64,6 +179,13 @@ export default function ImportCSVModal({ onClose }: ImportCSVModalProps) {
       if (lines.length > 0) {
         const firstLine = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
         setHeaders(firstLine);
+        
+        // Auto-map the headers
+        const autoMapping = autoMapHeaders(firstLine);
+        setImportOptions(prev => ({
+          ...prev,
+          mapping: autoMapping
+        }));
       }
       setStep('mapping');
     }
@@ -146,16 +268,79 @@ export default function ImportCSVModal({ onClose }: ImportCSVModalProps) {
     </div>
   );
 
-  const renderMappingStep = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-3">Map CSV Columns</h3>
-        <p className="text-gray-600 mb-4">
-          Match your CSV columns to game fields. Title and Max Players are required.
-        </p>
-      </div>
+  const renderMappingStep = () => {
+    // Check if auto-mapping was successful for required fields
+    const autoMappedFields = Object.entries(importOptions.mapping)
+      .filter(([_, value]) => value !== '')
+      .map(([field, _]) => field);
+    
+    const hasRequiredMappings = importOptions.mapping.title && importOptions.mapping.maxPlayers;
 
-      {/* Import options */}
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-3">Map CSV Columns</h3>
+          <p className="text-gray-600 mb-4">
+            Match your CSV columns to game fields. Title and Max Players are required.
+          </p>
+          
+          {/* Auto-mapping status */}
+          {autoMappedFields.length > 0 && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-600">🎯</span>
+                  <span className="text-sm font-medium text-blue-800">
+                    Auto-mapped {autoMappedFields.length} field{autoMappedFields.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => {
+                      const autoMapping = autoMapHeaders(headers);
+                      setImportOptions(prev => ({
+                        ...prev,
+                        mapping: autoMapping
+                      }));
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Re-run Auto-mapping
+                  </button>
+                  <button
+                    onClick={() => setImportOptions(prev => ({
+                      ...prev,
+                      mapping: {
+                        title: '',
+                        maxPlayers: '',
+                        minPlayers: '',
+                        link: '',
+                        image: '',
+                        description: '',
+                        category: '',
+                        designer: '',
+                        publisher: '',
+                        yearPublished: '',
+                        complexity: '',
+                        playingTime: '',
+                        tags: ''
+                      }
+                    }))}
+                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
+              <div className="text-xs text-blue-700 mt-1">
+                Detected: {autoMappedFields.join(', ')}
+                {!hasRequiredMappings && ' (Please verify required fields)'}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Import options */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-md">
         <label className="flex items-center space-x-2">
           <input
@@ -212,7 +397,19 @@ export default function ImportCSVModal({ onClose }: ImportCSVModalProps) {
               ))}
             </select>
             <div className="text-xs text-gray-500">
-              {headers[parseInt(importOptions.mapping[field] || '')] || 'Not mapped'}
+              {importOptions.mapping[field] && headers[parseInt(importOptions.mapping[field])] ? (
+                <div className="flex items-center space-x-2">
+                  <span>{headers[parseInt(importOptions.mapping[field])]}</span>
+                  {/* Show auto-mapping indicator */}
+                  {autoMappedFields.includes(field) && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                      Auto
+                    </span>
+                  )}
+                </div>
+              ) : (
+                'Not mapped'
+              )}
             </div>
           </div>
         ))}
@@ -278,6 +475,7 @@ export default function ImportCSVModal({ onClose }: ImportCSVModalProps) {
       </div>
     </div>
   );
+  };
 
   const renderResultStep = () => (
     <div className="space-y-6">

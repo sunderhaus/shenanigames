@@ -12,6 +12,7 @@ interface GameLibraryHeaderProps {
   onExportCSV: () => void;
   onExportJSON: () => void;
   onShowStats: () => void;
+  onClearLibrary: () => void;
   viewMode: 'grid' | 'list';
   onViewModeChange: (mode: 'grid' | 'list') => void;
 }
@@ -25,6 +26,7 @@ export default function GameLibraryHeader({
   onExportCSV,
   onExportJSON,
   onShowStats,
+  onClearLibrary,
   viewMode,
   onViewModeChange
 }: GameLibraryHeaderProps) {
@@ -127,6 +129,17 @@ export default function GameLibraryHeader({
               >
                 ➕ Add Game
               </button>
+              
+              {/* Clear Library - Dangerous action, separated */}
+              {totalGames > 0 && (
+                <button
+                  onClick={onClearLibrary}
+                  className="px-4 py-2 text-sm font-medium text-red-700 bg-red-100 border border-red-300 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  title="Clear all games from library"
+                >
+                  🗑️ Clear All
+                </button>
+              )}
             </div>
           </div>
         </div>

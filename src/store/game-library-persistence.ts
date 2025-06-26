@@ -110,16 +110,31 @@ export const importGamesToLibrary = (games: LibraryGame[], overwriteExisting = f
   const currentState = loadGameLibrary() || createEmptyGameLibrary();
   let importedCount = 0;
   
+  // Create a set of existing game titles for efficient duplicate checking
+  const existingTitles = new Set(
+    Object.values(currentState.games).map(game => game.title.toLowerCase().trim())
+  );
+  
   games.forEach(game => {
-    // Check if game already exists
+    // Check if game already exists by ID
     if (currentState.games[game.id] && !overwriteExisting) {
       return; // Skip existing games if not overwriting
+    }
+    
+    // Check if game already exists by title (case-insensitive)
+    const gameTitle = game.title.toLowerCase().trim();
+    if (existingTitles.has(gameTitle) && !overwriteExisting) {
+      return; // Skip games with duplicate titles if not overwriting
     }
     
     currentState.games[game.id] = {
       ...game,
       dateAdded: currentState.games[game.id]?.dateAdded || new Date() // Preserve original date if updating
     };
+    
+    // Add the new title to our set to prevent duplicates within the import batch
+    existingTitles.add(gameTitle);
+    
     importedCount++;
   });
   

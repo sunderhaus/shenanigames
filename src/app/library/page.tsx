@@ -10,12 +10,14 @@ import GameLibraryGrid from '@/components/game-library/GameLibraryGrid';
 import GameLibraryStats from '@/components/game-library/GameLibraryStats';
 import AddGameModal from '@/components/game-library/AddGameModal';
 import ImportCSVModal from '@/components/game-library/ImportCSVModal';
+import ClearLibraryModal from '@/components/game-library/ClearLibraryModal';
 import HamburgerMenu from '@/components/HamburgerMenu';
 
 export default function GameLibraryPage() {
   const [isClient, setIsClient] = useState(false);
   const [showAddGame, setShowAddGame] = useState(false);
   const [showImportCSV, setShowImportCSV] = useState(false);
+  const [showClearLibrary, setShowClearLibrary] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -86,6 +88,7 @@ export default function GameLibraryPage() {
           onExportCSV={handleExportCSV}
           onExportJSON={handleExportJSON}
           onShowStats={() => setShowStats(true)}
+          onClearLibrary={() => setShowClearLibrary(true)}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
         />
@@ -169,6 +172,13 @@ export default function GameLibraryPage() {
         {showImportCSV && (
           <ImportCSVModal
             onClose={() => setShowImportCSV(false)}
+          />
+        )}
+
+        {showClearLibrary && (
+          <ClearLibraryModal
+            onClose={() => setShowClearLibrary(false)}
+            totalGames={totalGames}
           />
         )}
       </div>
