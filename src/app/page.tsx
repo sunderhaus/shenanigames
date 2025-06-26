@@ -227,8 +227,8 @@ export default function Home() {
                         <h3 className="text-sm font-medium text-gray-700 mb-2">Quick Stats</h3>
                         <div className="space-y-2 text-sm text-gray-600">
                           <div className="flex justify-between">
-                            <span>Tables in use:</span>
-                            <span>{tables.filter(t => t.gameId !== null).length} / {tables.length}</span>
+                            <span>Number of Tables:</span>
+                            <span>{tables.filter(t => t.gameId !== null).length}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Session type:</span>
