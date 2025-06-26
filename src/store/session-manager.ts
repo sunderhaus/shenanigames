@@ -5,7 +5,8 @@ import {
   SessionMetadata, 
   SessionManagerState, 
   CreateSessionOptions,
-  SessionTemplate 
+  SessionTemplate,
+  SessionType
 } from '@/types/session-types';
 import { SessionState, Player, Game, Table, Round, SessionStage } from '@/types/types';
 import { 
@@ -20,12 +21,13 @@ import {
 import { loadState } from './persistence'; // For migration
 
 // Helper function to create metadata from session state
-const createMetadataFromState = (id: string, name: string, state: SessionState, description?: string): SessionMetadata => {
+const createMetadataFromState = (id: string, name: string, state: SessionState, description?: string, sessionType?: SessionType): SessionMetadata => {
   const now = new Date();
   return {
     id,
     name,
     description,
+    sessionType: sessionType || SessionType.PICKS, // Default to PICKS for backwards compatibility
     createdAt: now,
     lastModified: now,
     playerCount: state.players.length,
@@ -64,8 +66,8 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
     placedByPlayerId: undefined
   }));
 
-  // Assign picks if provided
-  if (template.playerPicks) {
+  // Assign picks if provided and session type is PICKS
+  if (template.sessionType === SessionType.PICKS && template.playerPicks) {
     Object.entries(template.playerPicks).forEach(([playerName, gameIndices]) => {
       const player = players.find(p => p.name === playerName);
       if (player && Array.isArray(gameIndices)) {
@@ -105,7 +107,10 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
 
   return {
     players,
-    availableGames: games.filter(game => getAllPlayerPicks(players).includes(game.id)),
+    // For Freeform sessions, all games are available; for Picks sessions, only picked games are available
+    availableGames: template.sessionType === SessionType.FREEFORM 
+      ? games 
+      : games.filter(game => getAllPlayerPicks(players).includes(game.id)),
     allGames: games,
     tables,
     rounds: [createInitialRound(tables)],
@@ -120,9 +125,10 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
 };
 
 // Default session template based on current sample data
-const getDefaultTemplate = (): SessionTemplate => ({
+const getDefaultTemplate = (sessionType: SessionType = SessionType.PICKS): SessionTemplate => ({
   name: 'New Session',
   description: 'A new drafting session',
+  sessionType,
   players: [
     { name: 'Player 1', icon: '🐯' },
     { name: 'Player 2', icon: '🐼' },
@@ -220,10 +226,12 @@ export const useSessionManager = create<SessionManagerStore>((set, get) => ({
     const sessionId = uuidv4();
     let sessionState: SessionState;
     let sessionName = options.name || 'New Session';
+    let sessionType = options.sessionType || SessionType.PICKS;
     
     if (options.template) {
       sessionState = createSessionFromTemplate(options.template);
       sessionName = options.template.name;
+      sessionType = options.template.sessionType;
     } else if (options.copyFromSessionId) {
       const sourceSession = loadSession(options.copyFromSessionId);
       if (!sourceSession) {
@@ -254,9 +262,10 @@ export const useSessionManager = create<SessionManagerStore>((set, get) => ({
         }))
       };
       sessionName = `${sourceSession.metadata.name} (Copy)`;
+      sessionType = sourceSession.metadata.sessionType;
     } else {
       // Create from default template
-      const template = getDefaultTemplate();
+      const template = getDefaultTemplate(sessionType);
       template.name = sessionName;
       if (options.description) {
         template.description = options.description;
@@ -264,7 +273,7 @@ export const useSessionManager = create<SessionManagerStore>((set, get) => ({
       sessionState = createSessionFromTemplate(template);
     }
 
-    const metadata = createMetadataFromState(sessionId, sessionName, sessionState, options.description);
+    const metadata = createMetadataFromState(sessionId, sessionName, sessionState, options.description, sessionType);
     const session: Session = { metadata, state: sessionState };
     
     // Save the session

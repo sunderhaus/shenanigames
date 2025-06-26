@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { SessionState, Game, SessionStage, GameSession } from '@/types/types';
+import { SessionType } from '@/types/session-types';
 import { useSessionManager } from './session-manager';
 
 // This store provides the same interface as the old store but works with sessions
@@ -113,13 +114,18 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
   // Reset the current round to its initial state
   resetRound: () => {
     set(state => {
+      // Get session type
+      const sessionManager = useSessionManager.getState();
+      const currentSession = sessionManager.getCurrentSession();
+      const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+      
       // Get the current round
       const currentRound = state.rounds[state.currentRoundIndex];
 
       // Keep track of games that need to be restored to availableGames
       const gamesToRestore: Game[] = [];
 
-      // Keep track of which games were placed by which players
+      // Keep track of which games were placed by which players (only for Picks mode)
       const gamesByPlacedPlayer: Record<string, string[]> = {};
 
       // Identify games on tables and who placed them
@@ -131,11 +137,13 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
             // Add to games to restore
             gamesToRestore.push(game);
 
-            // Track which player placed this game
-            if (!gamesByPlacedPlayer[table.placedByPlayerId]) {
-              gamesByPlacedPlayer[table.placedByPlayerId] = [];
+            // Track which player placed this game (only for Picks mode)
+            if (sessionType === SessionType.PICKS) {
+              if (!gamesByPlacedPlayer[table.placedByPlayerId]) {
+                gamesByPlacedPlayer[table.placedByPlayerId] = [];
+              }
+              gamesByPlacedPlayer[table.placedByPlayerId].push(table.gameId);
             }
-            gamesByPlacedPlayer[table.placedByPlayerId].push(table.gameId);
           }
         }
       });
@@ -149,39 +157,53 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         gameSession: undefined
       }));
 
-      // Reset all players' actionTakenInCurrentRound to false and restore games to their picks
+      // Reset players based on session type
       const resetPlayers = state.players.map(player => {
-        // Get games placed by this player
-        const gamesPlacedByPlayer = gamesByPlacedPlayer[player.id] || [];
+        if (sessionType === SessionType.FREEFORM) {
+          // In Freeform mode, just reset the action flags
+          return {
+            ...player,
+            selectionsMade: 0,
+            actionTakenInCurrentRound: false
+          };
+        } else {
+          // In Picks mode, restore games to their picks
+          const gamesPlacedByPlayer = gamesByPlacedPlayer[player.id] || [];
+          const updatedPicks = [...player.picks];
 
-        // Create a new picks array with the restored games
-        const updatedPicks = [...player.picks];
+          // Add back any games that were placed by this player
+          gamesPlacedByPlayer.forEach(gameId => {
+            // Only add if not already in picks
+            if (!updatedPicks.includes(gameId)) {
+              updatedPicks.push(gameId);
+            }
+          });
 
-        // Add back any games that were placed by this player
-        gamesPlacedByPlayer.forEach(gameId => {
-          // Only add if not already in picks
-          if (!updatedPicks.includes(gameId)) {
-            updatedPicks.push(gameId);
-          }
-        });
-
-        return {
-          ...player,
-          picks: updatedPicks,
-          selectionsMade: 0, // Reset selections made
-          actionTakenInCurrentRound: false
-        };
-      });
-
-      // Update availableGames to include the restored games
-      // First, filter out any duplicates
-      const updatedAvailableGames = [...state.availableGames];
-      gamesToRestore.forEach(game => {
-        // Only add if not already in availableGames
-        if (!updatedAvailableGames.some(g => g.id === game.id)) {
-          updatedAvailableGames.push(game);
+          return {
+            ...player,
+            picks: updatedPicks,
+            selectionsMade: 0,
+            actionTakenInCurrentRound: false
+          };
         }
       });
+
+      // Update availableGames based on session type
+      let updatedAvailableGames: Game[];
+      
+      if (sessionType === SessionType.FREEFORM) {
+        // In Freeform mode, all games should always be available
+        updatedAvailableGames = [...state.allGames];
+      } else {
+        // In Picks mode, restore games to availableGames
+        updatedAvailableGames = [...state.availableGames];
+        gamesToRestore.forEach(game => {
+          // Only add if not already in availableGames
+          if (!updatedAvailableGames.some(g => g.id === game.id)) {
+            updatedAvailableGames.push(game);
+          }
+        });
+      }
 
       // Return the updated state
       const newState = {
@@ -326,6 +348,11 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     let placeSucceeded = false;
     
     set((state) => {
+      // Get session type from metadata
+      const sessionManager = useSessionManager.getState();
+      const currentSession = sessionManager.getCurrentSession();
+      const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+      
       // Find the game and table
       // Look in allGames first, which contains all games
       const game = state.allGames.find(g => g.id === gameId);
@@ -344,15 +371,19 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         t.id !== tableId && t.seatedPlayerIds.includes(playerId)
       );
 
-      // Check if the game is in the player's picks
-      const isInPlayerPicks = player?.picks.includes(gameId);
+      // For Picks mode: Check if the game is in the player's picks
+      // For Freeform mode: Allow any game from available games
+      const isGameValid = sessionType === SessionType.FREEFORM 
+        ? state.availableGames.some(g => g.id === gameId) // Any available game is valid in Freeform
+        : player?.picks.includes(gameId); // Must be in player's picks for Picks mode
 
-      // During SETUP, prevent placing games until all players have exactly 2 picks
-      const canPlaceDuringSetup = state.stage !== SessionStage.SETUP || 
+      // During SETUP, prevent placing games until all players have exactly 2 picks (only for Picks mode)
+      const canPlaceDuringSetup = sessionType === SessionType.FREEFORM ||
+        state.stage !== SessionStage.SETUP || 
         state.players.every(p => p.picks && p.picks.length === 2);
 
       // Validate the action - if table already has a game, don't proceed
-      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isInPlayerPicks || isPlayerSeatedAtAnotherTable || !canPlaceDuringSetup) {
+      if (!game || !table || !player || table.gameId !== null || hasAssignedPicks || !isGameValid || isPlayerSeatedAtAnotherTable || !canPlaceDuringSetup) {
         return state; // Invalid action, return unchanged state
       }
 

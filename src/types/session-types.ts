@@ -5,12 +5,21 @@
 import { SessionState } from './types';
 
 /**
+ * Session types for different draft modes
+ */
+export enum SessionType {
+  PICKS = 'picks',     // Traditional picks-based drafting (current behavior)
+  FREEFORM = 'freeform' // Free-form drafting without pre-selected picks
+}
+
+/**
  * Metadata about a session
  */
 export interface SessionMetadata {
   id: string;
   name: string;
   description?: string;
+  sessionType: SessionType;
   createdAt: Date;
   lastModified: Date;
   playerCount: number;
@@ -42,6 +51,7 @@ export interface SessionManagerState {
 export interface SessionTemplate {
   name: string;
   description?: string;
+  sessionType: SessionType;
   players: Array<{
     name: string;
     icon: string;
@@ -53,7 +63,7 @@ export interface SessionTemplate {
     image?: string;
   }>;
   tableCount: number;
-  playerPicks?: Record<string, number[]>; // playerName -> gameIndices
+  playerPicks?: Record<string, number[]>; // playerName -> gameIndices (only used for PICKS type)
 }
 
 /**
@@ -63,6 +73,7 @@ export interface CreateSessionOptions {
   template?: SessionTemplate;
   name?: string;
   description?: string;
+  sessionType?: SessionType;
   copyFromSessionId?: string; // Copy structure from existing session
 }
 

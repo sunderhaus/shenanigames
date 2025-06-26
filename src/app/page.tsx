@@ -13,6 +13,7 @@ import LifecycleStatusTooltip from '../components/LifecycleStatusTooltip';
 import { useState, useEffect } from 'react';
 import { useSessionGameStore } from '../store/session-store';
 import { useSessionManager } from '../store/session-manager';
+import { SessionType } from '../types/session-types';
 import AnimationProvider from '../components/AnimationProvider';
 
 export default function Home() {
@@ -20,8 +21,13 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
 
   // Get session state
-  const { currentSessionId, createSession } = useSessionManager();
+  const { currentSessionId, createSession, getCurrentSession } = useSessionManager();
   const { tables, hasActiveSession, loadCurrentSession } = useSessionGameStore();
+  
+  // Get current session details
+  const currentSession = getCurrentSession();
+  const sessionName = currentSession?.metadata.name || 'No Session';
+  const sessionType = currentSession?.metadata.sessionType;
 
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
@@ -82,7 +88,18 @@ export default function Home() {
               </div>
               <div className="flex-1 text-center">
                 <h1 className="text-2xl font-bold">Shenanigames</h1>
-                <p className="text-gray-600 text-sm">Ellijay Edition</p>
+                <div className="flex items-center justify-center gap-2">
+                  <p className="text-gray-600 text-sm">{sessionName}</p>
+                  {sessionType && (
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      sessionType === SessionType.FREEFORM 
+                        ? 'bg-purple-100 text-purple-700' 
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {sessionType === SessionType.FREEFORM ? '🎲' : '🎯'}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="w-12 flex justify-end">
                 <LifecycleStatusTooltip isMobile={isMobile} />
@@ -117,7 +134,18 @@ export default function Home() {
                 </div>
                 <div className="flex-1 text-center">
                   <h1 className="text-2xl font-bold">Shenanigames</h1>
-                  <p className="text-sm text-gray-600">Tables</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <p className="text-sm text-gray-600">{sessionName}</p>
+                    {sessionType && (
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        sessionType === SessionType.FREEFORM 
+                          ? 'bg-purple-100 text-purple-700' 
+                          : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {sessionType === SessionType.FREEFORM ? '🎲' : '🎯'}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="w-16"></div>
               </div>

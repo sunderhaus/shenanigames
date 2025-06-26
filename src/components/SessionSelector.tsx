@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSessionManager } from '@/store/session-manager';
 import { useSessionGameStore } from '@/store/session-store';
-import { SessionMetadata } from '@/types/session-types';
+import { SessionMetadata, SessionType } from '@/types/session-types';
+import SessionTypeSelector from './SessionTypeSelector';
 
 const SessionSelector: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newSessionName, setNewSessionName] = useState('');
 
   const {
     sessionList,
@@ -32,17 +32,6 @@ const SessionSelector: React.FC = () => {
     }
   };
 
-const handleCreateSession = () => {
-    if (newSessionName.trim()) {
-      const sessionId = createSession({ name: newSessionName.trim() });
-      if (sessionId) {
-        loadCurrentSession();
-        setShowCreateModal(false);
-        setNewSessionName('');
-        setIsOpen(false);
-      }
-    }
-  };
 
   const handleCreateFromFullTemplate = () => {
     const sessionId = createSession({
@@ -50,6 +39,7 @@ const handleCreateSession = () => {
       template: {
         name: 'Ellijay Edition Template',
         description: 'Full game set with players and picks from the original Ellijay edition',
+        sessionType: SessionType.PICKS,
         players: [
           { name: 'Jonny', icon: '🐯' },
           { name: 'Chris', icon: '🦁' },
@@ -91,7 +81,6 @@ const handleCreateSession = () => {
     if (sessionId) {
       loadCurrentSession();
       setShowCreateModal(false);
-      setNewSessionName('');
       setIsOpen(false);
     }
   };
@@ -198,9 +187,18 @@ const handleCreateSession = () => {
                           <span className="ml-2 text-xs text-blue-600">(Current)</span>
                         )}
                       </h4>
-                      <span className="text-xs text-gray-500">
-                        Round {session.currentRound}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          session.sessionType === SessionType.FREEFORM 
+                            ? 'bg-purple-100 text-purple-700' 
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {session.sessionType === SessionType.FREEFORM ? '🎲 Freeform' : '🎯 Picks'}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Round {session.currentRound}
+                        </span>
+                      </div>
                     </div>
                     <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
                       <span>{session.playerCount} players</span>
@@ -268,69 +266,11 @@ const handleCreateSession = () => {
         </div>
       )}
 
-      {/* Create Session Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96 max-w-90vw">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Create New Session</h3>
-            
-            <div className="mb-4">
-              <label htmlFor="sessionName" className="block text-sm font-medium text-gray-700 mb-2">
-                Session Name
-              </label>
-              <input
-                id="sessionName"
-                type="text"
-                value={newSessionName}
-                onChange={(e) => setNewSessionName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleCreateSession();
-                  } else if (e.key === 'Escape') {
-                    setShowCreateModal(false);
-                    setNewSessionName('');
-                  }
-                }}
-                placeholder="Enter session name..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                autoFocus
-              />
-            </div>
-
-            <div className="mb-4 p-4 bg-gray-50 rounded-md">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Quick Templates</h4>
-              <button
-                onClick={handleCreateFromFullTemplate}
-                className="w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                🎲 Create Ellijay Edition Template
-                <span className="block text-xs text-gray-500 mt-1">
-                  Pre-configured with 7 players and all original games & picks
-                </span>
-              </button>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setNewSessionName('');
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateSession}
-                disabled={!newSessionName.trim()}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Create Session
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Session Type Selector Modal */}
+      <SessionTypeSelector 
+        isOpen={showCreateModal} 
+        onClose={() => setShowCreateModal(false)} 
+      />
 
       {/* Click outside to close */}
       {isOpen && (
