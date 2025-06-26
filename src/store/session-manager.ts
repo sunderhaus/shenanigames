@@ -58,13 +58,15 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
     image: gameTemplate.image
   }));
 
-  // Create tables
-  const tables: Table[] = Array.from({ length: template.tableCount }, (_, index) => ({
-    id: `table-${index + 1}`,
-    gameId: null,
-    seatedPlayerIds: [],
-    placedByPlayerId: undefined
-  }));
+  // Create tables - only for Picks sessions, Freeform starts with no tables
+  const tables: Table[] = template.sessionType === SessionType.FREEFORM 
+    ? [] // Freeform starts with no tables
+    : Array.from({ length: template.tableCount }, (_, index) => ({
+        id: `table-${index + 1}`,
+        gameId: null,
+        seatedPlayerIds: [],
+        placedByPlayerId: undefined
+      }));
 
   // Assign picks if provided and session type is PICKS
   if (template.sessionType === SessionType.PICKS && template.playerPicks) {
@@ -387,7 +389,8 @@ export const useSessionManager = create<SessionManagerStore>((set, get) => ({
       currentSession.metadata.id,
       currentSession.metadata.name,
       newState,
-      currentSession.metadata.description
+      currentSession.metadata.description,
+      currentSession.metadata.sessionType // Preserve the session type!
     );
     // Preserve creation date
     updatedMetadata.createdAt = currentSession.metadata.createdAt;

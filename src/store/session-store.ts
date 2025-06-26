@@ -356,7 +356,23 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       // Find the game and table
       // Look in allGames first, which contains all games
       const game = state.allGames.find(g => g.id === gameId);
-      const table = state.tables.find(t => t.id === tableId);
+      let table = state.tables.find(t => t.id === tableId);
+      
+      // For Freeform sessions, create table if it doesn't exist
+      if (!table && sessionType === SessionType.FREEFORM) {
+        table = {
+          id: tableId,
+          gameId: null,
+          seatedPlayerIds: [],
+          placedByPlayerId: undefined
+        };
+        // Add the new table to the state
+        state = {
+          ...state,
+          tables: [...state.tables, table]
+        };
+      }
+      
       const player = state.players.find(p => p.id === playerId);
 
       // Check if player has already assigned any of their picks to a table

@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef, TouchEvent } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Table, Game, Player } from '../types/types';
+import { SessionType } from '../types/session-types';
 import { useSessionGameStore } from '../store/session-store';
+import { useSessionManager } from '../store/session-manager';
 import { useAnimation } from './AnimationProvider';
 import GameSessionEditor from './GameSessionEditor';
+import FreeformTableEditor from './FreeformTableEditor';
 
 interface DroppableTableProps {
   table: Table;
@@ -21,6 +24,11 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   const viewingRoundIndex = useSessionGameStore(state => state.viewingRoundIndex);
   const { animatePlayerToTable } = useAnimation();
   
+  // Get session type to determine behavior
+  const { getCurrentSession } = useSessionManager();
+  const currentSession = getCurrentSession();
+  const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+  
   // State for game session editor
   const [showSessionEditor, setShowSessionEditor] = useState(false);
 
@@ -37,6 +45,9 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   const handleTableClick = () => {
     // If in read-only mode, do nothing
     if (isReadOnly) return;
+    
+    // Disable double-click joining for Freeform sessions
+    if (sessionType === SessionType.FREEFORM) return;
 
     const now = Date.now();
 
@@ -69,6 +80,9 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
     // If in read-only mode or not a valid target, do nothing
     if (isReadOnly || !isValidPlayerTarget || !currentPlayerId) return;
+    
+    // Disable long press joining for Freeform sessions
+    if (sessionType === SessionType.FREEFORM) return;
 
     // Start the long press timer
     longPressTimeoutRef.current = setTimeout(async () => {
@@ -170,6 +184,12 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   const getTooltipText = () => {
     if (isReadOnly) {
       return "Historical view - read only";
+    } else if (sessionType === SessionType.FREEFORM) {
+      if (table.gameId === null) {
+        return "Use 'Add New Table' to create a table with a game";
+      } else {
+        return "Click edit button to modify players or session details";
+      }
     } else if (isValidPlayerTarget) {
       return "Double-click or long press to join this table";
     } else if (table.gameId === null) {
@@ -377,14 +397,21 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
       
       {/* Game Session Editor Modal */}
       {showSessionEditor && game && (
-        <GameSessionEditor
-          tableId={table.id}
-          roundIndex={viewingRoundIndex}
-          currentSession={table.gameSession}
-          seatedPlayers={seatedPlayers}
-          gameTitle={game.title}
-          onClose={() => setShowSessionEditor(false)}
-        />
+        sessionType === SessionType.FREEFORM ? (
+          <FreeformTableEditor
+            table={table}
+            onClose={() => setShowSessionEditor(false)}
+          />
+        ) : (
+          <GameSessionEditor
+            tableId={table.id}
+            roundIndex={viewingRoundIndex}
+            currentSession={table.gameSession}
+            seatedPlayers={seatedPlayers}
+            gameTitle={game.title}
+            onClose={() => setShowSessionEditor(false)}
+          />
+        )
       )}
     </div>
   );

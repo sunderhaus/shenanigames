@@ -10,6 +10,7 @@ import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import HamburgerMenu from '../components/HamburgerMenu';
 import PickRequirements from '../components/PickRequirements';
 import LifecycleStatusTooltip from '../components/LifecycleStatusTooltip';
+import AddTableModal from '../components/AddTableModal';
 import { useState, useEffect } from 'react';
 import { useSessionGameStore } from '../store/session-store';
 import { useSessionManager } from '../store/session-manager';
@@ -19,6 +20,8 @@ import AnimationProvider from '../components/AnimationProvider';
 export default function Home() {
   // State to track if we're on a mobile device
   const [isMobile, setIsMobile] = useState(false);
+  // State for Add Table modal (Freeform sessions)
+  const [showAddTableModal, setShowAddTableModal] = useState(false);
 
   // Get session state
   const { currentSessionId, createSession, getCurrentSession } = useSessionManager();
@@ -105,14 +108,21 @@ export default function Home() {
                 <LifecycleStatusTooltip isMobile={isMobile} />
               </div>
             </div>
-            <PickRequirements />
+            {/* Only show pick requirements for Picks sessions */}
+            {sessionType !== SessionType.FREEFORM && <PickRequirements />}
             <TablesHeader />
           </header>
 
           {/* Body with calculated height to fill space between header and footer */}
           <main className="pt-32 pb-32 overflow-hidden" style={{ height: 'calc(100vh - 16rem)' }}>
             <DragAndDropProvider>
-              <TablesArea isMobile={isMobile} />
+              {sessionType === SessionType.FREEFORM ? (
+                /* Freeform Mobile: Just tables, no game list */
+                <TablesArea isMobile={isMobile} />
+              ) : (
+                /* Picks Mobile: Show both games and tables */
+                <TablesArea isMobile={isMobile} />
+              )}
             </DragAndDropProvider>
           </main>
 
@@ -161,8 +171,8 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* Round navigation controls */}
-                  <RoundControls />
+                  {/* Round navigation controls - Only for Picks sessions */}
+                  {sessionType !== SessionType.FREEFORM && <RoundControls />}
                 </div>
 
                 {/* Navigation breadcrumb */}
@@ -180,8 +190,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Pick Requirements Warning */}
-            <PickRequirements />
+            {/* Pick Requirements Warning - Only for Picks sessions */}
+            {sessionType !== SessionType.FREEFORM && <PickRequirements />}
 
             <DragAndDropProvider>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -190,9 +200,40 @@ export default function Home() {
                   <TablesArea isMobile={isMobile} />
                 </div>
 
-                {/* Right sidebar - Players with Remaining Picks (1/3rd width) */}
+                {/* Right sidebar - Different content based on session type */}
                 <div className="lg:col-span-1">
-                  <PlayerInfo />
+                  {sessionType === SessionType.FREEFORM ? (
+                    /* Freeform Session Sidebar - Add Table Panel */
+                    <div className="bg-white p-4 rounded-lg shadow-md">
+                      <h2 className="text-xl font-bold mb-4">🎲 Freeform Session</h2>
+                      <p className="text-gray-600 mb-4">
+                        Add new tables by selecting games and players from your collections.
+                      </p>
+                      <button
+                        onClick={() => setShowAddTableModal(true)}
+                        className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                      >
+                        + Add New Table
+                      </button>
+                      
+                      <div className="mt-6 pt-4 border-t border-gray-200">
+                        <h3 className="text-sm font-medium text-gray-700 mb-2">Quick Stats</h3>
+                        <div className="space-y-2 text-sm text-gray-600">
+                          <div className="flex justify-between">
+                            <span>Tables in use:</span>
+                            <span>{tables.filter(t => t.gameId !== null).length} / {tables.length}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Session type:</span>
+                            <span className="text-purple-600 font-medium">Freeform</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Picks Session Sidebar - Player Info */
+                    <PlayerInfo />
+                  )}
                 </div>
               </div>
             </DragAndDropProvider>
@@ -204,6 +245,12 @@ export default function Home() {
           </div>
         </main>
       )}
+      
+      {/* Add Table Modal for Freeform sessions */}
+      <AddTableModal 
+        isOpen={showAddTableModal} 
+        onClose={() => setShowAddTableModal(false)} 
+      />
     </AnimationProvider>
   );
 }
