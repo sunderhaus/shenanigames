@@ -424,6 +424,26 @@ main {
   }
 }
 
+/* Freeform table card optimizations for better space utilization */
+.table-card.freeform-optimized {
+  padding: 0.5rem !important; /* Reduced padding for more content space */
+}
+
+.table-card.freeform-optimized.has-game {
+  padding: 0.75rem 0.5rem !important; /* Slightly more vertical padding, less horizontal */
+}
+
+/* Freeform mobile optimizations */
+@media (max-width: 1023px) {
+  .table-card.freeform-optimized {
+    padding: 0.375rem !important; /* Even more compact on mobile */
+  }
+  
+  .table-card.freeform-optimized.has-game {
+    padding: 0.5rem 0.375rem !important;
+  }
+}
+
 /* Winner indicator styling */
 .winner {
   background: linear-gradient(45deg, #22c55e, #16a34a) !important;

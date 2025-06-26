@@ -231,7 +231,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
       onTouchCancel={handleTouchEnd}
       title={getTooltipText()}
       data-table-id={table.id}
-      className={`table-card ${table.gameId ? 'has-game' : ''} ${getDropTargetClass()} ${getCursorStyle()} ${getRecentlyClickedClass()} ${isLongPressing ? 'long-pressing' : ''}`}
+      className={`table-card ${table.gameId ? 'has-game' : ''} ${sessionType === SessionType.FREEFORM ? 'freeform-optimized' : ''} ${getDropTargetClass()} ${getCursorStyle()} ${getRecentlyClickedClass()} ${isLongPressing ? 'long-pressing' : ''}`}
       style={{
         transition: 'all 0.2s ease',
         transform: recentlyClicked || isLongPressing ? 'scale(1.015)' : 'scale(1)', /* Reduced scale factor to prevent viewport clipping */
@@ -253,10 +253,10 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         <div className="absolute inset-0 flex items-center justify-center bg-blue-100 bg-opacity-40 rounded">
         </div>
       )}
-      <h3 className={`font-bold text-center ${game ? 'mb-2 text-base sm:text-lg sm:mb-3' : 'mb-2 text-lg sm:text-xl'}`}>{game ? game.title : table.id}</h3>
+      <h3 className={`font-bold text-center ${game ? (sessionType === SessionType.FREEFORM ? 'mb-1 text-lg sm:text-xl lg:text-2xl' : 'mb-2 text-base sm:text-lg sm:mb-3') : 'mb-2 text-lg sm:text-xl'}`}>{game ? game.title : table.id}</h3>
 
       {game ? (
-        <div className="text-center flex-1 flex flex-col justify-start min-h-0 space-y-2">
+        <div className={`text-center flex-1 flex flex-col justify-start min-h-0 ${sessionType === SessionType.FREEFORM ? 'space-y-1' : 'space-y-2'}`}>
           {game.image && (
             <div className="w-full game-image-container flex-shrink-0">
               <img 
@@ -264,20 +264,20 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
                 alt={game.title} 
                 className="game-image w-full h-auto"
                 style={{ 
-                  maxHeight: 'min(80px, 15vh)', 
+                  maxHeight: sessionType === SessionType.FREEFORM ? 'min(120px, 25vh)' : 'min(80px, 15vh)', 
                   height: 'auto'
                 }}
               />
             </div>
           )}
 
-          <div className="flex-shrink-0">
-            <span className="text-sm sm:text-base font-medium text-gray-600">
+          <div className={`flex-shrink-0 ${sessionType === SessionType.FREEFORM ? 'mb-0.5' : ''}`}>
+            <span className={`font-medium text-gray-600 ${sessionType === SessionType.FREEFORM ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}>
               {table.seatedPlayerIds.length}/{game.maxPlayers} Players
             </span>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-1 sm:gap-2 flex-shrink-0">
+          <div className={`flex flex-wrap justify-center flex-shrink-0 ${sessionType === SessionType.FREEFORM ? 'gap-1' : 'gap-1 sm:gap-2'}`}>
             {seatedPlayers.map(player => (
               <div 
                 key={player.id} 
