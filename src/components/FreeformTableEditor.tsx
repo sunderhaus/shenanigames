@@ -40,7 +40,17 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
         : new Date(table.gameSession.gameEndedAt);
       setEndTime(formatDateTimeForInput(endDate));
     }
-  }, [table]);
+
+    // Handle escape key to close modal
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [table, onClose]);
 
   const formatDateTimeForInput = (date: Date): string => {
     const d = new Date(date);
@@ -212,8 +222,22 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-md max-h-96 flex flex-col">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        // Close modal when clicking on backdrop
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="bg-white rounded-lg w-full max-w-md max-h-96 flex flex-col"
+        onClick={(e) => {
+          // Prevent event bubbling when clicking inside the modal
+          e.stopPropagation();
+        }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
           <h3 className="text-base font-semibold text-gray-900">

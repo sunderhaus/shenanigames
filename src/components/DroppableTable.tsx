@@ -46,8 +46,13 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
     // If in read-only mode, do nothing
     if (isReadOnly) return;
     
-    // Disable double-click joining for Freeform sessions
-    if (sessionType === SessionType.FREEFORM) return;
+    // For Freeform sessions, open the editor if there's a game
+    if (sessionType === SessionType.FREEFORM) {
+      if (game) {
+        setShowSessionEditor(true);
+      }
+      return;
+    }
 
     const now = Date.now();
 
@@ -188,7 +193,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
       if (table.gameId === null) {
         return "Use 'Add New Table' to create a table with a game";
       } else {
-        return "Click edit button to modify players or session details";
+        return "Click anywhere to edit players or session details";
       }
     } else if (isValidPlayerTarget) {
       return "Double-click or long press to join this table";
@@ -205,6 +210,9 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
 
   // Determine the cursor style based on whether the table is a valid target
   const getCursorStyle = () => {
+    if (sessionType === SessionType.FREEFORM && game) {
+      return 'cursor-pointer';
+    }
     return isValidPlayerTarget ? 'cursor-pointer' : '';
   };
 
