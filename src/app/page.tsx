@@ -22,6 +22,8 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   // State for Add Table modal (Freeform sessions)
   const [showAddTableModal, setShowAddTableModal] = useState(false);
+  // State to track hydration
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Get session state
   const { currentSessionId, createSession, getCurrentSession } = useSessionManager();
@@ -29,11 +31,16 @@ export default function Home() {
   
   // Get current session details
   const currentSession = getCurrentSession();
-  const sessionName = currentSession?.metadata.name || 'No Session';
-  const sessionType = currentSession?.metadata.sessionType;
+  const sessionName = isHydrated ? (currentSession?.metadata.name || 'No Session') : 'Loading...';
+  const sessionType = isHydrated ? currentSession?.metadata.sessionType : null;
 
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
+
+  // Set hydration state
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Initialize session if none exists
   useEffect(() => {

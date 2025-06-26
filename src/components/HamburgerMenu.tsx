@@ -8,10 +8,16 @@ import { useSessionManager } from '@/store/session-manager';
 export default function HamburgerMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { sessionList, currentSessionId } = useSessionManager();
   
   const currentSession = sessionList.find(s => s.id === currentSessionId);
+
+  // Ensure component is hydrated before showing session data
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -155,9 +161,9 @@ export default function HamburgerMenu() {
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="mb-3">
                   <div className="text-sm text-gray-600">Current Session:</div>
-                  <div className="font-medium text-gray-800">{currentSession?.name || 'No session'}</div>
+                  <div className="font-medium text-gray-800">{isHydrated ? (currentSession?.name || 'No session') : 'Loading...'}</div>
                   <div className="text-xs text-gray-500 mt-1">
-                    Last modified: {currentSession ? new Date(currentSession.lastModified).toLocaleDateString() : 'N/A'}
+                    Last modified: {isHydrated ? (currentSession ? new Date(currentSession.lastModified).toLocaleDateString() : 'N/A') : 'N/A'}
                   </div>
                 </div>
                 <button

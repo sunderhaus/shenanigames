@@ -3,11 +3,23 @@
 import { useSessionGameStore } from '@/store/session-store';
 import { useGameLibrary } from '@/store/game-library-store';
 import { SessionStage } from '@/types/types';
+import { useState, useEffect } from 'react';
 
 export default function PickRequirements() {
+  const [isHydrated, setIsHydrated] = useState(false);
   const players = useSessionGameStore(state => state.players);
   const stage = useSessionGameStore(state => state.stage);
   const { getGameById } = useGameLibrary();
+
+  // Set hydration state
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  // Don't render anything until hydrated to prevent server/client mismatch
+  if (!isHydrated) {
+    return null;
+  }
 
   // Only show pick requirements during SETUP stage
   if (stage !== SessionStage.SETUP) {

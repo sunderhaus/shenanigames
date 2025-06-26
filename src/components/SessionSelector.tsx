@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSessionManager } from '@/store/session-manager';
 import { useSessionGameStore } from '@/store/session-store';
@@ -10,6 +10,7 @@ import SessionTypeSelector from './SessionTypeSelector';
 const SessionSelector: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const {
     sessionList,
@@ -24,6 +25,11 @@ const SessionSelector: React.FC = () => {
   const { loadCurrentSession } = useSessionGameStore();
 
   const currentSession = sessionList.find(s => s.id === currentSessionId);
+
+  // Ensure component is hydrated before showing session data
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleSessionSelect = (sessionId: string) => {
     if (setCurrentSession(sessionId)) {
@@ -123,7 +129,7 @@ const SessionSelector: React.FC = () => {
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700">Session:</span>
           <span className="text-sm text-gray-900">
-            {currentSession ? currentSession.name : 'No Session Selected'}
+            {isHydrated ? (currentSession ? currentSession.name : 'No Session Selected') : 'Loading...'}
           </span>
         </div>
         <svg

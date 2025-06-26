@@ -1,10 +1,11 @@
 'use client';
 
 import { useSessionGameStore } from '../store/session-store';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LifecycleStatusTooltip from './LifecycleStatusTooltip';
 
 export default function RoundControls() {
+  const [isHydrated, setIsHydrated] = useState(false);
   const rounds = useSessionGameStore(state => state.rounds);
   const currentRoundIndex = useSessionGameStore(state => state.currentRoundIndex);
   const viewingRoundIndex = useSessionGameStore(state => state.viewingRoundIndex);
@@ -17,6 +18,11 @@ export default function RoundControls() {
 
   // State for reset confirmation dialogue
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+
+  // Set hydration state
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Check if the current round is complete
   const roundComplete = isRoundComplete();
@@ -84,9 +90,9 @@ export default function RoundControls() {
             ←
           </button>
           <span className="mx-3 text-sm font-medium whitespace-nowrap">
-            {`Round ${viewingRoundIndex + 1}/${rounds.length}`}
-            {isViewingHistory && " (History)"}
-            {!isViewingHistory && roundComplete && " (Complete)"}
+            {isHydrated ? `Round ${viewingRoundIndex + 1}/${rounds.length}` : 'Round 1/0'}
+            {isHydrated && isViewingHistory && " (History)"}
+            {isHydrated && !isViewingHistory && roundComplete && " (Complete)"}
           </span>
           <button
             onClick={viewNextRound}

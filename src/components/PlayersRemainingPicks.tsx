@@ -25,8 +25,8 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
     setIsClient(true);
   }, []);
 
-  // Check if all tables have games
-  const allTablesHaveGames = tables.every(table => table.gameId !== null);
+  // Check if all tables have games (only after hydration)
+  const allTablesHaveGames = isClient ? tables.every(table => table.gameId !== null) : false;
 
   // Get the current player
   const currentPlayerId = turnOrder[currentPlayerTurnIndex];
