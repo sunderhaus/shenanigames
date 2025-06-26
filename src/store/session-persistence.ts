@@ -4,7 +4,7 @@ import { Session, SessionMetadata, SessionManagerState, SessionExport } from '@/
 const SESSION_MANAGER_KEY = 'shenanigames-session-manager';
 const SESSION_PREFIX = 'shenanigames-session-';
 const VERSION_KEY = 'shenanigames-version';
-const CURRENT_VERSION = '0.0.1'; // Keep consistent with existing version
+const CURRENT_VERSION = '0.0.2'; // Incremented to force session reset and clear corrupted data
 
 // Check if we're running in the browser environment
 const isBrowser = typeof window !== 'undefined';
@@ -135,12 +135,20 @@ export const getAllSessionMetadata = (): SessionMetadata[] => {
         if (serializedSession) {
           try {
             const session = JSON.parse(serializedSession) as Session;
+            
+            // Validate that session has proper structure
+            if (!session || !session.metadata || !session.metadata.id) {
+              console.warn(`Invalid session structure in key ${key}, skipping`);
+              continue;
+            }
+            
             // Convert date strings back to Date objects
             session.metadata.createdAt = new Date(session.metadata.createdAt);
             session.metadata.lastModified = new Date(session.metadata.lastModified);
             sessionMetadata.push(session.metadata);
           } catch (parseError) {
             console.error(`Error parsing session from key ${key}:`, parseError);
+            // Skip this corrupted session and continue
           }
         }
       }
