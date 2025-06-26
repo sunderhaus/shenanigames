@@ -196,9 +196,11 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         return "Click anywhere to edit players or session details";
       }
     } else if (isValidPlayerTarget) {
-      return "Double-click or long press to join this table";
+      return sessionType === SessionType.FREEFORM 
+        ? "Double-click to join this table" 
+        : "Double-click or long press to join this table";
     } else if (table.gameId === null) {
-      return "Drop a game here";
+      return "Double tap a game or drop a game here";
     } else if (table.seatedPlayerIds.includes(currentPlayerId)) {
       return "You are already seated at this table";
     } else if (game && table.seatedPlayerIds.length >= game.maxPlayers) {
@@ -243,11 +245,6 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
       }}
     >
       {/* Mobile long press indicator */}
-      {isValidPlayerTarget && (
-        <div className="absolute top-1 right-1 block md:hidden text-xs text-gray-500 bg-white bg-opacity-80 px-1 rounded">
-          <span className="mr-1">👆</span>Long press to join
-        </div>
-      )}
       {/* Visual feedback during long press */}
       {isLongPressing && isValidPlayerTarget && (
         <div className="absolute inset-0 flex items-center justify-center bg-blue-100 bg-opacity-40 rounded">
@@ -382,7 +379,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         </div>
       ) : (
         <div className="text-center text-gray-500">
-          Drop a game here
+          Double tap a game or drop a game here
         </div>
       )}
       
