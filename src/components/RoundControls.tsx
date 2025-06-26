@@ -1,10 +1,12 @@
 'use client';
 
 import { useSessionGameStore } from '../store/session-store';
+import { SessionMode } from '../types/types';
 import { useState } from 'react';
 import LifecycleStatusTooltip from './LifecycleStatusTooltip';
 
 export default function RoundControls() {
+  const mode = useSessionGameStore(state => state.mode);
   const rounds = useSessionGameStore(state => state.rounds);
   const currentRoundIndex = useSessionGameStore(state => state.currentRoundIndex);
   const viewingRoundIndex = useSessionGameStore(state => state.viewingRoundIndex);
@@ -14,6 +16,11 @@ export default function RoundControls() {
   const viewPreviousRound = useSessionGameStore(state => state.viewPreviousRound);
   const viewNextRound = useSessionGameStore(state => state.viewNextRound);
   const returnToCurrentRound = useSessionGameStore(state => state.returnToCurrentRound);
+  
+  // Only show round controls in Pick Mode
+  if (mode !== SessionMode.PICK) {
+    return null;
+  }
 
   // State for reset confirmation dialogue
   const [showResetConfirmation, setShowResetConfirmation] = useState(false);

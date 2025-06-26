@@ -34,6 +34,7 @@ export interface Table {
   seatedPlayerIds: string[];
   placedByPlayerId?: string; // ID of the player who placed the game
   gameSession?: GameSession; // Game session tracking data
+  mode: SessionMode; // Which session mode this table belongs to
 }
 
 /**
@@ -77,6 +78,14 @@ export enum SessionStage {
 }
 
 /**
+ * Session modes
+ */
+export enum SessionMode {
+  PICK = 'pick',           // Traditional pick-based drafting with rounds
+  ADHOC = 'adhoc'          // Ad-hoc game placement without picks or rounds
+}
+
+/**
  * SessionState representing the main state object for the application
  */
 export interface SessionState {
@@ -92,4 +101,5 @@ export interface SessionState {
   currentPlayerTurnIndex: number;
   draftingComplete: boolean;
   stage: SessionStage;        // Current stage of the session lifecycle
+  mode: SessionMode;          // Session mode: pick-based or ad-hoc
 }

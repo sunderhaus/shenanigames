@@ -1,7 +1,7 @@
 'use client';
 
 import { useSessionGameStore } from '../store/session-store';
-import { Table, Game, Player } from '../types/types';
+import { Table, Game, Player, SessionMode } from '../types/types';
 import DroppableTable from './DroppableTable';
 import { useState, useEffect, useRef, TouchEvent } from 'react';
 
@@ -18,7 +18,7 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const swipeContainerRef = useRef<HTMLDivElement>(null);
 
-  const tables = useSessionGameStore(state => state.tables);
+  const tables = useSessionGameStore(state => state.currentModeTables);
   const availableGames = useSessionGameStore(state => state.availableGames);
   const allGames = useSessionGameStore(state => state.allGames);
   const players = useSessionGameStore(state => state.players);
@@ -32,6 +32,8 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
   const viewPreviousRound = useSessionGameStore(state => state.viewPreviousRound);
   const viewNextRound = useSessionGameStore(state => state.viewNextRound);
   const returnToCurrentRound = useSessionGameStore(state => state.returnToCurrentRound);
+  const addTable = useSessionGameStore(state => state.addTable);
+  const removeTable = useSessionGameStore(state => state.removeTable);
 
   // Set isClient to true after component mounts (client-side only)
   useEffect(() => {
@@ -222,7 +224,8 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                     gameId: tableState.gameId,
                     seatedPlayerIds: tableState.seatedPlayerIds,
                     placedByPlayerId: tableState.placedByPlayerId,
-                    gameSession: tableState.gameSession
+                    gameSession: tableState.gameSession,
+                    mode: SessionMode.PICK // Historical tables in rounds are from Pick Mode
                   };
 
                   return (
@@ -284,8 +287,10 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
           )}
         </div>
       ) : (
-        // Desktop view - grid of tables
-        <div className="grid gap-4 overflow-y-auto flex-grow" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+        // Desktop view - grid of tables only
+        <>
+          {/* Grid of tables */}
+          <div className="grid gap-4 overflow-y-auto flex-grow" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
           {isClient && isViewingHistory 
             ? viewingRound.tableStates.map((tableState) => {
                 const game = findGameById(tableState.gameId);
@@ -301,7 +306,8 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                   gameId: tableState.gameId,
                   seatedPlayerIds: tableState.seatedPlayerIds,
                   placedByPlayerId: tableState.placedByPlayerId,
-                  gameSession: tableState.gameSession
+                  gameSession: tableState.gameSession,
+                  mode: SessionMode.PICK // Historical tables in rounds are from Pick Mode
                 };
 
                 return (
@@ -333,7 +339,8 @@ export default function TablesArea({ isMobile = false }: TablesAreaProps) {
                 );
               })
           }
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

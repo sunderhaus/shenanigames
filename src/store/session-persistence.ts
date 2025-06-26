@@ -94,13 +94,31 @@ export const loadSession = (sessionId: string): Session | null => {
     
     const session = JSON.parse(serializedSession) as Session;
     
-    // Convert date strings back to Date objects
-    session.metadata.createdAt = new Date(session.metadata.createdAt);
-    session.metadata.lastModified = new Date(session.metadata.lastModified);
+    // Validate session structure
+    if (!session || !session.metadata || !session.state) {
+      console.warn(`Invalid session structure for session ${sessionId}`);
+      return null;
+    }
+    
+    // Validate required metadata fields
+    if (!session.metadata.id || !session.metadata.name) {
+      console.warn(`Session ${sessionId} missing required metadata fields`);
+      return null;
+    }
+    
+    // Convert date strings back to Date objects with fallbacks
+    session.metadata.createdAt = session.metadata.createdAt 
+      ? new Date(session.metadata.createdAt) 
+      : new Date();
+    session.metadata.lastModified = session.metadata.lastModified 
+      ? new Date(session.metadata.lastModified) 
+      : new Date();
     
     return session;
   } catch (error) {
-    console.error('Error loading session from localStorage:', error);
+    console.error(`Error loading session ${sessionId} from localStorage:`, error);
+    // Remove corrupted session data
+    localStorage.removeItem(getSessionKey(sessionId));
     return null;
   }
 };
@@ -135,12 +153,32 @@ export const getAllSessionMetadata = (): SessionMetadata[] => {
         if (serializedSession) {
           try {
             const session = JSON.parse(serializedSession) as Session;
-            // Convert date strings back to Date objects
-            session.metadata.createdAt = new Date(session.metadata.createdAt);
-            session.metadata.lastModified = new Date(session.metadata.lastModified);
+            
+            // Validate that the session has the required structure
+            if (!session || !session.metadata) {
+              console.warn(`Invalid session structure in key ${key}, skipping`);
+              continue;
+            }
+            
+            // Validate that required metadata fields exist
+            if (!session.metadata.id || !session.metadata.name) {
+              console.warn(`Session missing required metadata in key ${key}, skipping`);
+              continue;
+            }
+            
+            // Convert date strings back to Date objects with fallbacks
+            session.metadata.createdAt = session.metadata.createdAt 
+              ? new Date(session.metadata.createdAt) 
+              : new Date();
+            session.metadata.lastModified = session.metadata.lastModified 
+              ? new Date(session.metadata.lastModified) 
+              : new Date();
+            
             sessionMetadata.push(session.metadata);
           } catch (parseError) {
             console.error(`Error parsing session from key ${key}:`, parseError);
+            // Optionally remove corrupted session data
+            localStorage.removeItem(key);
           }
         }
       }

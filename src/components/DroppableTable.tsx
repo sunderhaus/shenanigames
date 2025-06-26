@@ -18,6 +18,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
   const players = useSessionGameStore(state => state.players);
   const joinGame = useSessionGameStore(state => state.joinGame);
+  const removeGameFromTable = useSessionGameStore(state => state.removeGameFromTable);
   const viewingRoundIndex = useSessionGameStore(state => state.viewingRoundIndex);
   const { animatePlayerToTable } = useAnimation();
   
@@ -358,21 +359,43 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
         </div>
       )}
       
-      {/* Edit Button - show when there's a game (both current and historical) */}
+      {/* Game Action Buttons - show when there's a game */}
       {game && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowSessionEditor(true);
-          }}
-          className={`absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 bg-white bg-opacity-80 hover:bg-opacity-100 rounded transition-all duration-200 ${isReadOnly ? 'z-10' : ''}`}
-          title={isReadOnly ? "Edit historical game session details" : "Edit game session details"}
-          style={{ pointerEvents: 'auto' }}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </button>
+        <div className="absolute top-2 right-2 flex space-x-1">
+          {/* Remove Game Button - only show for current round and if no players are seated */}
+          {!isReadOnly && table.seatedPlayerIds.length === 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm(`Remove ${game.title} from this table?`)) {
+                  removeGameFromTable(table.id);
+                }
+              }}
+              className="p-1 text-red-500 hover:text-red-700 bg-white bg-opacity-80 hover:bg-opacity-100 rounded transition-all duration-200"
+              title="Remove game from table"
+              style={{ pointerEvents: 'auto' }}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+          
+          {/* Edit Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSessionEditor(true);
+            }}
+            className={`p-1 text-gray-500 hover:text-gray-700 bg-white bg-opacity-80 hover:bg-opacity-100 rounded transition-all duration-200 ${isReadOnly ? 'z-10' : ''}`}
+            title={isReadOnly ? "Edit historical game session details" : "Edit game session details"}
+            style={{ pointerEvents: 'auto' }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+        </div>
       )}
       
       {/* Game Session Editor Modal */}

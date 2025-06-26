@@ -1,10 +1,13 @@
 import { create } from 'zustand';
-import { SessionState, Game, SessionStage, GameSession } from '@/types/types';
+import { SessionState, Game, SessionStage, GameSession, SessionMode, Table } from '@/types/types';
 import { useSessionManager } from './session-manager';
 import { useGameLibrary } from '@/store/game-library-store';
 
 // This store provides the same interface as the old store but works with sessions
 interface SessionGameStore extends SessionState {
+  // Computed property for mode-specific tables
+  currentModeTables: Table[];
+  
   // Action to place a game on a table
   placeGame: (gameId: string, tableId: string, playerId: string, pickIndex?: number) => void;
 
@@ -70,18 +73,44 @@ interface SessionGameStore extends SessionState {
   // Ad-hoc game session actions
   placeLibraryGame: (gameId: string, tableId: string) => void;
   removeGameFromTable: (tableId: string) => void;
+  
+  // Session mode management
+  toggleSessionMode: () => void;
+  
+  // Mode-specific table management
+  ensurePickModeTables: () => void;
 }
 
 // Get the current session state or return a default empty state
 const getCurrentSessionState = (): SessionState => {
-  const sessionManager = useSessionManager.getState();
-  const currentSession = sessionManager.getCurrentSession();
-  
-  if (currentSession) {
-    return currentSession.state;
+  try {
+    const sessionManager = useSessionManager.getState();
+    const currentSession = sessionManager.getCurrentSession();
+    
+    if (currentSession && currentSession.state) {
+      // Validate the session state has required properties
+      const state = currentSession.state;
+      return {
+        players: Array.isArray(state.players) ? state.players : [],
+        availableGames: Array.isArray(state.availableGames) ? state.availableGames : [],
+        allGames: Array.isArray(state.allGames) ? state.allGames : [],
+        tables: Array.isArray(state.tables) ? state.tables : [],
+        rounds: Array.isArray(state.rounds) ? state.rounds : [],
+        currentRoundIndex: typeof state.currentRoundIndex === 'number' ? state.currentRoundIndex : 0,
+        viewingRoundIndex: typeof state.viewingRoundIndex === 'number' ? state.viewingRoundIndex : 0,
+        isViewingHistory: typeof state.isViewingHistory === 'boolean' ? state.isViewingHistory : false,
+        turnOrder: Array.isArray(state.turnOrder) ? state.turnOrder : [],
+        currentPlayerTurnIndex: typeof state.currentPlayerTurnIndex === 'number' ? state.currentPlayerTurnIndex : 0,
+        draftingComplete: typeof state.draftingComplete === 'boolean' ? state.draftingComplete : false,
+        stage: state.stage || SessionStage.SETUP,
+        mode: state.mode || SessionMode.PICK
+      };
+    }
+  } catch (error) {
+    console.error('Error getting current session state:', error);
   }
   
-  // Return a minimal empty state if no session is active
+  // Return a minimal empty state if no session is active or on error
   return {
     players: [],
     availableGames: [],
@@ -94,7 +123,8 @@ const getCurrentSessionState = (): SessionState => {
     turnOrder: [],
     currentPlayerTurnIndex: 0,
     draftingComplete: false,
-    stage: SessionStage.SETUP
+    stage: SessionStage.SETUP,
+    mode: SessionMode.PICK // Default to pick mode
   };
 };
 
@@ -107,10 +137,39 @@ const saveCurrentSessionState = (state: SessionState) => {
 export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
   ...getCurrentSessionState(),
 
+  // Computed property for mode-specific tables
+  get currentModeTables() {
+    const state = get();
+    return state.tables.filter(table => table.mode === state.mode);
+  },
+
   // Load current session data
   loadCurrentSession: () => {
     const newState = getCurrentSessionState();
     set(newState);
+    // Ensure Pick Mode has the correct tables after loading
+    get().ensurePickModeTables();
+  },
+
+  // Toggle session mode
+  toggleSessionMode: () => {
+    set((state) => {
+      const newMode = state.mode === SessionMode.PICK ? SessionMode.ADHOC : SessionMode.PICK;
+      const newState = {
+        ...state,
+        mode: newMode
+      };
+      
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+    
+    // If switching to Pick Mode, ensure we have the correct tables
+    const state = get();
+    if (state.mode === SessionMode.PICK) {
+      get().ensurePickModeTables();
+    }
   },
 
   // Check if there's an active session
@@ -155,7 +214,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         gameId: null,
         seatedPlayerIds: [],
         placedByPlayerId: undefined,
-        gameSession: undefined
+        gameSession: undefined,
+        mode: table.mode // Preserve the table's mode
       }));
 
       // Reset all players' actionTakenInCurrentRound to false and restore games to their picks
@@ -1250,16 +1310,23 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     let newTableId = '';
     
     set(state => {
+      // In Pick Mode, prevent adding tables
+      if (state.mode === SessionMode.PICK) {
+        console.warn('Cannot add tables in Pick Mode - table count is fixed');
+        return state;
+      }
+      
       // Generate a unique ID for the new table
       newTableId = `table-${crypto.randomUUID()}`;
       
       // Create the new table
-      const newTable = {
+      const newTable: Table = {
         id: newTableId,
         gameId: null,
         seatedPlayerIds: [],
         placedByPlayerId: undefined,
-        gameSession: undefined
+        gameSession: undefined,
+        mode: state.mode // Assign table to current session mode
       };
       
       // Add the new table to the tables array
@@ -1299,6 +1366,12 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     let removeSucceeded = false;
     
     set(state => {
+      // In Pick Mode, prevent removing tables
+      if (state.mode === SessionMode.PICK) {
+        console.warn('Cannot remove tables in Pick Mode - table count is fixed');
+        return state;
+      }
+      
       // Check if table exists
       const tableIndex = state.tables.findIndex(t => t.id === tableId);
       if (tableIndex === -1) {
@@ -1496,11 +1569,75 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       return newState;
     });
   },
+
+  // Ensure Pick Mode has exactly 2 tables
+  ensurePickModeTables: () => {
+    set(state => {
+      if (state.mode !== SessionMode.PICK) {
+        // Not in Pick Mode, nothing to do
+        return state;
+      }
+      
+      // Filter existing Pick Mode tables
+      const pickModeTables = state.tables.filter(table => table.mode === SessionMode.PICK);
+      
+      // If we already have exactly 2 Pick Mode tables, we're good
+      if (pickModeTables.length === 2) {
+        return state;
+      }
+      
+      // Create exactly 2 Pick Mode tables
+      const newPickModeTables: Table[] = [
+        {
+          id: 'pick-table-1',
+          gameId: null,
+          seatedPlayerIds: [],
+          placedByPlayerId: undefined,
+          gameSession: undefined,
+          mode: SessionMode.PICK
+        },
+        {
+          id: 'pick-table-2', 
+          gameId: null,
+          seatedPlayerIds: [],
+          placedByPlayerId: undefined,
+          gameSession: undefined,
+          mode: SessionMode.PICK
+        }
+      ];
+      
+      // Keep all Ad-hoc tables and replace Pick Mode tables
+      const adhocTables = state.tables.filter(table => table.mode === SessionMode.ADHOC);
+      const updatedTables = [...adhocTables, ...newPickModeTables];
+      
+      // Update current round to include the new table structure
+      const updatedRounds = [...state.rounds];
+      if (updatedRounds[state.currentRoundIndex]) {
+        // Only include Pick Mode tables in rounds for Pick Mode
+        updatedRounds[state.currentRoundIndex] = {
+          ...updatedRounds[state.currentRoundIndex],
+          tableStates: newPickModeTables.map(table => ({
+            id: table.id,
+            gameId: table.gameId,
+            seatedPlayerIds: [...table.seatedPlayerIds],
+            placedByPlayerId: table.placedByPlayerId,
+            gameSession: table.gameSession
+          }))
+        };
+      }
+      
+      const newState = {
+        ...state,
+        tables: updatedTables,
+        rounds: updatedRounds
+      };
+      
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+  },
 }));
 
-// Subscribe to session manager changes and update the game store
-useSessionManager.subscribe((sessionManagerState) => {
-  // If the current session changed, reload the game store
-  const gameStore = useSessionGameStore.getState();
-  gameStore.loadCurrentSession();
-});
+// Note: Removed automatic subscription to prevent circular dependencies
+// The session store will be explicitly updated when needed

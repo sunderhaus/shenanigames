@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import PlayerInfo from '../components/PlayerInfo';
 import TablesArea from '../components/TablesArea';
-import TablesHeader from '../components/TablesHeader';
 import RoundControls from '../components/RoundControls';
+import SessionModeToggle from '../components/SessionModeToggle';
+import TableManagementControls from '../components/TableManagementControls';
 import DragAndDropProvider from '../components/DragAndDropProvider';
 import ActivePlayerFooter from '../components/ActivePlayerFooter';
 import HamburgerMenu from '../components/HamburgerMenu';
@@ -16,8 +17,9 @@ import { useSessionManager } from '../store/session-manager';
 import AnimationProvider from '../components/AnimationProvider';
 
 export default function Home() {
-  // State to track if we're on a mobile device
+  // State to track if we're on a mobile device and if we're hydrated
   const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   // Get session state
   const { currentSessionId, createSession } = useSessionManager();
@@ -26,18 +28,36 @@ export default function Home() {
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
 
-  // Initialize session if none exists
+  // Set client-side flag
   useEffect(() => {
-    if (!hasActiveSession()) {
-      // Create a default session
-      const sessionId = createSession({ name: 'My First Session' });
-      if (sessionId) {
-        loadCurrentSession();
-      }
-    } else {
-      loadCurrentSession();
-    }
+    setIsClient(true);
   }, []);
+
+  // Initialize session if none exists (only after client hydration)
+  useEffect(() => {
+    if (!isClient) return;
+    
+    const initializeSession = async () => {
+      try {
+        if (!hasActiveSession()) {
+          // Create a default session
+          const sessionId = createSession({ name: 'My First Session' });
+          if (sessionId) {
+            // Small delay to ensure session is saved before loading
+            setTimeout(() => {
+              loadCurrentSession();
+            }, 100);
+          }
+        } else {
+          loadCurrentSession();
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+      }
+    };
+
+    initializeSession();
+  }, [isClient]);
 
   // Check if we're on a mobile device on component mount
   useEffect(() => {
@@ -69,6 +89,18 @@ export default function Home() {
     };
   }, [isMobile, allTablesHaveGames]);
 
+  // Show loading state during hydration
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Shenanigames</h1>
+          <div className="text-gray-600">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AnimationProvider>
       {isMobile ? (
@@ -88,8 +120,13 @@ export default function Home() {
                 <LifecycleStatusTooltip isMobile={isMobile} />
               </div>
             </div>
+            
+            {/* Session Mode Toggle for mobile */}
+            <div className="mb-2 flex justify-center">
+              <SessionModeToggle />
+            </div>
+            
             <PickRequirements />
-            <TablesHeader />
           </header>
 
           {/* Body with calculated height to fill space between header and footer */}
@@ -133,8 +170,20 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* Round navigation controls */}
-                  <RoundControls />
+                  {/* Controls section */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    {/* Session Mode Toggle */}
+                    <SessionModeToggle />
+                    
+                    {/* Mode-specific controls */}
+                    <div className="flex items-center gap-4">
+                      {/* Round navigation controls - only in Pick Mode */}
+                      <RoundControls />
+                      
+                      {/* Table management controls - only in Ad-hoc Mode */}
+                      <TableManagementControls />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Navigation breadcrumb */}

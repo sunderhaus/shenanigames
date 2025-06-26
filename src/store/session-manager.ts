@@ -7,7 +7,7 @@ import {
   CreateSessionOptions,
   SessionTemplate 
 } from '@/types/session-types';
-import { SessionState, Player, Game, Table, Round, SessionStage } from '@/types/types';
+import { SessionState, Player, Game, Table, Round, SessionStage, SessionMode } from '@/types/types';
 import { 
   saveSessionManager, 
   loadSessionManager, 
@@ -55,12 +55,14 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
     image: gameTemplate.image
   }));
 
-  // Create tables
+  // Create tables with Pick Mode (default mode is PICK)
   const tables: Table[] = Array.from({ length: template.tableCount }, (_, index) => ({
-    id: `table-${index + 1}`,
+    id: `pick-table-${index + 1}`,
     gameId: null,
     seatedPlayerIds: [],
-    placedByPlayerId: undefined
+    placedByPlayerId: undefined,
+    gameSession: undefined,
+    mode: SessionMode.PICK
   }));
 
   // Assign picks if provided
@@ -114,7 +116,8 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
     turnOrder: players.map(player => player.id),
     currentPlayerTurnIndex: 0,
     draftingComplete: false,
-    stage: SessionStage.SETUP
+    stage: SessionStage.SETUP,
+    mode: SessionMode.PICK // Default to pick mode
   };
 };
 
@@ -134,26 +137,47 @@ const getDefaultTemplate = (): SessionTemplate => ({
     { title: 'Dune', maxPlayers: 6, link: 'https://boardgamegeek.com/boardgame/283355/dune', image: 'https://cf.geekdo-images.com/2fgPg6Be--w97zoycObUgg__imagepagezoom/img/xaHCXAm16YrluAkOLF6ATbKDYHg=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic4815198.jpg' },
     { title: 'Kemet', maxPlayers: 5, link: 'https://boardgamegeek.com/boardgame/297562/kemet-blood-and-sand', image: 'https://cf.geekdo-images.com/IU-az-0jlIpoUxDHCCclNw__imagepagezoom/img/JUuxRLpu0aOMPWbSMxNj4KuT0eA=/fit-in/1200x900/filters:no_upscale():strip_icc()/pic6230640.jpg' }
   ],
-  tableCount: 2
+  tableCount: 3 // Good default for Pick Mode - allows for variety while keeping games manageable
 });
 
 // Load initial session manager state
 const loadInitialSessionManager = (): SessionManagerState => {
-  // Bootstrap the session system
-  bootstrapSessions();
-  
-  const savedManager = loadSessionManager();
-  if (savedManager) {
-    // Refresh session list from storage
-    const sessionList = getAllSessionMetadata();
-    return {
-      ...savedManager,
-      sessionList
-    };
+  try {
+    // Bootstrap the session system
+    bootstrapSessions();
+    
+    const savedManager = loadSessionManager();
+    if (savedManager) {
+      // Refresh session list from storage - this will clean up any corrupted sessions
+      const sessionList = getAllSessionMetadata();
+      
+      // Validate that the current session still exists and is valid
+      let currentSessionId = savedManager.currentSessionId;
+      if (currentSessionId) {
+        const currentSession = loadSession(currentSessionId);
+        if (!currentSession) {
+          console.warn(`Current session ${currentSessionId} no longer exists or is corrupted, clearing it`);
+          currentSessionId = null;
+        }
+      }
+      
+      return {
+        sessions: savedManager.sessions || {},
+        currentSessionId,
+        sessionList
+      };
+    }
+  } catch (error) {
+    console.error('Error loading initial session manager state:', error);
+    // Clear potentially corrupted data and start fresh
+    try {
+      localStorage.removeItem('shenanigames-session-manager');
+    } catch (clearError) {
+      console.error('Error clearing corrupted session manager data:', clearError);
+    }
   }
 
-
-  // No existing data, start fresh
+  // No existing data or error occurred, start fresh
   return {
     sessions: {},
     currentSessionId: null,

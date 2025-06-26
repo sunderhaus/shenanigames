@@ -42,7 +42,15 @@ export const AnimationProvider: React.FC<AnimationProviderProps> = ({ children }
       setPortalContainer(container);
 
       return () => {
-        document.body.removeChild(container);
+        try {
+          // Check if the container still exists and is a child of document.body
+          if (container && container.parentNode === document.body) {
+            document.body.removeChild(container);
+          }
+        } catch (error) {
+          // Silently handle the error - the element may have already been removed
+          console.debug('Animation container cleanup: element already removed');
+        }
       };
     }
   }, []);
@@ -103,7 +111,15 @@ export const AnimationProvider: React.FC<AnimationProviderProps> = ({ children }
 
       // Clean up after animation
       setTimeout(() => {
-        portalContainer.removeChild(clone);
+        try {
+          // Check if the clone still exists and is a child of portalContainer
+          if (clone && clone.parentNode === portalContainer) {
+            portalContainer.removeChild(clone);
+          }
+        } catch (error) {
+          // Silently handle the error - the element may have already been removed
+          console.debug('Animation clone cleanup: element already removed');
+        }
         resolve();
       }, 500); // Match the transition duration
     });

@@ -2,15 +2,16 @@
 
 import { useSessionGameStore } from '@/store/session-store';
 import { useGameLibrary } from '@/store/game-library-store';
-import { SessionStage } from '@/types/types';
+import { SessionStage, SessionMode } from '@/types/types';
 
 export default function PickRequirements() {
   const players = useSessionGameStore(state => state.players);
   const stage = useSessionGameStore(state => state.stage);
+  const mode = useSessionGameStore(state => state.mode);
   const { getGameById } = useGameLibrary();
 
-  // Only show pick requirements during SETUP stage
-  if (stage !== SessionStage.SETUP) {
+  // Only show pick requirements during SETUP stage and in pick mode
+  if (stage !== SessionStage.SETUP || mode !== SessionMode.PICK) {
     return null;
   }
 
