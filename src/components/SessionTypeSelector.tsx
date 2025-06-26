@@ -114,7 +114,7 @@ const SessionTypeSelector: React.FC<SessionTypeSelectorProps> = ({ isOpen, onClo
       case 'custom-picks':
         return '🎯 Create Custom Picks Session';
       case 'freeform':
-        return '🎲 Create Freeform Session';
+        return '🌵 Create Freeform Session';
     }
   };
 
@@ -217,7 +217,7 @@ const SessionTypeSelector: React.FC<SessionTypeSelectorProps> = ({ isOpen, onClo
                       <div className="w-full h-full rounded-full bg-white transform scale-50"></div>
                     )}
                   </div>
-                  <h5 className="font-medium text-gray-900">🎲 Freeform Draft</h5>
+                  <h5 className="font-medium text-gray-900">🌵 Freeform Draft</h5>
                 </div>
                 <p className="text-sm text-gray-600">
                   Open drafting where players can place any game from the library.

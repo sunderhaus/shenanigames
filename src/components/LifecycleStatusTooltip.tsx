@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSessionGameStore } from '@/store/session-store';
+import { useSessionManager } from '@/store/session-manager';
 import { SessionStage } from '@/types/types';
+import { SessionType } from '@/types/session-types';
 
 interface LifecycleStatusTooltipProps {
   isMobile: boolean;
@@ -80,6 +82,19 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
       case SessionStage.FIRST_ROUND:
       case SessionStage.SUBSEQUENT_ROUNDS:
         const currentRound = rounds[currentRoundIndex];
+        const sessionManager = useSessionManager.getState();
+        const currentSession = sessionManager.getCurrentSession();
+        const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+        
+        if (sessionType === SessionType.FREEFORM) {
+          return {
+            icon: '🌵',
+            color: 'text-green-600',
+            bgColor: 'bg-green-50',
+            borderColor: 'border-green-200'
+          };
+        }
+
         if (currentRound?.completed && canCreateNextRound()) {
           return {
             icon: '🎯',
@@ -122,9 +137,37 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
   // Get content based on stage
   const getContent = () => {
     const currentRound = rounds[currentRoundIndex];
+    const sessionManager = useSessionManager.getState();
+    const currentSession = sessionManager.getCurrentSession();
+    const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
     
     switch (stage) {
       case SessionStage.SETUP:
+        if (sessionType === SessionType.FREEFORM) {
+          return {
+            title: 'Freeform Session Setup',
+            message: 'Freeform sessions require minimal setup:',
+            details: (
+              <ul className="list-disc list-inside space-y-1 mt-2">
+                <li className={players.length >= 2 ? 'text-green-700' : ''}>
+                  Add at least 2 players {players.length >= 2 ? '✓' : `(${players.length}/2)`}
+                </li>
+                <li className="text-green-700">
+                  No picks required - players can choose from any game ✓
+                </li>
+              </ul>
+            ),
+            action: canStartFirstRound() ? (
+              <button
+                onClick={handleStartFirstRound}
+                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                Start First Round
+              </button>
+            ) : null
+          };
+        }
+        
         return {
           title: 'Session Setup',
           message: 'Complete the following steps to start your first round:',
@@ -152,6 +195,28 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
 
       case SessionStage.FIRST_ROUND:
       case SessionStage.SUBSEQUENT_ROUNDS:
+        if (sessionType === SessionType.FREEFORM) {
+          if (currentRound?.completed) {
+            return {
+              title: `Freeform Round ${currentRoundIndex + 1} Complete! 🌵`,
+              message: 'All players are seated! This is a freeform session, so you can continue with more rounds indefinitely.',
+              action: (
+                <button
+                  onClick={handleCreateNextRound}
+                  className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+                >
+                  Start Another Round
+                </button>
+              )
+            };
+          } else {
+            return {
+              title: `Freeform Round ${currentRoundIndex + 1} 🌵`,
+              message: 'Players can choose any game from the library. No pick restrictions apply!'
+            };
+          }
+        }
+        
         if (currentRound?.completed && canCreateNextRound()) {
           return {
             title: `Round ${currentRoundIndex + 1} Complete!`,

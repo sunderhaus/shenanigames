@@ -272,18 +272,27 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       // Calculate the new current round index
       const newCurrentRoundIndex = state.currentRoundIndex + 1;
 
+      // Get session type
+      const sessionManager = useSessionManager.getState();
+      const currentSession = sessionManager.getCurrentSession();
+      const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+      
       // Determine the new stage
       let newStage = state.stage;
       if (state.stage === SessionStage.FIRST_ROUND) {
         newStage = SessionStage.SUBSEQUENT_ROUNDS;
       }
-      // If no players have picks remaining after this round, complete the session
-      const anyPlayerHasPicks = state.players.some(player => 
-        player.picks && player.picks.length > 0
-      );
-      if (!anyPlayerHasPicks) {
-        newStage = SessionStage.COMPLETE;
+      
+      // For picks sessions, check if no players have picks remaining
+      if (sessionType === SessionType.PICKS) {
+        const anyPlayerHasPicks = state.players.some(player => 
+          player.picks && player.picks.length > 0
+        );
+        if (!anyPlayerHasPicks) {
+          newStage = SessionStage.COMPLETE;
+        }
       }
+      // For freeform sessions, never auto-complete - they can go on indefinitely
 
       // Add the new round and increment the current round index
       const newState = {
@@ -1139,13 +1148,23 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
   canStartFirstRound: () => {
     const state = get();
     
+    // Get session type
+    const sessionManager = useSessionManager.getState();
+    const currentSession = sessionManager.getCurrentSession();
+    const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+    
     // Must be in SETUP stage
     if (state.stage !== SessionStage.SETUP) return false;
     
     // Must have at least 2 players
     if (state.players.length < 2) return false;
     
-    // All players must have exactly 2 picks
+    // For freeform sessions, only need players - no pick requirements
+    if (sessionType === SessionType.FREEFORM) {
+      return true;
+    }
+    
+    // For picks sessions, all players must have exactly 2 picks
     const allPlayersHavePicks = state.players.every(player => 
       player.picks && player.picks.length === 2
     );
@@ -1196,6 +1215,11 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
   canCreateNextRound: () => {
     const state = get();
     
+    // Get session type
+    const sessionManager = useSessionManager.getState();
+    const currentSession = sessionManager.getCurrentSession();
+    const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+    
     // Must not be in SETUP stage
     if (state.stage === SessionStage.SETUP) return false;
     
@@ -1203,7 +1227,12 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     const currentRound = state.rounds[state.currentRoundIndex];
     if (!currentRound || !currentRound.completed) return false;
     
-    // Check if any player still has picks remaining
+    // For freeform sessions, rounds are indeterminate - can always create new rounds
+    if (sessionType === SessionType.FREEFORM) {
+      return true;
+    }
+    
+    // For picks sessions, check if any player still has picks remaining
     const anyPlayerHasPicks = state.players.some(player => 
       player.picks && player.picks.length > 0
     );
