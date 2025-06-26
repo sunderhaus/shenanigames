@@ -1,6 +1,8 @@
 'use client';
 
 import { useSessionGameStore } from '../store/session-store';
+import { useSessionManager } from '../store/session-manager';
+import { SessionType } from '../types/session-types';
 import { useState, useEffect } from 'react';
 import DraggablePlayer from './DraggablePlayer';
 import PlayersRemainingPicks from './PlayersRemainingPicks';
@@ -16,6 +18,11 @@ export default function ActivePlayerFooter() {
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
   const passTurn = useSessionGameStore(state => state.passTurn);
   const tables = useSessionGameStore(state => state.tables);
+  
+  // Get session type to determine if footer should be shown
+  const { getCurrentSession } = useSessionManager();
+  const currentSession = getCurrentSession();
+  const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
 
   // Check if all tables have games
   const allTablesHaveGames = tables.every(table => table.gameId !== null);
@@ -32,6 +39,11 @@ export default function ActivePlayerFooter() {
 
   // Check if all players have taken actions in the current round
   const allPlayersHaveActed = players.every(player => player.actionTakenInCurrentRound);
+
+  // Don't show footer for freeform sessions
+  if (sessionType === SessionType.FREEFORM) {
+    return null;
+  }
 
   if (!isClient || !currentPlayer) {
     return null;
