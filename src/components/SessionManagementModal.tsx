@@ -118,7 +118,7 @@ export const SessionManagementModal: React.FC<SessionManagementModalProps> = ({
                           {session.sessionType === SessionType.PICKS ? (
                             <>🎯&nbsp;&nbsp;Picks-based</>
                           ) : (
-                            <>🎲&nbsp;&nbsp;Freeform</>
+                            <>🌵&nbsp;&nbsp;Freeform</>
                           )}
                         </div>
                         <div>{new Date(session.lastModified).toLocaleDateString()}</div>
@@ -175,7 +175,7 @@ export const SessionManagementModal: React.FC<SessionManagementModalProps> = ({
                         {session.sessionType === SessionType.PICKS ? (
                           <>🎯&nbsp;&nbsp;Picks-based</>
                         ) : (
-                          <>🎲&nbsp;&nbsp;Freeform</>
+                          <>🌵&nbsp;&nbsp;Freeform</>
                         )}
                       </div>
                       <div className="flex items-center gap-1">

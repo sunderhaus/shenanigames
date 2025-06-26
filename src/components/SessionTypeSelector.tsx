@@ -110,7 +110,7 @@ const SessionTypeSelector: React.FC<SessionTypeSelectorProps> = ({ isOpen, onClo
   const getCreateButtonText = () => {
     switch (selectedMode) {
       case 'template':
-        return '🎲 Create Ellijay Edition';
+        return '🌵 Create Ellijay Edition';
       case 'custom-picks':
         return '🎯 Create Custom Picks Session';
       case 'freeform':
@@ -149,7 +149,7 @@ const SessionTypeSelector: React.FC<SessionTypeSelectorProps> = ({ isOpen, onClo
                     <div className="w-full h-full rounded-full bg-white transform scale-50"></div>
                   )}
                 </div>
-                <h5 className="font-medium text-gray-900">🎲 Ellijay Edition Template</h5>
+                <h5 className="font-medium text-gray-900">🌵 Ellijay Edition Template</h5>
                 <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Recommended</span>
               </div>
               <p className="text-sm text-gray-600">

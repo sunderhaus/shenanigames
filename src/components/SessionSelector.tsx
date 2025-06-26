@@ -199,7 +199,7 @@ const SessionSelector: React.FC = () => {
                             ? 'bg-purple-100 text-purple-700' 
                             : 'bg-blue-100 text-blue-700'
                         }`}>
-                          {session.sessionType === SessionType.FREEFORM ? '🎲 Freeform' : '🎯 Picks'}
+                          {session.sessionType === SessionType.FREEFORM ? '🌵 Freeform' : '🎯 Picks'}
                         </span>
                         <span className="text-xs text-gray-500">
                           Round {session.currentRound}

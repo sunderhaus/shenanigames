@@ -28,7 +28,7 @@ export default function AvailableGamesList() {
   if (sessionType === SessionType.FREEFORM) {
     // In Freeform mode, show all available games
     filteredGames = availableGames;
-    headerText = '🎲 All Games (Freeform)';
+    headerText = '🌵 All Games (Freeform)';
   } else {
     // In Picks mode, show only the current player's picks
     filteredGames = currentPlayer 

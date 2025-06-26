@@ -480,7 +480,7 @@ export default function Results() {
                               ? 'bg-purple-100 text-purple-700'
                               : 'bg-blue-100 text-blue-700'
                           }`}>
-                            {session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM' ? '🎲' : '🎯'}
+                            {session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM' ? '🌵' : '🎯'}
                           </span>
                           <span className="text-xs text-gray-500">
                             {session.playerCount} players

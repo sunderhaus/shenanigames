@@ -106,7 +106,7 @@ export default function Home() {
                         ? 'bg-purple-100 text-purple-700' 
                         : 'bg-blue-100 text-blue-700'
                     }`}>
-                      {sessionType === SessionType.FREEFORM ? '🎲' : '🎯'}
+                      {sessionType === SessionType.FREEFORM ? '🌵' : '🎯'}
                     </span>
                   )}
                 </div>
@@ -159,7 +159,7 @@ export default function Home() {
                           ? 'bg-purple-100 text-purple-700' 
                           : 'bg-blue-100 text-blue-700'
                       }`}>
-                        {sessionType === SessionType.FREEFORM ? '🎲' : '🎯'}
+                        {sessionType === SessionType.FREEFORM ? '🌵' : '🎯'}
                       </span>
                     )}
                   </div>
@@ -212,7 +212,7 @@ export default function Home() {
                   {sessionType === SessionType.FREEFORM ? (
                     /* Freeform Session Sidebar - Add Table Panel */
                     <div className="bg-white p-4 rounded-lg shadow-md">
-                      <h2 className="text-xl font-bold mb-4">🎲 Freeform Session</h2>
+                      <h2 className="text-xl font-bold mb-4">🌵 Freeform Session</h2>
                       <p className="text-gray-600 mb-4">
                         Add new tables by selecting games and players from your collections.
                       </p>
