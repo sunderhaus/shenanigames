@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSessionManager } from '../../store/session-manager';
+import { useGameCollections } from '../../store/game-collection-store';
 import { GameSession, Player, Game, Round, SessionState } from '../../types/types';
 import HamburgerMenu from '../../components/HamburgerMenu';
 import Link from 'next/link';
@@ -13,63 +14,87 @@ interface GameSessionWithContext extends GameSession {
   roundIndex: number;
   seatedPlayerIds: string[];
   placedByPlayerId?: string;
+  sessionName?: string;
+  sessionType?: string;
 }
 
 export default function Results() {
   const { sessionList, currentSessionId, loadSessionById } = useSessionManager();
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(currentSessionId);
-  const [selectedSession, setSelectedSession] = useState<{ metadata: any; state: any } | null>(null);
+  const { playerList } = useGameCollections();
+  const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
+  const [selectedSessions, setSelectedSessions] = useState<{ metadata: any; state: any }[]>([]);
 
-  // Update selected session when current session changes
+  // Update selected sessions when current session changes and no sessions are selected
   useEffect(() => {
-    if (currentSessionId && !selectedSessionId) {
-      setSelectedSessionId(currentSessionId);
+    if (currentSessionId && selectedSessionIds.length === 0) {
+      setSelectedSessionIds([currentSessionId]);
     }
-  }, [currentSessionId, selectedSessionId]);
+  }, [currentSessionId, selectedSessionIds.length]);
 
-  // Load the actual session data when selectedSessionId changes
+  // Load the actual session data when selectedSessionIds changes
   useEffect(() => {
-    if (selectedSessionId) {
-      const session = loadSessionById(selectedSessionId);
-      setSelectedSession(session);
-    } else {
-      setSelectedSession(null);
-    }
-  }, [selectedSessionId, loadSessionById]);
+    const sessions = selectedSessionIds
+      .map(id => loadSessionById(id))
+      .filter(Boolean) as { metadata: any; state: any }[];
+    setSelectedSessions(sessions);
+  }, [selectedSessionIds, loadSessionById]);
 
-  // Extract all game sessions with context
+  // Handle session selection toggle
+  const toggleSessionSelection = (sessionId: string) => {
+    setSelectedSessionIds(prev => 
+      prev.includes(sessionId)
+        ? prev.filter(id => id !== sessionId)
+        : [...prev, sessionId]
+    );
+  };
+
+  // Clear all selections
+  const clearAllSelections = () => {
+    setSelectedSessionIds([]);
+  };
+
+  // Select all sessions
+  const selectAllSessions = () => {
+    setSelectedSessionIds(sessionList.map(s => s.id));
+  };
+
+  // Extract all game sessions with context from multiple sessions
   const allGameSessions: GameSessionWithContext[] = useMemo(() => {
-    if (!selectedSession) return [];
+    if (selectedSessions.length === 0) return [];
 
     const sessions: GameSessionWithContext[] = [];
     
-    selectedSession.state.rounds.forEach((round: Round, roundIndex: number) => {
-      round.tableStates.forEach((tableState: any) => {
-        if (tableState.gameSession && tableState.gameId) {
-          const game = selectedSession.state.allGames.find((g: Game) => g.id === tableState.gameId);
-          sessions.push({
-            ...tableState.gameSession,
-            tableId: tableState.id,
-            gameId: tableState.gameId,
-            gameName: game?.title || 'Unknown Game',
-            roundIndex,
-            seatedPlayerIds: tableState.seatedPlayerIds,
-            placedByPlayerId: tableState.placedByPlayerId
-          });
-        }
+    selectedSessions.forEach((selectedSession) => {
+      selectedSession.state.rounds.forEach((round: Round, roundIndex: number) => {
+        round.tableStates.forEach((tableState: any) => {
+          if (tableState.gameSession && tableState.gameId) {
+            const game = selectedSession.state.allGames.find((g: Game) => g.id === tableState.gameId);
+            sessions.push({
+              ...tableState.gameSession,
+              tableId: tableState.id,
+              gameId: tableState.gameId,
+              gameName: game?.title || 'Unknown Game',
+              roundIndex,
+              seatedPlayerIds: tableState.seatedPlayerIds,
+              placedByPlayerId: tableState.placedByPlayerId,
+              sessionName: selectedSession.metadata.name, // Add session name for context
+              sessionType: selectedSession.metadata.sessionType // Add session type for conditional rendering
+            });
+          }
+        });
       });
     });
     
     return sessions;
-  }, [selectedSession]);
+  }, [selectedSessions]);
 
-  // Calculate statistics
+  // Calculate statistics across all selected sessions
   const statistics = useMemo(() => {
-    if (!selectedSession || allGameSessions.length === 0) {
+    if (selectedSessions.length === 0 || allGameSessions.length === 0) {
       return {
         totalGames: 0,
         gamesWithDuration: 0,
-        mostWins: { playerId: '', count: 0, playerName: 'N/A' },
+        mostWins: { count: 0, playerNames: 'N/A' },
         longestDuration: 0,
         averageDuration: 0,
         winnerCounts: {} as Record<string, number>
@@ -108,7 +133,7 @@ export default function Results() {
       }
     });
 
-    // Find all players tied for most wins
+    // Find all players tied for most wins (need to look across all selected sessions for player names)
     const winCounts = Object.values(winnerCounts);
     const maxWins = winCounts.length > 0 ? Math.max(...winCounts) : 0;
     const playersWithMostWins = maxWins > 0 ? Object.entries(winnerCounts)
@@ -118,8 +143,21 @@ export default function Results() {
 
     const mostWinsPlayerNames = playersWithMostWins
       .map(({ playerId }) => {
-        const player = selectedSession.state.players.find((p: Player) => p.id === playerId);
-        return player ? `${player.icon} ${player.name}` : 'Unknown';
+        // Look for player in any of the selected sessions
+        for (const session of selectedSessions) {
+          const player = session.state.players.find((p: Player) => p.id === playerId);
+          if (player) {
+            return `${player.icon} ${player.name}`;
+          }
+        }
+        
+        // If not found in session data, check Player Collections (for freeform sessions)
+        const collectionPlayer = playerList.find(p => p.id === playerId);
+        if (collectionPlayer) {
+          return `${collectionPlayer.icon} ${collectionPlayer.name}`;
+        }
+        
+        return 'Unknown';
       })
       .join(', ');
 
@@ -136,7 +174,7 @@ export default function Results() {
       averageDuration: averageDurationMs,
       winnerCounts
     };
-  }, [selectedSession, allGameSessions]);
+  }, [selectedSessions, allGameSessions]);
 
   // Format duration helper
   const formatDuration = (durationMs: number): string => {
@@ -151,10 +189,23 @@ export default function Results() {
     return `${minutes}m`;
   };
 
-  // Get player name helper
+  // Get player name helper - looks across all selected sessions and Player Collections
   const getPlayerName = (playerId: string): string => {
-    const player = selectedSession?.state.players.find((p: Player) => p.id === playerId);
-    return player ? `${player.icon} ${player.name}` : 'Unknown Player';
+    // First, check in selected session data
+    for (const session of selectedSessions) {
+      const player = session.state.players.find((p: Player) => p.id === playerId);
+      if (player) {
+        return `${player.icon} ${player.name}`;
+      }
+    }
+    
+    // If not found in session data, check Player Collections (for freeform sessions)
+    const collectionPlayer = playerList.find(p => p.id === playerId);
+    if (collectionPlayer) {
+      return `${collectionPlayer.icon} ${collectionPlayer.name}`;
+    }
+    
+    return `Unknown Player (${playerId})`;
   };
 
   // Get game session duration
@@ -193,9 +244,11 @@ export default function Results() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Results</h1>
                 <p className="text-gray-600">
-                  {selectedSession 
-                    ? `Analysis for "${selectedSession.metadata.name}"`
-                    : 'Select a session to view results'
+                  {selectedSessions.length === 0
+                    ? 'Select sessions to view aggregated results'
+                    : selectedSessions.length === 1
+                    ? `Analysis for "${selectedSessions[0].metadata.name}"`
+                    : `Aggregated analysis across ${selectedSessions.length} sessions`
                   }
                 </p>
               </div>
@@ -217,22 +270,81 @@ export default function Results() {
         </div>
         {/* Session Picker */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <label className="block text-lg font-medium mb-3">Select Session:</label>
-          <select
-            value={selectedSessionId || ''}
-            onChange={e => setSelectedSessionId(e.target.value || null)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">-- Select a session --</option>
+          <div className="flex items-center justify-between mb-4">
+            <label className="block text-lg font-medium">Select Sessions:</label>
+            <div className="flex gap-2">
+              <button
+                onClick={selectAllSessions}
+                className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+              >
+                Select All
+              </button>
+              <button
+                onClick={clearAllSelections}
+                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+          
+          <div className="text-sm text-gray-600 mb-3">
+            {selectedSessionIds.length === 0 
+              ? 'No sessions selected' 
+              : `${selectedSessionIds.length} session${selectedSessionIds.length === 1 ? '' : 's'} selected`
+            }
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
             {sessionList.map(session => (
-              <option key={session.id} value={session.id}>
-                {session.name} ({new Date(session.lastModified).toLocaleDateString()})
-              </option>
+              <div
+                key={session.id}
+                className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                  selectedSessionIds.includes(session.id)
+                    ? 'bg-blue-50 border-blue-300 text-blue-900'
+                    : 'bg-white border-gray-200 hover:bg-gray-50'
+                }`}
+                onClick={() => toggleSessionSelection(session.id)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium truncate">{session.name}</h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(session.lastModified).toLocaleDateString()}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM'
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {session.sessionType && session.sessionType.toUpperCase() === 'FREEFORM' ? '🎲' : '🎯'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {session.playerCount} players
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0 ml-2">
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                      selectedSessionIds.includes(session.id)
+                        ? 'bg-blue-500 border-blue-500'
+                        : 'border-gray-300'
+                    }`}>
+                      {selectedSessionIds.includes(session.id) && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
-          </select>
+          </div>
         </div>
 
-        {selectedSession && (
+        {selectedSessions.length > 0 && (
           <>
             {/* Summary Statistics */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -306,7 +418,16 @@ export default function Results() {
                         <div className="flex-1">
                           <h3 className="text-lg font-semibold text-gray-900 mb-2">
                             {session.gameName}
-                            <span className="text-sm text-gray-500 ml-2">(Round {session.roundIndex + 1})</span>
+                            {/* Only show round info for PICKS sessions */}
+                            {session.sessionType && 
+                             session.sessionType.toUpperCase() !== 'FREEFORM' && (
+                              <span className="text-sm text-gray-500 ml-2">(Round {session.roundIndex + 1})</span>
+                            )}
+                            {selectedSessions.length > 1 && session.sessionName && (
+                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded ml-2">
+                                {session.sessionName}
+                              </span>
+                            )}
                           </h3>
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
