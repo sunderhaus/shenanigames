@@ -80,8 +80,8 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
   };
 
   const handleSubmit = () => {
-    if (!selectedGameId || selectedPlayers.length === 0) {
-      alert('Please select a game and at least one player.');
+    if (!selectedGameId) {
+      alert('Please select a game.');
       return;
     }
 
@@ -128,7 +128,7 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
           ...t,
           gameId: selectedGameId,
           seatedPlayerIds: selectedPlayers,
-          placedByPlayerId: selectedPlayers[0], // First player is the placer
+          placedByPlayerId: undefined, // No picker in freeform sessions
           gameSession: {
             gamePickedAt: t.gameSession?.gamePickedAt || new Date(),
             ...(winnerId && { winnerId }),
@@ -165,7 +165,7 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
                       id: table.id,
                       gameId: selectedGameId,
                       seatedPlayerIds: [...selectedPlayers],
-                      placedByPlayerId: selectedPlayers[0],
+                      placedByPlayerId: undefined,
                       gameSession: {
                         gamePickedAt: table.gameSession?.gamePickedAt || new Date(),
                         ...(winnerId && { winnerId }),
@@ -180,15 +180,14 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
       )
     };
     
-    // Save the updated state
+    // Save the updated state using the session manager
     updateCurrentSessionState(updatedState);
     
-    // Force a refresh to update the UI
-    setTimeout(() => {
-      loadCurrentSession();
-    }, 100);
+    // Directly set the session store state to ensure immediate UI synchronization
+    useSessionGameStore.setState(updatedState);
 
-    onClose();
+    // Wait until the next paint to close, ensuring all state updates are complete
+    requestAnimationFrame(() => onClose());
   };
 
   const handleDelete = () => {
@@ -212,12 +211,11 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
       
       updateCurrentSessionState(updatedState);
       
-      // Force a refresh to update the UI
-      setTimeout(() => {
-        loadCurrentSession();
-      }, 100);
+      // Directly set the session store state to ensure immediate UI synchronization
+      useSessionGameStore.setState(updatedState);
       
-      onClose();
+      // Wait until the next paint to close, ensuring all state updates are complete
+      requestAnimationFrame(() => onClose());
     }
   };
 
@@ -285,10 +283,10 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
 
             {/* Player Selection */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                <Users className="inline w-3 h-3 mr-1" />
-                Players * ({selectedPlayers.length} selected)
-              </label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              <Users className="inline w-3 h-3 mr-1" />
+              Players ({selectedPlayers.length} selected)
+            </label>
               <div className="grid grid-cols-1 gap-1 max-h-24 overflow-y-auto border border-gray-200 rounded-md p-1.5">
                 {availablePlayers.map(player => (
                   <label
@@ -427,7 +425,7 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!selectedGameId || selectedPlayers.length === 0}
+              disabled={!selectedGameId}
               className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Save

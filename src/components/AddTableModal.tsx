@@ -51,8 +51,8 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = () => {
-    if (!selectedGameId || selectedPlayers.length === 0) {
-      alert('Please select a game and at least one player.');
+    if (!selectedGameId) {
+      alert('Please select a game.');
       return;
     }
 
@@ -104,7 +104,7 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
       id: newTableId,
       gameId: selectedGame.id,
       seatedPlayerIds: selectedPlayers,
-      placedByPlayerId: selectedPlayers[0],
+      placedByPlayerId: undefined, // No picker in freeform sessions
       gameSession: {
         gamePickedAt: new Date(),
         ...(winnerId && { winnerId }),
@@ -123,9 +123,9 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
       availableGames: currentState.availableGames.some(g => g.id === selectedGame.id)
         ? currentState.availableGames
         : [...currentState.availableGames, sessionGame],
-      // Add players if they're not already in the session
+      // Add new players to the session (keep existing players)
       players: [
-        ...currentState.players.filter(p => !selectedPlayers.includes(p.id)),
+        ...currentState.players,
         ...sessionPlayers.filter(sp => !currentState.players.some(p => p.id === sp.id))
       ],
       // Add the new table
@@ -139,7 +139,7 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
                 id: newTable.id,
                 gameId: newTable.gameId,
                 seatedPlayerIds: [...newTable.seatedPlayerIds],
-                placedByPlayerId: newTable.placedByPlayerId,
+                placedByPlayerId: undefined,
                 gameSession: newTable.gameSession
               }]
             }
@@ -150,12 +150,11 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
     // Save the updated state (sessionType is now preserved automatically)
     updateCurrentSessionState(updatedState);
     
-    // Force a refresh to update the UI
-    setTimeout(() => {
-      loadCurrentSession();
-    }, 100);
+    // Directly set the session store state to ensure immediate UI synchronization
+    useSessionGameStore.setState(updatedState);
 
-    onClose();
+    // Wait until the next paint to close, ensuring all state updates are complete
+    requestAnimationFrame(() => onClose());
   };
 
   if (!isOpen) return null;
@@ -209,7 +208,7 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Users className="inline w-4 h-4 mr-1" />
-                Select Players * ({selectedPlayers.length} selected)
+                Select Players ({selectedPlayers.length} selected)
               </label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-3">
                 {availablePlayers.map(player => (
@@ -319,7 +318,7 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={!selectedGameId || selectedPlayers.length === 0}
+            disabled={!selectedGameId}
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Add Table
