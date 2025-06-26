@@ -52,6 +52,12 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
+  // Helper function to set current time
+  const setCurrentTime = (setter: (value: string) => void) => {
+    const now = new Date();
+    setter(formatDateTimeForInput(now));
+  };
+
   const selectedGame = gameList.find(game => game.id === selectedGameId);
   const availablePlayers = playerList.filter(player => player.isActive);
 
@@ -313,18 +319,28 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
             )}
 
             {/* Time Tracking */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   <Clock className="inline w-3 h-3 mr-1" />
                   Start Time
                 </label>
-                <input
-                  type="datetime-local"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
+                <div className="flex gap-1">
+                  <input
+                    type="datetime-local"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTime(setStartTime)}
+                    className="px-2 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-1 focus:ring-blue-500 flex-shrink-0"
+                    title="Set to current time"
+                  >
+                    NOW
+                  </button>
+                </div>
               </div>
               
               <div>
@@ -332,12 +348,22 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
                   <Clock className="inline w-3 h-3 mr-1" />
                   End Time
                 </label>
-                <input
-                  type="datetime-local"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
+                <div className="flex gap-1">
+                  <input
+                    type="datetime-local"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCurrentTime(setEndTime)}
+                    className="px-2 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-1 focus:ring-blue-500 flex-shrink-0"
+                    title="Set to current time"
+                  >
+                    NOW
+                  </button>
+                </div>
               </div>
             </div>
 
