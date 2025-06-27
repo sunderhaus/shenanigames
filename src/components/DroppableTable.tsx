@@ -290,7 +290,9 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
                   <span className="mr-1 text-yellow-400">★</span>
                 )}
                 {table.gameSession?.winnerId === player.id && (
-                  <span className="mr-1 text-green-500">🏆</span>
+                  <span className="mr-1 text-green-500">
+                    {player.name === 'Matthew' ? '💩' : '🏆'}
+                  </span>
                 )}
                 <span className="mr-1">{player.icon}</span>
                 <span className="truncate max-w-16 sm:max-w-none">{player.name}</span>
@@ -311,11 +313,14 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
                   ⏹️
                 </span>
               )}
-              {table.gameSession.winnerId && (
-                <span title="Winner recorded">
-                  🏆
-                </span>
-              )}
+              {table.gameSession.winnerId && (() => {
+                const winner = seatedPlayers.find(p => p.id === table.gameSession?.winnerId);
+                return (
+                  <span title="Winner recorded">
+                    {winner?.name === 'Matthew' ? '💩' : '🏆'}
+                  </span>
+                );
+              })()}
             </div>
           )}
           
@@ -326,7 +331,7 @@ const DroppableTable: React.FC<DroppableTableProps> = ({ table, game, seatedPlay
                 const winner = seatedPlayers.find(p => p.id === table.gameSession?.winnerId);
                 return winner && (
                   <div className="flex items-center justify-center gap-1 text-green-600 font-medium">
-                    <span>🏆</span>
+                    <span>{winner.name === 'Matthew' ? '💩' : '🏆'}</span>
                     <span>{winner.icon} {winner.name}</span>
                   </div>
                 );

@@ -215,6 +215,25 @@ export default function Results() {
     return `Unknown Player (${playerId})`;
   };
 
+  // Get winner emoji helper - returns appropriate emoji based on winner's name
+  const getWinnerEmoji = (playerId: string): string => {
+    // First, check in selected session data
+    for (const session of selectedSessions) {
+      const player = session.state.players.find((p: Player) => p.id === playerId);
+      if (player) {
+        return player.name === 'Matthew' ? '💩' : '🏆';
+      }
+    }
+    
+    // If not found in session data, check Player Collections (for freeform sessions)
+    const collectionPlayer = playerList.find(p => p.id === playerId);
+    if (collectionPlayer) {
+      return collectionPlayer.name === 'Matthew' ? '💩' : '🏆';
+    }
+    
+    return '🏆'; // Default to trophy if player not found
+  };
+
   // Get game session duration
   const getSessionDuration = (session: GameSessionWithContext): string => {
     if (!session.gameStartedAt || !session.gameEndedAt) return 'N/A';
@@ -607,7 +626,7 @@ export default function Results() {
                                   <span className="font-medium text-gray-700">Winner:</span>
                                   <div className="text-gray-600">
                                     {session.winnerId 
-                                      ? `🏆 ${getPlayerName(session.winnerId)}`
+                                      ? `${getWinnerEmoji(session.winnerId)} ${getPlayerName(session.winnerId)}`
                                       : 'No winner recorded'
                                     }
                                   </div>
