@@ -355,17 +355,28 @@ export default function PlayerInfo() {
 
       {/* Remaining Picks Section */}
       <div className="mt-6 pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-semibold mb-4">
-          {isClient && currentPlayer ? (
-            isSetupStage 
-              ? `${currentPlayer.name}'s Picked Games`
-              : `${currentPlayer.name}'s Remaining Picks`
-          ) : (
-            isSetupStage 
-              ? "Player's Picked Games"
-              : "Player's Remaining Picks"
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">
+            {isClient && currentPlayer ? (
+              isSetupStage 
+                ? `${currentPlayer.name}'s Picked Games`
+                : `${currentPlayer.name}'s Remaining Picks`
+            ) : (
+              isSetupStage 
+                ? "Player's Picked Games"
+                : "Player's Remaining Picks"
+            )}
+          </h3>
+          {isClient && currentPlayer && (
+            <button
+              onClick={() => setPickSelectionPlayer(currentPlayer)}
+              className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title={stage === SessionStage.SETUP ? 'Select picks' : 'Update picks'}
+            >
+              ✏️ {stage === SessionStage.SETUP ? 'Select' : 'Edit'} Picks
+            </button>
           )}
-        </h3>
+        </div>
 
         {isClient && allTablesHaveGames && (
           <div className="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">

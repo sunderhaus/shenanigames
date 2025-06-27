@@ -1,8 +1,9 @@
 'use client';
 
 import { useSessionGameStore } from '../store/session-store';
-import { Game } from '../types/types';
+import { Game, SessionStage } from '../types/types';
 import DraggableGame from './DraggableGame';
+import PickSelectionModal from './PickSelectionModal';
 import { useEffect, useState } from 'react';
 
 interface PlayersRemainingPicksProps {
@@ -12,6 +13,7 @@ interface PlayersRemainingPicksProps {
 export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemainingPicksProps) {
   // Use useState to manage client-side state
   const [isClient, setIsClient] = useState(false);
+  const [pickSelectionPlayer, setPickSelectionPlayer] = useState<any>(null);
 
   // Get state from the store
   const availableGames = useSessionGameStore(state => state.availableGames);
@@ -19,6 +21,7 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
   const turnOrder = useSessionGameStore(state => state.turnOrder);
   const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
   const tables = useSessionGameStore(state => state.tables);
+  const stage = useSessionGameStore(state => state.stage);
 
   // Set isClient to true after component mounts (client-side only)
   useEffect(() => {
@@ -43,9 +46,20 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
   return (
     <div className={`bg-white ${isFooter ? 'p-0' : 'p-4 rounded-lg shadow-md'}`}>
       {!isFooter && (
-        <h2 className="text-xl font-bold mb-4">
-          {isClient && currentPlayer ? `${currentPlayer.name}'s Remaining Picks` : "Player's Remaining Picks"}
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">
+            {isClient && currentPlayer ? `${currentPlayer.name}'s Remaining Picks` : "Player's Remaining Picks"}
+          </h2>
+          {isClient && currentPlayer && (
+            <button
+              onClick={() => setPickSelectionPlayer(currentPlayer)}
+              className="px-3 py-1 text-sm font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title={stage === SessionStage.SETUP ? 'Select picks' : 'Update picks'}
+            >
+              ✏️ {stage === SessionStage.SETUP ? 'Select' : 'Edit'} Picks
+            </button>
+          )}
+        </div>
       )}
 
       {isClient && allTablesHaveGames && (
@@ -86,6 +100,14 @@ export default function PlayersRemainingPicks({ isFooter = false }: PlayersRemai
             </div>
           ))}
         </div>
+      )}
+      
+      {/* Pick Selection Modal */}
+      {pickSelectionPlayer && (
+        <PickSelectionModal
+          player={pickSelectionPlayer}
+          onClose={() => setPickSelectionPlayer(null)}
+        />
       )}
     </div>
   );
