@@ -1056,8 +1056,15 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
       
       let newCurrentPlayerTurnIndex = currentPlayerTurnIndex;
       
-      if (removedPlayerTurnIndex <= currentPlayerTurnIndex && currentPlayerTurnIndex > 0) {
-        // If we removed a player before or at the current player's position, decrement the index
+      if (removedPlayerTurnIndex === currentPlayerTurnIndex) {
+        // If we're removing the active player, keep the same index to advance to the next player
+        // But if we're at the end of the list, wrap to the beginning
+        if (currentPlayerTurnIndex >= updatedTurnOrder.length) {
+          newCurrentPlayerTurnIndex = 0;
+        }
+        // Otherwise keep the same index, which will now point to the next player
+      } else if (removedPlayerTurnIndex < currentPlayerTurnIndex) {
+        // If we removed a player before the current player's position, decrement the index
         newCurrentPlayerTurnIndex = currentPlayerTurnIndex - 1;
       } else if (currentPlayerTurnIndex >= updatedTurnOrder.length) {
         // If the current index is now out of bounds, wrap to the beginning
