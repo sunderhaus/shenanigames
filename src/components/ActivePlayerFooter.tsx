@@ -17,6 +17,7 @@ export default function ActivePlayerFooter() {
   const currentPlayerTurnIndex = useSessionGameStore(state => state.currentPlayerTurnIndex);
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
   const passTurn = useSessionGameStore(state => state.passTurn);
+  const optOutRound = useSessionGameStore(state => state.optOutRound);
   const tables = useSessionGameStore(state => state.tables);
   
   // Get session type to determine if footer should be shown
@@ -66,6 +67,7 @@ export default function ActivePlayerFooter() {
               isCurrentPlayer={true}
               showPassButton={!draftingComplete}
               onPassTurn={passTurn}
+              onOptOut={optOutRound}
               allPlayersHaveActed={allPlayersHaveActed}
             />
           </div>

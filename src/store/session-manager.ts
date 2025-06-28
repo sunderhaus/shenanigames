@@ -45,8 +45,9 @@ const createSessionFromTemplate = (template: SessionTemplate): SessionState => {
     name: playerTemplate.name,
     icon: playerTemplate.icon,
     selectionsMade: 0,
-    picks: [], // Will be populated later if playerPicks is provided
-    actionTakenInCurrentRound: false
+    picks: [],
+    actionTakenInCurrentRound: false,
+    optedOutOfRound: false
   }));
 
   // Create games from template
@@ -253,7 +254,8 @@ export const useSessionManager = create<SessionManagerStore>((set, get) => ({
         players: sourceSession.state.players.map(player => ({
           ...player,
           selectionsMade: 0,
-          actionTakenInCurrentRound: false
+          actionTakenInCurrentRound: false,
+          optedOutOfRound: false
         })),
         // Reset tables
         tables: sourceSession.state.tables.map(table => ({

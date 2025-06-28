@@ -9,6 +9,7 @@ interface DraggablePlayerProps {
   isCurrentPlayer: boolean;
   showPassButton?: boolean;
   onPassTurn?: () => void;
+  onOptOut?: () => void;
   allPlayersHaveActed?: boolean;
 }
 
@@ -17,7 +18,8 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
   isCurrentPlayer, 
   showPassButton = false, 
   onPassTurn,
-  allPlayersHaveActed = false
+  allPlayersHaveActed = false,
+  onOptOut
 }) => {
   const draftingComplete = useSessionGameStore(state => state.draftingComplete);
 
@@ -55,6 +57,13 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
     }
   };
 
+  const handleOptOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onOptOut) {
+      onOptOut();
+    }
+  };
+
   return (
     <div 
       ref={setNodeRef}
@@ -65,7 +74,11 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
       className={`player-tile flex justify-between items-center p-2 border rounded-lg ${
         isCurrentPlayer && !allPlayersHaveActed ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
       } ${isDraggable ? 'draggable' : 'not-draggable'} ${isDragging ? 'dragging' : ''} ${
-        player.actionTakenInCurrentRound ? 'action-taken' : ''
+        player.optedOutOfRound 
+          ? 'opted-out' 
+          : player.actionTakenInCurrentRound 
+          ? 'action-taken' 
+          : ''
       }`}
     >
       {/* Mobile long press indicator */}
@@ -82,12 +95,20 @@ const DraggablePlayer: React.FC<DraggablePlayerProps> = ({
       </div>
 
       {showPassButton && !player.actionTakenInCurrentRound && (
-        <button 
-          className="pass-button text-sm px-2 py-1"
-          onClick={handlePassTurn}
-        >
-          Pass
-        </button>
+        <div className="flex space-x-2">
+          <button 
+            className="pass-button text-sm px-2 py-1"
+            onClick={handlePassTurn}
+          >
+            Pass
+          </button>
+          <button 
+            className="opt-out-button text-sm px-2 py-1 bg-orange-100 text-orange-700 border border-orange-300 rounded hover:bg-orange-200"
+            onClick={handleOptOut}
+          >
+            Opt Out
+          </button>
+        </div>
       )}
     </div>
   );

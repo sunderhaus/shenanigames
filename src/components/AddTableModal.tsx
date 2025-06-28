@@ -95,7 +95,8 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
         icon: collectionPlayer?.icon || '🎮',
         selectionsMade: 0,
         picks: [],
-        actionTakenInCurrentRound: false
+        actionTakenInCurrentRound: false,
+        optedOutOfRound: false
       };
     });
     

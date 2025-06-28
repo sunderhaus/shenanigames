@@ -30,6 +30,7 @@ export default function PlayerInfo() {
   const tables = useSessionGameStore(state => state.tables);
   const stage = useSessionGameStore(state => state.stage);
   const passTurn = useSessionGameStore(state => state.passTurn);
+  const optOutRound = useSessionGameStore(state => state.optOutRound);
   const addPlayer = useSessionGameStore(state => state.addPlayer);
   const removePlayer = useSessionGameStore(state => state.removePlayer);
   const updatePlayer = useSessionGameStore(state => state.updatePlayer);
@@ -258,6 +259,7 @@ export default function PlayerInfo() {
                         isCurrentPlayer={isCurrentPlayer}
                         showPassButton={isCurrentPlayer && !draftingComplete}
                         onPassTurn={passTurn}
+                        onOptOut={optOutRound}
                         allPlayersHaveActed={allPlayersHaveActed}
                       />
                     </div>

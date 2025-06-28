@@ -14,8 +14,14 @@ interface SessionGameStore extends SessionState {
   // Action to pass a turn
   passTurn: () => void;
 
+  // Action to opt out of participating in the current round
+  optOutRound: () => void;
+
   // Helper to advance to the next player's turn
   advanceTurn: () => void;
+
+  // Helper to check if all participating players have acted
+  allParticipatingPlayersHaveActed: () => boolean;
 
   // Helper to check if a round is complete
   isRoundComplete: () => boolean;
@@ -164,7 +170,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           return {
             ...player,
             selectionsMade: 0,
-            actionTakenInCurrentRound: false
+            actionTakenInCurrentRound: false,
+            optedOutOfRound: false
           };
         } else {
           // In Picks mode, restore games to their picks
@@ -183,7 +190,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
             ...player,
             picks: updatedPicks,
             selectionsMade: 0,
-            actionTakenInCurrentRound: false
+            actionTakenInCurrentRound: false,
+            optedOutOfRound: false
           };
         }
       });
@@ -222,22 +230,38 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     });
   },
 
+  // Helper to check if all participating players have completed their actions for the round
+  allParticipatingPlayersHaveActed: () => {
+    const state = get();
+    
+    // Get players who are participating (not opted out)
+    const participatingPlayers = state.players.filter(player => !player.optedOutOfRound);
+    
+    // Check if all participating players have either:
+    // 1. Joined a table (are seated somewhere), OR
+    // 2. Taken some action in the current round (including passing)
+    return participatingPlayers.every(player => {
+      const isSeatedAtTable = state.tables.some(table => table.seatedPlayerIds.includes(player.id));
+      return isSeatedAtTable || player.actionTakenInCurrentRound;
+    });
+  },
+
   // Helper to check if a round is complete
   isRoundComplete: () => {
     const state = get();
     const currentRound = state.rounds[state.currentRoundIndex];
 
-    // A round is complete when all tables have a game and all players have made their selections for this round
-    const allTablesHaveGames = state.tables.every(table => table.gameId !== null);
-
-    // Check if all players have made their selections for this round
-    // This is a simplified check - in a real app, you might need more complex logic
-    const allPlayersHaveSelected = state.players.every(player => {
+    // A round is complete when all participating players have made their selections for this round
+    // We don't require all tables to have games - players can all join the same table
+    
+    // Check if all participating players (excluding opted-out players) have made their selections for this round
+    const participatingPlayers = state.players.filter(player => !player.optedOutOfRound);
+    const allParticipatingPlayersHaveSelected = participatingPlayers.every(player => {
       // Check if player has selected a game or joined a table in this round
       return state.tables.some(table => table.seatedPlayerIds.includes(player.id));
     });
 
-    return allTablesHaveGames && allPlayersHaveSelected;
+    return allParticipatingPlayersHaveSelected;
   },
 
   // Helper to create a new round
@@ -311,10 +335,11 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
           placedByPlayerId: undefined,
           gameSession: undefined
         })),
-        // Reset actionTakenInCurrentRound for all players
+        // Reset actionTakenInCurrentRound and optedOutOfRound for all players
         players: state.players.map(player => ({
           ...player,
-          actionTakenInCurrentRound: false
+          actionTakenInCurrentRound: false,
+          optedOutOfRound: false
         })),
         // Rotate turn order for the new round
         turnOrder: [...state.turnOrder.slice(1), state.turnOrder[0]],
@@ -496,15 +521,16 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
 
       // Check if the round is complete after this action
       const isRoundComplete = () => {
-        // A round is complete when all tables have a game and all players have made their selections for this round
-        const allTablesHaveGames = updatedTables.every(table => table.gameId !== null);
+        // A round is complete when all participating players have made their selections for this round
+        // We don't require all tables to have games - players can all join the same table
 
-        // Check if all players have selected a game or joined a table in this round
-        const allPlayersHaveSelected = updatedPlayers.every(player => {
+        // Check if all participating players (excluding opted-out players) have selected a game or joined a table in this round
+        const participatingPlayers = updatedPlayers.filter(player => !player.optedOutOfRound);
+        const allParticipatingPlayersHaveSelected = participatingPlayers.every(player => {
           return updatedTables.some(table => table.seatedPlayerIds.includes(player.id));
         });
 
-        return allTablesHaveGames && allPlayersHaveSelected;
+        return allParticipatingPlayersHaveSelected;
       };
 
       // If the round is complete, mark it as completed but don't create a new round yet
@@ -606,15 +632,16 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
 
       // Check if the round is complete after this action
       const isRoundComplete = () => {
-        // A round is complete when all tables have a game and all players have made their selections for this round
-        const allTablesHaveGames = updatedTables.every(table => table.gameId !== null);
+        // A round is complete when all participating players have made their selections for this round
+        // We don't require all tables to have games - players can all join the same table
 
-        // Check if all players have selected a game or joined a table in this round
-        const allPlayersHaveSelected = updatedPlayers.every(player => {
+        // Check if all participating players (excluding opted-out players) have selected a game or joined a table in this round
+        const participatingPlayers = updatedPlayers.filter(player => !player.optedOutOfRound);
+        const allParticipatingPlayersHaveSelected = participatingPlayers.every(player => {
           return updatedTables.some(table => table.seatedPlayerIds.includes(player.id));
         });
 
-        return allTablesHaveGames && allPlayersHaveSelected;
+        return allParticipatingPlayersHaveSelected;
       };
 
       // If the round is complete, mark it as completed but don't create a new round yet
@@ -652,6 +679,44 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
   // Pass a turn
   passTurn: () => {
     // Just advance to the next player's turn without tracking passes
+    useSessionGameStore.getState().advanceTurn();
+  },
+
+  // Opt out of participating in the current round
+  optOutRound: () => {
+    set(state => {
+      // Get the current player
+      const currentPlayerId = state.turnOrder[state.currentPlayerTurnIndex];
+      const currentPlayer = state.players.find(p => p.id === currentPlayerId);
+      
+      if (!currentPlayer) {
+        console.error('Current player not found');
+        return state;
+      }
+      
+      // Mark the player as opted out and having taken their action
+      const updatedPlayers = state.players.map(player => {
+        if (player.id === currentPlayerId) {
+          return {
+            ...player,
+            optedOutOfRound: true,
+            actionTakenInCurrentRound: true
+          };
+        }
+        return player;
+      });
+      
+      const newState = {
+        ...state,
+        players: updatedPlayers
+      };
+      
+      // Save to session manager
+      saveCurrentSessionState(newState);
+      return newState;
+    });
+    
+    // Advance to the next player's turn
     useSessionGameStore.getState().advanceTurn();
   },
 
@@ -928,7 +993,8 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         icon: playerIcon,
         selectionsMade: 0,
         picks: [], // Start with empty picks - can be assigned later
-        actionTakenInCurrentRound: false
+        actionTakenInCurrentRound: false,
+        optedOutOfRound: false
       };
 
       // Add the new player to the players array
@@ -1223,9 +1289,24 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     // Must not be in SETUP stage
     if (state.stage === SessionStage.SETUP) return false;
     
-    // Current round must be completed
+    // Current round must be completed OR all participating players have taken actions
     const currentRound = state.rounds[state.currentRoundIndex];
-    if (!currentRound || !currentRound.completed) return false;
+    if (!currentRound) return false;
+    
+    // Check if all participating players (excluding opted-out players) have either:
+    // 1. Been seated at a table, OR
+    // 2. Taken an action in the current round (including passing or opting out)
+    const participatingPlayers = state.players.filter(player => !player.optedOutOfRound);
+    const allParticipatingPlayersHaveActed = participatingPlayers.every(player => {
+      const isSeatedAtTable = state.tables.some(table => table.seatedPlayerIds.includes(player.id));
+      return isSeatedAtTable || player.actionTakenInCurrentRound;
+    });
+    
+    // Round is ready for next round if all participating players have taken actions
+    // We don't require all tables to have games - players can all join the same table
+    const roundReadyForNext = allParticipatingPlayersHaveActed;
+    
+    if (!roundReadyForNext) return false;
     
     // For freeform sessions, rounds are indeterminate - can always create new rounds
     if (sessionType === SessionType.FREEFORM) {

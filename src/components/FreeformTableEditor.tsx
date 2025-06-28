@@ -117,7 +117,8 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
         icon: collectionPlayer?.icon || '🎮',
         selectionsMade: 0,
         picks: [],
-        actionTakenInCurrentRound: false
+        actionTakenInCurrentRound: false,
+        optedOutOfRound: false
       };
     });
     
