@@ -71,9 +71,9 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
-  // Apply has-warning-footer class to body when all tables have games
+  // Apply has-warning-footer class to body when all tables have games (only for Picks sessions)
   useEffect(() => {
-    if (isMobile && allTablesHaveGames) {
+    if (isMobile && allTablesHaveGames && sessionType === SessionType.PICKS) {
       document.body.classList.add('has-warning-footer');
     } else {
       document.body.classList.remove('has-warning-footer');
@@ -83,7 +83,7 @@ export default function Home() {
     return () => {
       document.body.classList.remove('has-warning-footer');
     };
-  }, [isMobile, allTablesHaveGames]);
+  }, [isMobile, allTablesHaveGames, sessionType]);
 
   return (
     <AnimationProvider>
@@ -135,7 +135,7 @@ export default function Home() {
 
           {/* Fixed Footer */}
           <div className="fixed bottom-0 left-0 right-0">
-            <ActivePlayerFooter />
+            <ActivePlayerFooter onAddTableClick={() => setShowAddTableModal(true)} />
           </div>
         </div>
       ) : (

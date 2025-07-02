@@ -7,7 +7,11 @@ import { useState, useEffect } from 'react';
 import DraggablePlayer from './DraggablePlayer';
 import PlayersRemainingPicks from './PlayersRemainingPicks';
 
-export default function ActivePlayerFooter() {
+interface ActivePlayerFooterProps {
+  onAddTableClick?: () => void;
+}
+
+export default function ActivePlayerFooter({ onAddTableClick }: ActivePlayerFooterProps = {}) {
   // Use useState to manage client-side state
   const [isClient, setIsClient] = useState(false);
 
@@ -41,9 +45,20 @@ export default function ActivePlayerFooter() {
   // Check if all players have taken actions in the current round
   const allPlayersHaveActed = players.every(player => player.actionTakenInCurrentRound);
 
-  // Don't show footer for freeform sessions
+// Show Add new table button for freeform sessions in mobile view
   if (sessionType === SessionType.FREEFORM) {
-    return null;
+    return (
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md z-20">
+        <div className="container mx-auto p-3">
+          <button
+            onClick={onAddTableClick}
+            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+          >
+            + Add New Table
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!isClient || !currentPlayer) {
