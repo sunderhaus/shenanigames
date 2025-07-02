@@ -1071,11 +1071,35 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
         newCurrentPlayerTurnIndex = 0;
       }
 
+      // Check if the round should be marked as completed after player removal
+      // This handles the case where a player is removed and all remaining players have acted
+      let updatedRounds = state.rounds;
+      const currentRound = state.rounds[state.currentRoundIndex];
+      
+      if (currentRound && !currentRound.completed) {
+        // Check if all remaining participating players have acted
+        const remainingParticipatingPlayers = updatedPlayers.filter(player => !player.optedOutOfRound);
+        const allRemainingPlayersHaveActed = remainingParticipatingPlayers.every(player => {
+          const isSeatedAtTable = state.tables.some(table => table.seatedPlayerIds.includes(player.id));
+          return isSeatedAtTable || player.actionTakenInCurrentRound;
+        });
+        
+        // If all remaining players have acted, mark the round as completed
+        if (allRemainingPlayersHaveActed && remainingParticipatingPlayers.length > 0) {
+          updatedRounds = [...state.rounds];
+          updatedRounds[state.currentRoundIndex] = {
+            ...currentRound,
+            completed: true
+          };
+        }
+      }
+
       const newState = {
         ...state,
         players: updatedPlayers,
         turnOrder: updatedTurnOrder,
-        currentPlayerTurnIndex: newCurrentPlayerTurnIndex
+        currentPlayerTurnIndex: newCurrentPlayerTurnIndex,
+        rounds: updatedRounds
       };
 
       // Save to session manager
@@ -1304,6 +1328,12 @@ export const useSessionGameStore = create<SessionGameStore>((set, get) => ({
     // 1. Been seated at a table, OR
     // 2. Taken an action in the current round (including passing or opting out)
     const participatingPlayers = state.players.filter(player => !player.optedOutOfRound);
+    
+    // Need at least 2 participating players to create a new round
+    if (participatingPlayers.length < 2) {
+      return false;
+    }
+    
     const allParticipatingPlayersHaveActed = participatingPlayers.every(player => {
       const isSeatedAtTable = state.tables.some(table => table.seatedPlayerIds.includes(player.id));
       return isSeatedAtTable || player.actionTakenInCurrentRound;
