@@ -145,24 +145,27 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
       case SessionStage.SETUP:
         if (sessionType === SessionType.FREEFORM) {
           return {
-            title: 'Freeform Session Setup',
-            message: 'Freeform sessions require minimal setup:',
+            title: 'Freeform Session Ready! 🌵',
+            message: 'You can start adding tables immediately:',
             details: (
               <ul className="list-disc list-inside space-y-1 mt-2">
-                <li className={players.length >= 2 ? 'text-green-700' : ''}>
-                  Add at least 2 players {players.length >= 2 ? '✓' : `(${players.length}/2)`}
+                <li className={players.length >= 1 ? 'text-green-700' : ''}>
+                  Add at least 1 player {players.length >= 1 ? '✓' : `(${players.length}/1)`}
                 </li>
                 <li className="text-green-700">
-                  No picks required - players can choose from any game ✓
+                  Click "Add New Table" to create tables with any games ✓
+                </li>
+                <li className="text-green-700">
+                  No picks or rounds - complete freedom! ✓
                 </li>
               </ul>
             ),
-            action: canStartFirstRound() ? (
+            action: canStartFirstRound() && players.length >= 1 ? (
               <button
                 onClick={handleStartFirstRound}
-                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
               >
-                Start First Round
+                Ready to Go!
               </button>
             ) : null
           };
@@ -196,25 +199,23 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
       case SessionStage.FIRST_ROUND:
       case SessionStage.SUBSEQUENT_ROUNDS:
         if (sessionType === SessionType.FREEFORM) {
-          if (currentRound?.completed) {
-            return {
-              title: `Freeform Round ${currentRoundIndex + 1} Complete! 🌵`,
-              message: 'All players are seated! This is a freeform session, so you can continue with more rounds indefinitely.',
-              action: (
-                <button
-                  onClick={handleCreateNextRound}
-                  className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                >
-                  Start Another Round
-                </button>
-              )
-            };
-          } else {
-            return {
-              title: `Freeform Round ${currentRoundIndex + 1} 🌵`,
-              message: 'Players can choose any game from the library. No pick restrictions apply!'
-            };
-          }
+          return {
+            title: 'Freeform Session Active! 🌵',
+            message: 'Create as many tables as you want!',
+            details: (
+              <ul className="list-disc list-inside space-y-1 mt-2">
+                <li className="text-green-700">
+                  Use "Add New Table" to create tables with any games ✓
+                </li>
+                <li className="text-green-700">
+                  Select players and games from your collections ✓
+                </li>
+                <li className="text-green-700">
+                  No limits - add tables whenever you want! ✓
+                </li>
+              </ul>
+            )
+          };
         }
         
         if (currentRound?.completed && canCreateNextRound()) {
@@ -259,8 +260,17 @@ export default function LifecycleStatusTooltip({ isMobile }: LifecycleStatusTool
   const statusInfo = getStatusInfo();
   const content = getContent();
   
-  // Check if we should show the action button in header
+  // Check if we should show the action button in header (exclude Freeform sessions)
   const shouldShowActionInHeader = () => {
+    const sessionManager = useSessionManager.getState();
+    const currentSession = sessionManager.getCurrentSession();
+    const sessionType = currentSession?.metadata.sessionType || SessionType.PICKS;
+    
+    // Never show pulse animation for Freeform sessions
+    if (sessionType === SessionType.FREEFORM) {
+      return false;
+    }
+    
     const currentRound = rounds[currentRoundIndex];
     return (
       (stage === SessionStage.SETUP && canStartFirstRound()) ||
