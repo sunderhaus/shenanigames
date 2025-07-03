@@ -22,6 +22,9 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   // State for Add Table modal (Freeform sessions)
   const [showAddTableModal, setShowAddTableModal] = useState(false);
+  // Ref to access modal's save function
+  const [modalSaveRef, setModalSaveRef] = useState<(() => void) | null>(null);
+  const [modalSaveEnabled, setModalSaveEnabled] = useState(false);
   // State to track hydration
   const [isHydrated, setIsHydrated] = useState(false);
 
@@ -133,9 +136,16 @@ export default function Home() {
             </DragAndDropProvider>
           </main>
 
-          {/* Fixed Footer */}
+{/* Fixed Footer */}
           <div className="fixed bottom-0 left-0 right-0">
-            <ActivePlayerFooter onAddTableClick={() => setShowAddTableModal(true)} />
+            <ActivePlayerFooter
+              onAddTableClick={() => setShowAddTableModal(true)}
+              isModalOpen={showAddTableModal}
+              modalSaveEnabled={modalSaveEnabled}
+              onModalSave={modalSaveRef || (() => {})}
+              onModalCancel={() => setShowAddTableModal(false)}
+              modalType="add-table"
+            />
           </div>
         </div>
       ) : (
@@ -256,7 +266,9 @@ export default function Home() {
       {/* Add Table Modal for Freeform sessions */}
       <AddTableModal 
         isOpen={showAddTableModal} 
-        onClose={() => setShowAddTableModal(false)} 
+        onClose={() => setShowAddTableModal(false)}
+        onSave={modalSaveRef}
+        saveEnabled={modalSaveEnabled}
       />
     </AnimationProvider>
   );

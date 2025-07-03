@@ -9,9 +9,22 @@ import PlayersRemainingPicks from './PlayersRemainingPicks';
 
 interface ActivePlayerFooterProps {
   onAddTableClick?: () => void;
+  // Modal state props
+  isModalOpen?: boolean;
+  modalSaveEnabled?: boolean;
+  onModalSave?: () => void;
+  onModalCancel?: () => void;
+  modalType?: 'add-table' | 'edit-table';
 }
 
-export default function ActivePlayerFooter({ onAddTableClick }: ActivePlayerFooterProps = {}) {
+export default function ActivePlayerFooter({ 
+  onAddTableClick, 
+  isModalOpen = false,
+  modalSaveEnabled = true,
+  onModalSave,
+  onModalCancel,
+  modalType = 'add-table'
+}: ActivePlayerFooterProps = {}) {
   // Use useState to manage client-side state
   const [isClient, setIsClient] = useState(false);
 
@@ -50,12 +63,36 @@ export default function ActivePlayerFooter({ onAddTableClick }: ActivePlayerFoot
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md z-20">
         <div className="container mx-auto p-3">
-          <button
-            onClick={onAddTableClick}
-            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-          >
-            + Add New Table
-          </button>
+          {isModalOpen ? (
+            // Show modal save/cancel buttons when modal is open
+            <div className="flex gap-3">
+              <button
+                onClick={onModalCancel}
+                className="flex-1 px-4 py-3 text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onModalSave}
+                disabled={!modalSaveEnabled}
+                className={`flex-1 px-4 py-3 text-white rounded-lg font-medium ${
+                  modalSaveEnabled
+                    ? 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {modalType === 'add-table' ? 'Add Table' : 'Save Changes'}
+              </button>
+            </div>
+          ) : (
+            // Show add table button when no modal is open
+            <button
+              onClick={onAddTableClick}
+              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            >
+              + Add New Table
+            </button>
+          )}
         </div>
       </div>
     );

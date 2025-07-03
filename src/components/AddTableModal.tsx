@@ -12,20 +12,35 @@ import { SessionType } from '@/types/session-types';
 interface AddTableModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave?: () => void;
+  saveEnabled?: boolean;
 }
 
-const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
+const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose, onSave, saveEnabled }) => {
   const [selectedGameId, setSelectedGameId] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [winnerId, setWinnerId] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
 
   const { gameList } = useGameLibrary();
   const { playerList } = useGameCollections();
   const { placeGame, joinGame, updateGameSession, tables, loadCurrentSession } = useSessionGameStore();
   const { updateCurrentSessionState } = useSessionManager();
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   // Reset form when modal opens
   useEffect(() => {
@@ -38,6 +53,14 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
       setNotes('');
     }
   }, [isOpen]);
+
+  // Expose save function and validation to parent (for mobile footer)
+  useEffect(() => {
+    if (onSave && typeof onSave === 'function') {
+      // Update parent with our save function
+      onSave.current = handleSubmit;
+    }
+  }, [onSave, selectedGameId, selectedPlayers, winnerId, startTime, endTime, notes]);
 
   const selectedGame = gameList.find(game => game.id === selectedGameId);
   const availablePlayers = playerList.filter(player => player.isActive);
@@ -309,22 +332,24 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-3 p-4 border-t bg-gray-50">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!selectedGameId}
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Add Table
-          </button>
-        </div>
+        {/* Footer - Hide on mobile since footer handles buttons */}
+        {!isMobile && (
+          <div className="flex justify-end gap-3 p-4 border-t bg-gray-50">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={!selectedGameId}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Add Table
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
