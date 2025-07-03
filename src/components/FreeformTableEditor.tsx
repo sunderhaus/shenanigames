@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Users, Clock, Trophy, Edit } from 'lucide-react';
 import { useGameLibrary } from '@/store/game-library-store';
 import { useGameCollections } from '@/store/game-collection-store';
@@ -11,20 +11,35 @@ import { GameSession, Player, Table } from '@/types/types';
 interface FreeformTableEditorProps {
   table: Table;
   onClose: () => void;
+  onSaveRef?: (saveFunction: () => void) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClose }) => {
+const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClose, onSaveRef, onValidationChange }) => {
   const [selectedGameId, setSelectedGameId] = useState(table.gameId || '');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([...table.seatedPlayerIds]);
   const [winnerId, setWinnerId] = useState(table.gameSession?.winnerId || '');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
 
   const { gameList } = useGameLibrary();
   const { playerList } = useGameCollections();
   const { loadCurrentSession } = useSessionGameStore();
   const { updateCurrentSessionState } = useSessionManager();
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   // Initialize form with current table data
   useEffect(() => {
@@ -51,6 +66,20 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [table, onClose]);
+
+  // Expose save function to parent (for mobile footer) - only when needed
+  useEffect(() => {
+    if (onSaveRef) {
+      onSaveRef(handleSubmit);
+    }
+  }, [onSaveRef]);
+
+  // Update validation state
+  useEffect(() => {
+    if (onValidationChange) {
+      onValidationChange(!!selectedGameId);
+    }
+  }, [onValidationChange, selectedGameId]);
 
   const formatDateTimeForInput = (date: Date): string => {
     const d = new Date(date);
@@ -406,33 +435,35 @@ const FreeformTableEditor: React.FC<FreeformTableEditorProps> = ({ table, onClos
           </div>
         </div>
 
-        {/* Footer - Fixed at bottom */}
-        <div className="flex justify-between px-4 py-3 border-t bg-gray-50 flex-shrink-0">
-          {/* Delete button on the left */}
-          <button
-            onClick={handleDelete}
-            className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
-          >
-            Delete
-          </button>
-          
-          {/* Save/Cancel buttons on the right */}
-          <div className="flex gap-2">
+        {/* Footer - Hide on mobile since footer handles buttons */}
+        {!isMobile && (
+          <div className="flex justify-between px-4 py-3 border-t bg-gray-50 flex-shrink-0">
+            {/* Delete button on the left */}
             <button
-              onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              onClick={handleDelete}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
             >
-              Cancel
+              Delete
             </button>
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedGameId}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Save
-            </button>
+            
+            {/* Save/Cancel buttons on the right */}
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!selectedGameId}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

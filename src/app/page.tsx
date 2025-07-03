@@ -22,8 +22,8 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   // State for Add Table modal (Freeform sessions)
   const [showAddTableModal, setShowAddTableModal] = useState(false);
-  // Ref to access modal's save function
-  const [modalSaveRef, setModalSaveRef] = useState<(() => void) | null>(null);
+  // Modal save function and validation state
+  const [modalSaveFunction, setModalSaveFunction] = useState<(() => void) | undefined>(undefined);
   const [modalSaveEnabled, setModalSaveEnabled] = useState(false);
   // State to track hydration
   const [isHydrated, setIsHydrated] = useState(false);
@@ -142,7 +142,7 @@ export default function Home() {
               onAddTableClick={() => setShowAddTableModal(true)}
               isModalOpen={showAddTableModal}
               modalSaveEnabled={modalSaveEnabled}
-              onModalSave={modalSaveRef || (() => {})}
+              onModalSave={modalSaveFunction || (() => {})}
               onModalCancel={() => setShowAddTableModal(false)}
               modalType="add-table"
             />
@@ -267,8 +267,8 @@ export default function Home() {
       <AddTableModal 
         isOpen={showAddTableModal} 
         onClose={() => setShowAddTableModal(false)}
-        onSave={modalSaveRef}
-        saveEnabled={modalSaveEnabled}
+        onSaveRef={setModalSaveFunction}
+        onValidationChange={setModalSaveEnabled}
       />
     </AnimationProvider>
   );

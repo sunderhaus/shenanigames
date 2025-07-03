@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Users, Clock, Trophy } from 'lucide-react';
 import { useGameLibrary } from '@/store/game-library-store';
 import { useGameCollections } from '@/store/game-collection-store';
@@ -12,11 +12,11 @@ import { SessionType } from '@/types/session-types';
 interface AddTableModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave?: () => void;
-  saveEnabled?: boolean;
+  onSaveRef?: (saveFunction: () => void) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose, onSave, saveEnabled }) => {
+const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose, onSaveRef, onValidationChange }) => {
   const [selectedGameId, setSelectedGameId] = useState('');
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [winnerId, setWinnerId] = useState('');
@@ -54,13 +54,19 @@ const AddTableModal: React.FC<AddTableModalProps> = ({ isOpen, onClose, onSave, 
     }
   }, [isOpen]);
 
-  // Expose save function and validation to parent (for mobile footer)
+  // Expose save function to parent (for mobile footer) - only when modal is open
   useEffect(() => {
-    if (onSave && typeof onSave === 'function') {
-      // Update parent with our save function
-      onSave.current = handleSubmit;
+    if (onSaveRef && isOpen) {
+      onSaveRef(handleSubmit);
     }
-  }, [onSave, selectedGameId, selectedPlayers, winnerId, startTime, endTime, notes]);
+  }, [onSaveRef, isOpen]);
+
+  // Update validation state
+  useEffect(() => {
+    if (onValidationChange) {
+      onValidationChange(!!selectedGameId);
+    }
+  }, [onValidationChange, selectedGameId]);
 
   const selectedGame = gameList.find(game => game.id === selectedGameId);
   const availablePlayers = playerList.filter(player => player.isActive);
